@@ -4,8 +4,8 @@ var startdata = '', usePhotoShader;
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 function showfirstdata() {
     interpretSearchString();
-    if (startdata === 'none') return;
-    if (location.href.indexOf('arch') === -1 && !startdata) startdata = 'data/4bcufullCA.pdb';
+    if (!startdata) return;
+    // if (location.href.indexOf('arch') === -1 && !startdata) startdata = 'data/4bcufullCA.pdb';
     if (startdata) {
         posturiasync(startdata, pdbReader);
         spotsize(5);
@@ -124,7 +124,7 @@ function csvReader(raw, fid) {
         data.splice(-1, 1);  // remove blank line at end if any
     dataa = [];
     data.forEach( x=> dataa.push(x.split('\t')));
-    header = data[0].toLowerCase().split('\t').map(x=>x.split(',')[0]);  
+    header = data[0].toLowerCase().split('\t').map(x=>x.split(',')[0]);
     dataa.splice(0, 1);  // remove header
 
     // convert data to an array of structures, and compute ranges

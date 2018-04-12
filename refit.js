@@ -39,11 +39,11 @@ function refit() {
             if (d.z == 0) return;
             //if (dv.distanceTo(cen) > 3)
             //    console.log('refit big', gr.gid, i, cen, dv);
-                
+
             linegeom.vertices.push(cen);
             linegeom.vertices.push(dv);
             linegeom.colors.push(col);
-            linegeom.colors.push(col);            
+            linegeom.colors.push(col);
             });
     }
 
@@ -51,6 +51,6 @@ function refit() {
     if (rlines) scene.remove(rlines);
     rlines = new THREE.LineSegments(linegeom, linemat);
     maingroup.add(rlines);
-
+    addvis(rlines, 'refits');
 }
 
