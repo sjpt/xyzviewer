@@ -3,6 +3,8 @@
 
 var datas, scene, rgroups, rlines;
 
+// compute refit from preloaded data held in datas, make a refit set for each group
+// and display as lines from flints to centroid of group
 function refit() {
     if (!datas) {setTimeout(refit, 100); return; }
     // data prep, find groups
