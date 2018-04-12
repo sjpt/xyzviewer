@@ -52,7 +52,7 @@ function init() {
         image.onload = function() { sprite1.needsUpdate = true; };
     } else {
         var textureLoader = new THREE.TextureLoader();
-        sprite1 = textureLoader.load( "../xyz/sprites/circle.png" );
+        sprite1 = textureLoader.load( "sprites/circle.png" );
     }
     // sprite1 = makeCircle();
 

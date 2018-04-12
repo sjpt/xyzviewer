@@ -25,7 +25,7 @@ function init() {
     geometry = new THREE.Geometry();
     var sprite1;
     var textureLoader = new THREE.TextureLoader();
-    sprite1 = textureLoader.load( "../xyz/sprites/circle.png" );
+    sprite1 = textureLoader.load( "sprites/circle.png" );
 
     sprite = sprite1;
     size   = 1;
