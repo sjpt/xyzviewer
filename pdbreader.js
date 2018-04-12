@@ -168,6 +168,11 @@ function expandchain(trik = 0, pentk = 0, cenk = 0) {
 
 /** dynamic expansion, todo add easier scripting */
 function folddemo(tt = 10000, gap = 2000) {
+	if (!ranges || !ranges.atom) {
+        posturiasync('data/4bcufullCA.pdb', 
+        	(d,f) => { pdbReader(d,f); folddemo(); });
+        spotsize(5);
+	}
     orbcamera.position.set(0,0,250);
     fullcanvas(true);
 
