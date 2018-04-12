@@ -5,11 +5,8 @@ var startdata = '', usePhotoShader;
 function showfirstdata() {
     interpretSearchString();
     if (!startdata) return;
-    // if (location.href.indexOf('arch') === -1 && !startdata) startdata = 'data/4bcufullCA.pdb';
     if (startdata) {
         posturiasync(startdata, pdbReader);
-        spotsize(5);
-        // setTimeout( () => {colourby.value='tempfac'; dataToMarkersGui()}, 5000);
         return;
     }
     loaddata();         // load the data ready for display
