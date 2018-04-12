@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>submitframe test</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+        <b>VR resolution, exit VR and reenter VR to apply:</b>
+            1<input type="radio" name="vrres" onclick="vrres(1)"/>
+            1.2<input type="radio" name="vrres" onclick="vrres(1.2)"/>
+            1.4 (standard)<input type="radio" name="vrres" onclick="vrres(1.4)"/>
+            novr <input type="radio" name="vrres" onclick="vrres(-1)"/>
+        <br>
+
+		<script src="jsdeps/stats.min.js"></script>
+		<script src="jsdeps/three.js"></script>
+        <script src="gldebug.js"></script>
+        <script src="jsdeps/WebVR.js"></script>
+
+
+        <script>
+            var nobutton;
+            var display;
+            numParticles = 2000;
+            framenum = 0;
+            var threeloop = true;
+            window.onload = init;
+            var ca = {};
+
+/** initial call to read data and set up graphics */
+function init() {
+            interpretSearchString()
+
+
+            canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            gl = canvas.getContext( 'webgl', ca ) || canvas.getContext( 'experimental-webgl', ca );
+            // Gldebug.start({gl, frames:5, action: 'logall'})
+
+            renderer = new THREE.WebGLRenderer( {canvas});
+            if (!nobutton) document.body.appendChild( WEBVR.createButton( renderer ) );
+            renderer.setClearColor(0,1);
+            renderer.vr.enabled = true;
+
+            scene = new THREE.Scene();
+            var textureLoader = new THREE.TextureLoader();
+            sprite1 = textureLoader.load( "../xyz/sprites/circle.png" );
+
+            /**/
+            // particles empty for code checking
+            mat = new THREE.PointsMaterial( {size: 0.02, color: '#ff0000', map: sprite1} );
+            particles = new THREE.Points( new THREE.Geometry(), mat );
+            particles.frustumCulled = false;
+            particles.visible = false;
+            scene.add(particles);
+
+            // particles
+            particles1 = new THREE.Points( new THREE.Geometry(), mat );
+            particles1.frustumCulled = false;
+            r = () => 3 * (Math.random() - 0.5);
+            for (let i = 0; i < numParticles; i++)
+                particles1.geometry.vertices.push(new THREE.Vector3(r(), r(), r()));
+            particles1.visible = true;
+            scene.add(particles1);
+/**/
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000 );
+            camera.position.z = 2;
+            stats = new Stats();
+            document.body.appendChild( stats.dom );
+            document.body.appendChild(renderer.domElement);
+            navigator.getVRDisplays().then(
+                function ( displays ) {
+                    display = displays[0];
+                    renderer.vr.setDevice(display);
+                });
+
+            if (threeloop)
+                renderer.animate(render)
+            else
+                requestAnimationFrame(render);  // leave till device ready
+            } // init
+
+            function vrres(ratio) {
+                if (ratio <= 0) { renderer.vr.enabled = false; return display.exitPresent(); }
+                RRRATIO = ratio;
+                renderer.vr.enabled = true;
+                display.requestPresent( [ { source: canvas } ] );
+            }
+
+            function render() {
+                framenum++;
+                stats.update();
+                renderer.render(scene, camera)
+                if (!threeloop) {
+                    if (display && display.isPresenting) {
+                        display.requestAnimationFrame(render);
+                    } else {
+                        requestAnimationFrame(render);
+                    }
+                }
+            }
+
+            /** interpret he search string */
+            function interpretSearchString() {
+                var istring = unescape(location.search.substring(1));
+                try {
+                    eval(istring);
+                } catch (e) {
+                    alert("cannot eval search string '" + istring + ":'\n" + e);
+                }
+            }
+
+</script>
+	</body>
+</html>
