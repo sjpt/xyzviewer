@@ -4,7 +4,8 @@
 var datas, scene, rgroups, geolines;
 
 function geojson() {
-    posturiasync('data/StarCarr_FeatureDetails_ST.geojson', (json)=>geojsonReader(json));
+    if (!datas) {setTimeout(geojson, 100); return; }
+    loaddrop('contours.geojson');
 }
 
 function geojsonReader(json, fid) {

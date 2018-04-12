@@ -4,6 +4,7 @@
 var datas, scene, rgroups, rlines;
 
 function refit() {
+    if (!datas) {setTimeout(refit, 100); return; }
     // data prep, find groups
     rgroups = {};
     for(let i=0; i < datas.length; i++) {

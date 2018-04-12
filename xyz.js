@@ -6,7 +6,7 @@ function showfirstdata() {
     interpretSearchString();
     if (!startdata) return;
     if (startdata) {
-        posturiasync(startdata, pdbReader);
+        posturiasync(startdata, handlerForFid(startdata));
         return;
     }
     loaddata();         // load the data ready for display
@@ -279,12 +279,18 @@ function openfiles(files) {
     for (let f=0; f<files.length; f++) openfile(files[f]);
 }
 
+/** get the correct handler for a file name */
+function handlerForFid(fid) {
+    var ext = getFileExtension(fid);
+    var handler = fileTypeHandlers[ext];
+    if (!handler) handler = window[ext.substring(1) + 'Reader'];
+    return handler;
+}
+
 var fileTypeHandlers = {};
 /** read and process a single file, given a File object */
 function openfile(file) {
-    var ext = getFileExtension(file.name);
-    var handler = fileTypeHandlers[ext];
-    if (!handler) handler = window[ext.substring(1) + 'Reader'];
+    handler = handlerForFid(file.name);
 
     if (handler && handler.rawhandler) {
         handler(file);
@@ -349,7 +355,8 @@ document.ondrop = docdrop;
 
 
 /** post a uri and process callback  */
-function posturiasync(puri, callb, data='' ) {
+function posturiasync(puri, callb='auto', data='' ) {
+    if (callb === 'auto') callb = handlerForFid(puri);
     var req = new XMLHttpRequest();
     req.open("GET", puri, true);
     req.setRequestHeader("Content-type", "text/plain;charset=UTF-8");
