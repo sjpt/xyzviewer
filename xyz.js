@@ -290,7 +290,7 @@ function handlerForFid(fid) {
 var fileTypeHandlers = {};
 /** read and process a single file, given a File object */
 function openfile(file) {
-    handler = handlerForFid(file.name);
+    const handler = handlerForFid(file.name);
 
     if (handler && handler.rawhandler) {
         handler(file);
@@ -302,6 +302,7 @@ function openfile(file) {
             var data = e.target.result;
             handler(data, file.name);
         };
+        var ext = getFileExtension(file.name);
         if (ext === '.tif')
             reader.readAsArrayBuffer(file);        // start read in the data file
         else

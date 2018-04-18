@@ -16,26 +16,30 @@ function geojsonReader(json, fid) {
     const linegeom = new THREE.Geometry();
 
     const cx=ranges.x.mean, cy=ranges.y.mean, cz=ranges.z.mean;
-    for(let f = 0; f < features.length; f++) {
-        const type = features[f].geometry.type; 
-        const coords = features[f].geometry.coordinates;
+    for (let fi = 0; fi < features.length; fi++) {
+        const feature = features[fi];
+        const type = feature.geometry.type;
+        const coords = feature.geometry.coordinates;
+        const contour = (feature.properties && feature.properties.CONTOUR) ? feature.properties.CONTOUR - cz : 0;
+        const mv = l => new THREE.Vector3(l[0] - cx, l[1] - cy, 2 in l ? l[2] - cz : contour);
         if (type === 'MultiLineString' || type === 'Polygon') {
             for (let i=0; i < coords.length; i++) {
                 let line = coords[i];
                 if (!Array.isArray(line)) line = [line];
                 for (let l=0; l < line.length - 1; l++) {
-                    linegeom.vertices.push(new THREE.Vector3(line[l][0] - cx, line[l][1] - cy, 0));
-                    linegeom.vertices.push(new THREE.Vector3(line[l+1][0] - cx, line[l+1][1] - cy, 0));
+                    linegeom.vertices.push(mv(line[l]));
+                    linegeom.vertices.push(mv(line[l+1]));
                 }
             }
         } else if (type === 'LineString') {
             for (let i=0; i < coords.length-1; i++) {
-                linegeom.vertices.push(new THREE.Vector3(coords[i][0] - cx, coords[i][1] - cy, 0));
-                linegeom.vertices.push(new THREE.Vector3(coords[i+1][0] - cx, coords[i+1][1] - cy, 0));    
+                linegeom.vertices.push(mv(coords[i]));
+                linegeom.vertices.push(mv(coords[i+1]));
            }
         } else if (type === 'Point') {
-            linegeom.vertices.push(new THREE.Vector3(coords[0] - cx, coords[1] - cy, coords[2] - cz));
-            linegeom.vertices.push(new THREE.Vector3(coords[0]+0.01 - cx, coords[1] - cy, coords[2] - cz));    
+            linegeom.vertices.push(mv(coords));
+            const n = linegeom.vertices.push(mv(coords));
+            linegeom.vertices[n].x += 0.01;
         } else {
             log(`Unexpected type ${type} for geometry`);
         }
