@@ -1,11 +1,19 @@
 'use strict';
 // code for display of refit data
+export {refit};
+import {addToMain} from './graphicsboiler.js';
+import {centrerange} from './xyz.js';
+const {THREE, col3, X} = window;
+X.refit = refit;
 
-var datas, scene, rgroups, rlines;
+let rgroups, rlines;
+
+// var datas, scene, rgroups, rlines;
 
 // compute refit from preloaded data held in datas, make a refit set for each group
 // and display as lines from flints to centroid of group
 function refit() {
+    const datas = X.current.datas;
     if (!datas) {setTimeout(refit, 100); return; }
     // data prep, find groups
     rgroups = {};
@@ -35,7 +43,7 @@ function refit() {
     for (let g in rgroups) {
         const gr = rgroups[g];
         const col = col3(Math.random(), Math.random(), Math.random());
-        const cen = new THREE.Vector3(gr.x - ranges.x.mean, gr.y - ranges.y.mean, gr.z - ranges.z.mean);
+        const cen = new THREE.Vector3(gr.x - centrerange.x, gr.y - centrerange.y, gr.z - centrerange.z);
         gr.inds.forEach( i=> {
             const d = datas[i];
             const dv = new THREE.Vector3( d.c_x,  d.c_y,  d.c_z);
@@ -51,9 +59,8 @@ function refit() {
     }
 
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: THREE.VertexColors } );
-    if (rlines) scene.remove(rlines);
+    //if (rlines) maingroup.remove(rlines);
     rlines = new THREE.LineSegments(linegeom, linemat);
-    maingroup.add(rlines);
-    addvis(rlines, 'refits');
+    addToMain(rlines, 'refits');
 }
 

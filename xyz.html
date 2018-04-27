@@ -22,6 +22,10 @@
             }
             #colourbox { width: 20%; }
         </style>
+        <script>
+            window.onload = ()=>console.log('document loaded');
+            document.addEventListener("DOMContentLoaded",()=>{console.log('DOMContentLoaded loaded')});
+        </script>
 	</head>
 	<body>
         <div id="info">
@@ -77,7 +81,10 @@
                 <select onchange="dataToMarkersGui();" id="colourby">
                     <!-- will be filled in dynamically -->
                 </select>
-                <input type="text" id="colourbox" onkeyup="dataToMarkersGui();"/>
+                <!-- can't find reliable single event or even events for when OK clicked with no change  -->
+                <input type="color" id="colourpick" value="#c0c0c0"
+                    onchange="dataToMarkersGui('choose');" onclick="dataToMarkersGui('choose');"/>
+                <input type="text" id="colourbox" onkeyup="dataToMarkersGui('custom');"/>
                 <br>
                 <b>Spot size:</b>
                 0.01<input type="radio" name="spotsize" onclick="spotsize(0.01);"/>
@@ -100,19 +107,27 @@
                 <input type="file" id="fileChooser" style="display:none"/>
             </div>
         </div>
-
 		<script src="jsdeps/three.js"></script>
 		<script src="jsdeps/stats.min.js"></script>
 		<script src="jsdeps/OrbitControls.js"></script>
 		<script src="jsdeps/WebVR.js"></script>
-		<script src="graphicsboiler.js"></script>
-		<script src="refit.js"></script>
-		<script src="geojson.js"></script>
-		<script src="pdbreader.js"></script>
-		<script src="folddemo.js"></script>
-		<script src="xyz.js"></script>
-		<script src="photoshader.js"></script>
-		<script src="gldebug.js"></script>
+		<script src="jsdeps/PLYLoader.js"></script>
+
+		<script src="main.js"></script>
+
+        <!--
+		<script type="module" src="graphicsboiler.js"></script>
+		<script type="module" src="xyz.js"></script>
+        <script type="module" src="refit.js"></script>
+<script type="module" src="pdbreader.js"></script>
+-->
+<script type="module" src="folddemo.js"></script>
+<script type="module" src="photoshader.js"></script>
+<script type="module" src="geojson.js"></script>
+<script type="module" src="refit.js"></script>
+<script type="module" src="plyreader.js"></script>
+<script src="gldebug.js"></script>
+<script>console.log('last module read, window=', window)</script>
 
 		<!-- <script src="js/Detector.js"></script> -->
 	</body>

@@ -1,22 +1,28 @@
+'use strict';
 /** dynamic expansion, todo add easier scripting */
+import {centrerange, spotsize} from './xyz.js';
+import {posturiasync} from './basic.js';
 
-let {orbcamera, gui} = window;
+import {expandchain, pdbReader} from './pdbreader.js';
+import {fullcanvas, orbcamera} from './graphicsboiler.js';
+const {E} = window;
 
-export function folddemo(tt = 10000, gap = 2000) {
-    if (!ranges || !ranges.atom) {
+let folddemo_st;  // folddemo start time to help script
+function folddemofun(tt = 10000, gap = 2000) {
+    if (centrerange.x === 'unset') {  // no data yet, read data and pend
         posturiasync('data/4bcufullCA.pdb',
-            (d,f) => { pdbReader(d,f); folddemo(); });
-        spotsize(5);
+            (d,f) => { pdbReader(d,f); folddemofun(); });
         return;
     }
+    spotsize(5);
     orbcamera.position.set(0,0,250);
     fullcanvas(true);
 
-    if (!folddemo.st) requestAnimationFrame(foldframe);
-    folddemo.st = Date.now();
+    if (!folddemo_st) requestAnimationFrame(foldframe);
+    folddemo_st = Date.now();
     function foldframe() {
-        const t = Date.now() - folddemo.st;
-        if (t > 2 * tt + gap) { expandchain(0,0); folddemo.st = undefined; return; }
+        const t = Date.now() - folddemo_st;
+        if (t > 2 * tt + gap) { expandchain(0,0); folddemo_st = undefined; return; }
         if (t < tt) {
             const dt = t / tt;
             expandchain(0.5 + 0.5 * dt, 0.5 - 0.5 * dt);
@@ -28,7 +34,10 @@ export function folddemo(tt = 10000, gap = 2000) {
     }
 }
 
-var expbutton = document.createElement('button');
-gui.appendChild(expbutton);
-expbutton.textContent = 'fold demo';
-expbutton.onclick = () => folddemo();
+//document.addEventListener("DOMContentLoaded",()=>{
+    const expbutton = document.createElement('button');
+    expbutton.id = 'xexpbutton';
+    E.gui.appendChild(expbutton);
+    expbutton.textContent = 'fold demo';
+    expbutton.onclick = () => folddemofun();
+//});

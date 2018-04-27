@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model version="1.2.0">
+  <mesh path="mesh.ply">
+    <faceCount>8891613</faceCount>
+    <vertexCount>4446396</vertexCount>
+    <hasVertexColors>true</hasVertexColors>
+    <hasUV>true</hasUV>
+  </mesh>
+  <texture path="texture.png"/>
+  <meta>
+    <property name="atlas/atlas_blend_mode" value="3"/>
+    <property name="atlas/atlas_count" value="1"/>
+    <property name="atlas/atlas_height" value="4096"/>
+    <property name="atlas/atlas_mapping_mode" value="1"/>
+    <property name="atlas/atlas_width" value="4096"/>
+    <property name="atlas/color_correction" value="false"/>
+    <property name="atlas/duration_blend" value="352.889"/>
+    <property name="atlas/duration_uv" value="83"/>
+    <property name="atlas/fill_holes" value="true"/>
+    <property name="model/depth_downscale" value="2"/>
+    <property name="model/depth_filter_mode" value="2"/>
+    <property name="model/duration" value="146.767"/>
+    <property name="model/mesh_face_count" value="0"/>
+    <property name="model/mesh_interpolation" value="1"/>
+    <property name="model/mesh_object_type" value="0"/>
+    <property name="model/mesh_source_data" value="1"/>
+    <property name="model/resolution" value="0.000689473636027728"/>
+  </meta>
+</model>

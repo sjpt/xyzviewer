@@ -1,12 +1,13 @@
 'use strict';
 // code for display of geojson data
+export  {geojsonReader};
+import {addToMain} from './graphicsboiler.js';
+import {centrerange} from './xyz.js';
+const {THREE, addFileTypeHandler, log} = window;
 
-var datas, scene, rgroups, geolines;
+addFileTypeHandler('.geojson', geojsonReader);
 
-function geojson() {
-    if (!datas) {setTimeout(geojson, 100); return; }
-    loaddrop('contours.geojson');
-}
+var geolines;
 
 function geojsonReader(json, fid) {
     const sss = JSON.parse(json);
@@ -15,7 +16,7 @@ function geojsonReader(json, fid) {
     // now prepare groups as graphics
     const linegeom = new THREE.Geometry();
 
-    const cx=ranges.x.mean, cy=ranges.y.mean, cz=ranges.z.mean;
+    const cx=centrerange.x, cy=centrerange.y, cz=centrerange.z;
     for (let fi = 0; fi < features.length; fi++) {
         const feature = features[fi];
         const type = feature.geometry.type;
@@ -46,11 +47,10 @@ function geojsonReader(json, fid) {
     }
 
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1 } );
-    if (geolines) maingroup.remove(geolines);
+    // if (geolines) maingroup.remove(geolines);
     geolines = new THREE.LineSegments(linegeom, linemat);
 
-    maingroup.add(geolines);
-    addvis(geolines, 'geojson');
+    addToMain(geolines, fid);
     log(fid + `features=${features.length} segs=${linegeom.vertices.length}`);
 
 }

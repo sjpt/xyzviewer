@@ -1,11 +1,10 @@
 // test module data sharing
 //import * as THREE from './jsdeps/three.js';
+
 export {ttmod};
+
 var refit;
-//const THREE = window.THREE;
-let { THREE, log, renderer } = window;
-// ( { THREE } = window );
-// get rrenderer() { return 5; }
+let { THREE, renderer, log } = window;
 let rr = { get function() {return 5;} }
 
 log('testmodule THREE: ', THREE.FloatType);

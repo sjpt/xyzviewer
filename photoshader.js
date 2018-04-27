@@ -1,9 +1,13 @@
 'use strict';
 // make a points material with photo extraction from texture
+//import {particles} from './xyz.js';
+export {photoShader_clicked};
+
+const {THREE, E, X} = window;
+window.photoShader_clicked = photoShader_clicked;
+
 var photos;
-
-
-
+/*********** */
 function photoShader(fid = "../xyz/sprites/mut-64-64-r90.jpg", xres=undefined, yres=undefined) {
     const vertexShader = `
 /*
@@ -79,13 +83,15 @@ void main() {
     return shader;
 }
 
-photoShader.clicked = function(evt) {
-    const ele = evt  ? evt.srcElement : window.photoscheck;
-    if (!photoShader.nophotomaterial) photoShader.nophotomaterial = particles.material;       
+let nophotomaterial, photomaterial;
+function photoShader_clicked(evt) {
+    const ele = evt  ? evt.srcElement : E.photoscheck;
+    const particles = X.current.particles;
+    if (!nophotomaterial) nophotomaterial = particles.material;
 
     if (ele.checked) {
-        particles.material = photoShader.photomaterial = photoShader.photomaterial || photoShader();  // cahce and set photo material
+        particles.material = photomaterial = photomaterial || photoShader();  // cahce and set photo material
     } else {
-        particles.material = photoShader.nophotomaterial;
+        particles.material = nophotomaterial;
     }
 }
