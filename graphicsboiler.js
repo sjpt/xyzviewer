@@ -80,6 +80,7 @@ function init() {
 
     stats = new Stats();
     container.appendChild( stats.dom );
+    stats.dom.style.bottom = '0'; stats.dom.style.top = ''
 
     document.addEventListener( 'keydown', onDocumentKeyDown, false );
 

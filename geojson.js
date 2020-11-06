@@ -1,4 +1,6 @@
 'use strict';
+window.lastModified.geojson = `Last modified: 2020/11/06 17:42:10
+`
 // code for display of geojson data
 export  {geojsonReader};
 import {addToMain} from './graphicsboiler.js';

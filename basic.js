@@ -1,6 +1,7 @@
-
 export {addFileTypeHandler, showfirstdata, posturiasync};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
+X.lastModified.basic = `Last modified: 2020/11/06 17:39:12
+`
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
 

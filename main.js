@@ -1,4 +1,6 @@
 // main file for code that needs to run early
+window.lastModified.main = `Last modified: 2020/11/06 17:42:41
+`
 var fileTypeHandlers; //  = {};
 // eslint-disable-next-line no-unused-vars
 function addFileTypeHandler(ftype, fun) {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified = `Last modified: 2020/11/06 11:34:33
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/06 18:42:16
 `</script>
 <html lang="en">
 	<head>
@@ -19,7 +19,7 @@
 			}
             #gui {
                 position: relative;
-                top: 60px;
+                top: 10px;
                 z-index: 100;
             }
             #colourbox { width: 20%; }
@@ -27,15 +27,17 @@
         <script>
             window.onload = ()=>{
                 console.log('document loaded');
-                window.lastmod.textContent = lastModified;
+                window.lastmod.textContent = lastModified.xyzhtml;
                 init();
             }; 
             document.addEventListener("DOMContentLoaded",()=>{console.log('DOMContentLoaded loaded')});
         </script>
 	</head>
 	<body>
-        <div id="info">
-            <p id="lastmod">...</p>
+        <span id="lastmod"></span>
+        <span style="text-align:center">Press 'Q' key to toggle help information</span>
+        <span id="ack" style="position: fixed; right: 0px"></span>
+        <div id="info" style="display:none">
             <p>On a small screen, scroll to the bottom to see the image.
             You can interact with the mouse: left button to rotate, centre button or wheel to zoom, right button to pan.
             <br>
