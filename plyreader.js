@@ -25,6 +25,9 @@ class PLY {
         this.geometry = geometry;
         this.fid = fid;
         this.mesh = this.meshmaker(geometry, fid);
+        this.spotsize(0.05);
+        if (!geometry.attributes.color)  // choose white as base if colour will be added
+            this.dataToMarkersGui();
     }
 
     spotsize(size) { this.mesh.material.size = size; }

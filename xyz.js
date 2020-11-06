@@ -1,25 +1,40 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
-import {makechainlines} from './pdbreader.js';
+import {makechainlines, pdbReader} from './pdbreader.js';
 export {
     centrerange, // for draw centre consistency
     spotsize,
     dataToMarkersGui,
     // particles, // for subclass pdbreader, and particles for photoshader
-    XYZ
+    XYZ,
+    stdcols, stdcol,
+    csvReader
 };
 // temporary below
-let filtergui;
+// let filtergui;
 
 
 const {THREE, addFileTypeHandler, E, X, col3} = window;
 const {log} = window;
+const stdcols = [
+    col3(0.5, 0.5, 0.5),
+    col3(1,0,0),
+    col3(0,1,0),
+    col3(0,0,1),
+    col3(0,1,1),
+    col3(1,0,1),
+    col3(1,1,0),
+    col3(1,1,1)
+    ];
+const stdcol = n => stdcols[n%8];
+
 // bridge to access current members
 /** */
 const spotsize = a => {
     if (X.current) X.current.spotsize(a);
     //if (X.plymaterial) X.plymaterial.size = a;
 }
+const filtergui = g => { if (X.current) X.current.filtergui(g); }
 const dataToMarkersGui = (a,b) => X.current.dataToMarkersGui(a,b);
 //const makefilterfun = a => current.makefilterfun(a);
 //const makecolourfun = a => current.makecolourfun(a);
@@ -31,11 +46,13 @@ const centrerange = new THREE.Vector3('unset');  // ranges for external use
 X.spotsize = spotsize;
 X.dataToMarkersGui = dataToMarkersGui;
 X.filtergui = filtergui;
+X.csvReader = csvReader;
+X.pdbReader = pdbReader;
 addFileTypeHandler('.csv', csvReader);
+addFileTypeHandler('.txt', csvReader);
 
 var usePhotoShader;
 function csvReader(data, fid) { return new XYZ(data, fid); }
-
 
 class XYZ {
     // comment in line below for typescript checking, comment out for js runtime
@@ -66,8 +83,8 @@ dataToMarkersGui(type) {
 /** load the data with given filter and colour functions if requred, and display as markers */
 dataToMarkers(pfilterfun, pcolourfun) {
     if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
-    const filterfun = this.makefilterfun(pfilterfun);
-    const colourfun = this.makecolourfun(pcolourfun);
+    const filterfun = this.makefilterfun(pfilterfun, E.filterbox);
+    const colourfun = this.makecolourfun(pcolourfun, E.colourbox);
     const geometry = new THREE.Geometry();
     geometry.vertices = [];
     geometry.colors = [];
@@ -98,7 +115,7 @@ dataToMarkers(pfilterfun, pcolourfun) {
  * If low and high are not given they are used as 1.5 standard deviations from the mean.
  * We may later add low and high colour values for greater flexibility.
  */
-makecolourfun(fn) {
+makecolourfun(fn, box) {
     if (typeof fn === 'function') return fn;
     if (fn === undefined || fn === '' || fn === 'random') return ()=>col3(Math.random(),Math.random(),Math.random());
     if (fn === 'choose') {
@@ -114,7 +131,7 @@ makecolourfun(fn) {
                 E.colourpick.value = '#' + cc.getHexString();
                 return ()=>cc;
             }
-            const f = this.makefilterfun(c);
+            const f = this.makefilterfun(c, box);
             //const col = f(datas[0]);  // test
             return f;
         } catch(e) {
@@ -123,48 +140,79 @@ makecolourfun(fn) {
     if (typeof fn === 'string' && typeof (window[fn]) === 'function') return window[fn];  // need better formalization
     if (typeof fn === 'string') fn = { fn }
     const r = this.ranges[fn.fn];               // range
-    if (fn.low === undefined) fn.low = r.mean - 1.5 * r.sd;
-    if (fn.high === undefined) fn.high = r.mean + 1.5 * r.sd;
-    const low = fn.low;
-    const range = fn.high - fn.low;
     const name = fn.fn;
+    if (isNaN(r.sd)) {
+        const cf = function cfxval(d) {     // colorby enumerated column
+            const v = d[name];                // raw value
+            return stdcol(r.valueSet[v]);
+        }
+        return cf;
+    } else {                            // colorby value column
+        if (fn.low === undefined) fn.low = r.mean - 1.5 * r.sd;
+        if (fn.high === undefined) fn.high = r.mean + 1.5 * r.sd;
+        const low = fn.low;
+        const range = fn.high - fn.low;
 
-    const cf = function cfx(d) {
-        const v = d[name];                // raw value
-        const nv = ( v - low) / range;  // normalized value
-        return col3(nv, 1-nv, 1-nv);    // colour
+        const cf = function cfx(d) {
+            const v = d[name];                // raw value
+            const nv = ( v - low) / range;  // normalized value
+            return col3(nv, 1-nv, 1-nv);    // colour
+        }
+        return cf;
     }
-    return cf;
 }
 
 /** make a function for a filter
  * If the value is a string it is converted to a function, using d as the input data row.
  * so a valid string could be 'd.x > 17'.
+ * Also allows just x > 17
+ * Can return a string if the function is not valid, giving reason for failure
  */
-makefilterfun(filt) {
-    if (typeof filt === 'function') return filt;
+makefilterfun(filt, box) {
     if (!filt) return undefined;
-    if (typeof filt === 'string') {
-        for (let fn in this.ranges)
+    E.filterr.textContent = '';
+    let filtfun;
+    if (typeof filt === 'function')
+        filtfun = filt;
+    else if (typeof filt === 'string') {
+        for (let fn in this.ranges) // replace known field fn with d.fn
             // filt = filt.split(fn).join('d.' + fn);
             filt = filt.replace( new RegExp('\\b' + fn + '\\b', 'g'), 'd.' + fn);
         filt = filt.split('.d.').join('.');  // so things like ranges.x.mean will get correct
-        const filtfun = new Function('d', 'return (' + filt + ')');
-        return filtfun;
+        try {
+            filtfun = new Function('d', 'return (' + filt + ')');
+        } catch (e) {
+            E.filterr.textContent = filt + '<br>invalid function: ' + e.message;
+            if (box) box.style.background='#ffd0d0'
+            return undefined;
+        }
+    } else {
+        return undefined;
     }
+
+    try {
+        const r = filtfun(this.datas[0]);
+    } catch(e) {
+        E.filterr.textContent = filt + '<br>function throws exception: ' + e.message;
+        if (box) box.style.background='#d0d0ff'
+        return undefined;
+    }
+    if (box) box.style.background='#d0ffd0'
+    E.filterr.textContent = filt + '<br>OK';
+    return filtfun;
 }
 
 
 /** load the data as an array of arrays, and separate out header */
 csvReader(raw, fid) {
     log('csvReader', fid);
-    const data = raw.split('\n');
+    const data = raw.split('\r').join('').split('\n');
     if (data[0] === '') data.splice(0,1);  // in case of initial empty line
     if (data.slice(-1)[0] === '')
         data.splice(-1, 1);  // remove blank line at end if any
     const dataa = [];  // todo remove need for intermediate saved dataa
     data.forEach( x=> dataa.push(x.split('\t')));
-    this.header = data[0].toLowerCase().split('\t').map(x=>x.split(',')[0]);
+    this.header = data[0].toLowerCase().split('\t').map(x=>x.trim().split(',')[0]);
     dataa.splice(0, 1);  // remove header
 
     // convert data to an array of structures, and compute ranges
@@ -190,7 +238,10 @@ csvReader(raw, fid) {
     if (!this.ranges) {
         this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
     }
+    this.finalize(fid);
+}
 
+finalize(fid) {
     this.rebase('x');
     this.rebase('y');
     this.rebase('z');
@@ -246,7 +297,7 @@ filtergui(evt) {
     const ff = box.value;
     try {
         // const f = new Function('d', 'return ' + ff);
-        box.style.background='#d0ffd0';
+        // box.style.background='#d0ffd0';
         errbox.textContent = 'ctrl-enter to apply filter';
         if (evt.keyCode === 13) {
             filtergui.lastn = this.dataToMarkersGui();
@@ -258,7 +309,7 @@ filtergui(evt) {
             return;
         }
     } catch (e) {
-        box.style.background='#ffd0d0';
+        box.style.background='#ffffd0';
         errbox.textContent = e.message;
     }
 }
@@ -284,25 +335,32 @@ genstats(datals = this.datas, name = undefined) {
     let sum = 0, sum2 = 0, n = 0;
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
+    let valueSet = {};                  // for non-numeric vals
     if (isNaN(data[0])) {min = max = data[0]}
     data.forEach(v => {
         if (!v) return;  // '' or 0 are sometimes used for missing/undefined (not for pdb chains, never mind ...!!!)
-        sum += +v;
-        sum2 += v*v;
-        n++;
-        if (v < min) min = v;  // do not use Math.max as doesn't work for alpha
-        if (v > max) max = v;
-        max = Math.max(max, v);
+        if (isNaN(v)) {
+            valueSet[v] = true;
+        } else {
+            sum += +v;
+            sum2 += v*v;
+            n++;
+            if (v < min) min = v;  // do not use Math.max as doesn't work for alpha
+            if (v > max) max = v;
+            max = Math.max(max, v);
+        }
     });
+    const valueList = Object.keys(valueSet);
+    for (let i in valueList) valueSet[valueList[i]] = i;
 
     const sd = Math.sqrt((sum2 - 1/n * sum*sum) / n);
-    if (!isNaN(sd) && sd !== 0) {
+    if (sd !== 0) {
         const n = `<option value="${name}">${name}</option>`;
         if (E.colourby.innerHTML.indexOf(n) === -1)
         E.colourby.innerHTML += `<option value="${name}">${name}</option>`;
     }
 
-    return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n};
+    return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n, valueSet};
 }
 
 /** setvals, for use with pdbreader, later to be subclass */
@@ -341,3 +399,27 @@ setup(fid) {
     addToMain( this.particles, fid );
 }
 } // end class XYZ
+
+// helpers, global
+function enumI(d,f) {
+    if (f.substring(0,2) === 'd.') f=f.substring(2); 
+    return X.current.ranges[f].valueSet[d[f]];
+}
+function enumF(d,f) {
+    if (f.substring(0,2) === 'd.') f=f.substring(2); 
+    const vs = X.current.ranges[f].valueSet;
+    return vs[d[f]] / Object.keys(vs).length;
+}
+X.enumI = enumI; X.enumF = enumF; 
+
+/* reminder to me
+nb 
+http://localhost:8800/,,/xyz/xyz.html?startdata=/!C:/Users/Organic/Downloads/small_test_UMAP3A.csv
+http://localhost:8800/,,/xyz/xyz.html?startdata=https://files.rcsb.org/download/6Z9P.pdb
+https://sjpt.github.io/xyz/xyz.html?startdata=data/4bcufullCA.pdb
+https://sjpt.github.io/xyz/xyz.html?startdata=data/small_test.csv
+https://sjpt.github.io/xyz/xyz?startdata=https://sjpt.github.io/xyz/data/small_test.csv
+
+http://localhost:8800/,,/xyz/xyz.html?startdata=/remote/https://userweb.molbiol.ox.ac.uk//public/staylor/cyto/Steve_test_UMAP3_cyto_xyz.txt
+
+*/

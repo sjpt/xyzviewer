@@ -5,8 +5,7 @@ function addFileTypeHandler(ftype, fun) {
     fileTypeHandlers[ftype] = fun;
 }
 
-
-
+var W,E,X;
 W = E = X = window;
 console.log('main.js execute, window W set', W);
 
@@ -19,7 +18,7 @@ log('main.js initial log established');
 
 //window.onload = ()=>log('document loaded');
 /** convenience function for rgb colour */
-function col3(r, g, b) { return new THREE.Color().setRGB(r, g, b); }
+function col3(r, g=r, b=g) { return new THREE.Color().setRGB(r, g, b); }
 function hsv(h, s, v) { return new THREE.Color().setHSV(h, s, v); }
 /** convenience function for a few standard colours (integer based) */
 function icol(k) {

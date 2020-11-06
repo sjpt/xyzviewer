@@ -1,6 +1,6 @@
 'use strict';
 
-var gl, renderer;
+var gl, renderer, framenum, findval, oplist, opmode, serious, showbaderror;
 const Gldebug = {
     stopframe: -999, action: undefined, ops: undefined,
     start: function startgldebug(opts = {}) {

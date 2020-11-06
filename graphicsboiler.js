@@ -25,7 +25,7 @@ function init() {
     // interpretSearchString();
     container = document.getElementById('container');
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+    X.camera = camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.position.z = 0;
     orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
     orbcamera.position.z = X.defaultDistance;
@@ -170,7 +170,7 @@ function makeCircle(s = 64) {
     var d = new Uint8Array(s * s * 4);
     for (let x = -s/2 + 0.5; x < s/2; x++) {
         for (let y = -s/2 + 0.5; y < s/2; y++) {
-            const v = (x*x + y*y < s*s/4) * 255;
+            const v = +(x*x + y*y < s*s/4) * 255;
             d[i++] = v;
             d[i++] = v;
             d[i++] = v;
@@ -229,6 +229,6 @@ function addvis_clicked(evt) {
 window.addvis_clicked = addvis_clicked;
 
 /** set the sacel in x,y,z */
-function scale(x,y,z) {
+function scale(x,y=x,z=y) {
     maingroup.scale.set(x,y,z);
 }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>transcendental imaging</title>
+		<meta charset="utf-8">
+        <script>
+            window.onload = ()=>console.log('document loaded');
+        </script>
+	</head>
+	<body>
+		<div style="color: white; z-index: 999; background-color: #00f8; position: fixed;">
+			<h1>transcendental imaging</h1>
+			<p>Left mouse button and drag to rotate.</p>
+			<p>Keys '1' through '7': make random objects; bigger number, more objects.</p>
+			<p>Keys 'h' or 'home': reset view for 'front' view (clean cubes).
+				<br>Keys 'e' or 'end': reset view for 'back' view.
+			</p>
+		</div>
+		<script src="jsdeps/three.js"></script>
+		<script src="jsdeps/stats.min.js"></script>
+		<script src="jsdeps/TrackballControls.js"></script>
+
+		<script src="persp.js"></script>
+		<script id="xxx" src="persp.html" type="fs"></script>
+
+        <!--
+		<script type="module" src="graphicsboiler.js"></script>
+		<script type="module" src="xyz.js"></script>p
+        <script type="module" src="refit.js"></script>
+<script type="module" src="pdbreader.js"></script>
+<script>console.log('last module read, window=', window)</script>
+-->
+
+	</body>
+</html>

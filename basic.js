@@ -37,13 +37,17 @@ document.ondrop = docdrop;
 
 
 /** post a uri and process callback  */
-function posturiasync(puri, callb='auto', data='' ) {
+function posturiasync(puri, callb='auto', data='') {
+    const binary = puri.endsWith('.ply');
     if (callb === 'auto') callb = handlerForFid(puri);
     var req = new XMLHttpRequest();
     req.open("GET", puri, true);
-    req.setRequestHeader("Content-type", "text/plain;charset=UTF-8");
+    if (binary) req.responseType = 'arraybuffer';
+    req.setRequestHeader("Content-type", binary ? "application/octet-stream" : "text/plain;charset=UTF-8");
     req.send(data);
-    req.onload = function (oEvent) { callb(req.responseText, puri); }   // eslint-disable-line no-unused-vars
+    req.onload = function (oEvent) { 
+        callb(binary ? req.response : req.responseText, puri);
+    }   // eslint-disable-line no-unused-vars
     req.onerror = function (oEvent) { console.error('cannot load', puri, oEvent); }
     req.ontimeout = function (oEvent) { console.error('timeout error, cannot load', puri, oEvent); }
     // req.onprogress = function (e) { console.log('progress', puri, e.loaded, e.total); }

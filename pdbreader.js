@@ -56,15 +56,19 @@ function pdbReader(data, fid) {
     // push data to main graphics
     // maingroup.remove(rlines);
     myxyz.setvals(pdbdatas);  // will also do a genstats
-    chaindists();
+    myxyz.finalize(fid);
+    
+    dataToMarkersGui();
+    if (fid === 'data/4bcufullCA.pdb') {
+        chaindists();
 
-    //try {
-        dataToMarkersGui();
-    //} catch(e) {
-    //    dataToMarkers();
-    //}
+        //try {
+        //} catch(e) {
+        //    dataToMarkers();
+        //}
+        virusshow();
+    }
     document.title = '3dv: ' + fid;
-    virusshow();
 }
 // var vdbReader = pdbReader;  // so we can read vdb files with same function
 
@@ -78,8 +82,6 @@ function virusshow() {
     }
     dataToMarkersGui();
     if (!renderer.vr.getDevice()) orbcamera.position.z = 200;
-
-
 }
 
 /**
@@ -213,7 +215,8 @@ function chaindists(sc = 1) {
                 chj.close.push(i);
                 linegeom.vertices.push(chi.near);
                 linegeom.vertices.push(chj.near);
-                const col = cols[Math.floor(d)].clone();
+                const colx = cols[Math.floor(d)]
+                const col = colx ? colx.clone() : col3(0,1,0);
                 linegeom.colors.push(col);
                 linegeom.colors.push(col);
             }
@@ -313,12 +316,13 @@ var raycaster = new THREE.Raycaster();
 raycaster.linePrecision=0.1;
 var mouse = new THREE.Vector2();
 document.onmousemove = onMouseMove;
+document.onclick = onMouseMove;
 let onMouseMove_lastface;
 
 function onMouseMove( event ) {
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
-    if (event.target !== E.canvas || ! event.ctrlKey) return;
+    if (event.target !== E.canvas || !(event.ctrlKey || event.type === 'click'))  return;
     mouse.x = ( event.offsetX / E.canvas.style.width.replace('px','') ) * 2 - 1;
     mouse.y = - ( event.offsetY / E.canvas.style.height.replace('px','') ) * 2 + 1;
 
@@ -327,31 +331,40 @@ function onMouseMove( event ) {
     raycaster.setFromCamera( mouse, camera );
 
     // calculate objects intersecting the picking ray
+    console.time('inter')
     var intersects = raycaster.intersectObjects( outerscene.children, true );
+    console.timeEnd('inter')
+    const num = intersects.length;
+    intersects = intersects.splice(0, 10);
 
     //for ( var i = 0; i < intersects.length; i++ ) {
     //    //intersects[ i ].object.material.color.set( 0xff0000 );
     //
     //}
-    const ii = intersects[0];
-    if (ii && ii.object === polygonmesh) {
-        const face = ii.face;
-        if (onMouseMove_lastface !== face) {
-            if (onMouseMove_lastface)
-                onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
-            if (!face.ocol) face.ocol = face.color.clone();
-            face.color.setRGB(1,1,0);
-            polygonmesh.geometry.colorsNeedUpdate = true;
-            const chainsa = Array.from(face.chainset);
-            console.log(face, chainsa);
-            E.filterbox.value = '[' + chainsa + '].includes(chainn)';
-            dataToMarkersGui();
-            onMouseMove_lastface = face;
+    E.msgbox.innerHTML = `hits ${num} shown ${intersects.length} t=${Date.now()} <br>`;
+    intersects.forEach(function(ii) {
+    //const ii = intersects[0];
+        if (ii && ii.object === polygonmesh) {
+            const face = ii.face;
+            if (onMouseMove_lastface !== face) {
+                if (onMouseMove_lastface)
+                    onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
+                if (!face.ocol) face.ocol = face.color.clone();
+                face.color.setRGB(1,1,0);
+                polygonmesh.geometry.colorsNeedUpdate = true;
+                const chainsa = Array.from(face.chainset);
+                console.log(face, chainsa);
+                E.filterbox.value = '[' + chainsa + '].includes(chainn)';
+                dataToMarkersGui();
+                onMouseMove_lastface = face;
+            }
         }
-    }
-    E.msgbox.innerHTML = 'hit at ' + (ii ? ii.object.name : 'nohit') + '  t=' + Date.now();
+        E.msgbox.innerHTML += `${ii.object.name} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}<br>`;
+   });
+
+
     // console.log(ii ? ii.object : 'nohit');
-    if (onMouseMove_lastface && !ii) {
+    if (onMouseMove_lastface && !intersects.length) {
         onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
         E.filterbox.value = '';
         dataToMarkersGui();
