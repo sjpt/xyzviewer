@@ -191,6 +191,7 @@ makefilterfun(filt, box) {
     }
 
     try {
+        // eslint-disable-next-line no-unused-vars
         const r = filtfun(this.datas[0]);
     } catch(e) {
         E.filterr.innerHTML = filt + '<br>function throws exception: ' + e.message;

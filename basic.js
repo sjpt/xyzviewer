@@ -19,7 +19,7 @@ getQueryVariables();
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 function showfirstdata() {
     if (window.location.search === '?arch') {
-        window.addscript("../archaeology/archstart.js");
+        window.addscript("archstart.js");
         return;
     }
     const startcode = queryVariables.startcode;

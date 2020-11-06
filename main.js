@@ -31,17 +31,18 @@ function icol(k) {
 	return col.clone();
 }
 
-// /** create node from html string */
-// function nodeFromHTML(html) {
-// 	const t = document.createElement('div'); // using template did not yield a firstElementChild
-// 	t.innerHTML = html.trim('');
-// 	return t.firstElementChild;
-// }
+/** create node from html string */
+function nodeFromHTML(html) {
+	const t = document.createElement('div'); // using template did not yield a firstElementChild
+	t.innerHTML = html.trim('');
+	return t.firstElementChild;
+}
 
-// /** append node from html */
-// function appendNodeFromHTML(parent, html) {
-// 	parent.appendChild(nodeFromHTML(html));
-// }
+/** append node from html, used in archaeology version */
+// eslint-disable-next-line no-unused-vars
+function appendNodeFromHTML(parent, html) {
+	parent.appendChild(nodeFromHTML(html));
+}
 
 /** add a script dynamically */
 // eslint-disable-next-line no-unused-vars
