@@ -1,6 +1,6 @@
 // this is not included in runtime.  Here to help typescript-like type checking.
 interface MyExternals {
-    THREE,  Stats, style, pdbReader, vdbReader,
+    THREE,  Stats, style, pdbReader, vdbReader, init,
     killev, icol, csvReader, geojsonReader,
     photoShader_clicked, addvis_clicked, spotsize, xexpbutton, expbutton, addFileTypeHandler, fileTypeHandlers, log,
     scale, maingroup, dataToMarkersGui, defaultDistance, col3, rgb, hsv, filtergui, posturiasync, refit, addscript,

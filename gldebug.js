@@ -94,12 +94,14 @@ function checkglerror(msg, action = undefined, args = undefined) {
     if (action.indexOf('logall') !== -1)
         log(framenum, ">> gl" + msg + "            " + errmsg[0] + " (" + rc + " 0x" + rc.toString(16) + ")");
     if (action.indexOf('breakallall') !== -1)
+        // eslint-disable-next-line no-debugger
         debugger;
 
     if (rc) {
         if (action.indexOf('logerr') !== -1)
             console.error(framenum, ">> gl error " + errmsg[0] + " (" + rc + " 0x" + rc.toString(16) + ") in " + msg + '  opmode=' + opmode + ' ' + oplist[opmode]);
         if (action.indexOf('breakerr') !== -1)
+            // eslint-disable-next-line no-debugger
             debugger;
         if (action.indexOf('seriouserr') !== -1)
             serious(msg);

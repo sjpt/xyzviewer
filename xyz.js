@@ -26,7 +26,7 @@ const stdcols = [
     col3(1,1,0),
     col3(1,1,1)
     ];
-const stdcol = n => stdcols[n%8];
+const stdcol = X.stdcol = n => stdcols[n%8];
 
 // bridge to access current members
 /** */
@@ -170,7 +170,7 @@ makecolourfun(fn, box) {
  */
 makefilterfun(filt, box) {
     if (!filt) return undefined;
-    E.filterr.textContent = '';
+    E.filterr.innerHTML = '';
     let filtfun;
     if (typeof filt === 'function')
         filtfun = filt;
@@ -182,7 +182,7 @@ makefilterfun(filt, box) {
         try {
             filtfun = new Function('d', 'return (' + filt + ')');
         } catch (e) {
-            E.filterr.textContent = filt + '<br>invalid function: ' + e.message;
+            E.filterr.innerHTML = filt + '<br>invalid function: ' + e.message;
             if (box) box.style.background='#ffd0d0'
             return undefined;
         }
@@ -193,12 +193,12 @@ makefilterfun(filt, box) {
     try {
         const r = filtfun(this.datas[0]);
     } catch(e) {
-        E.filterr.textContent = filt + '<br>function throws exception: ' + e.message;
+        E.filterr.innerHTML = filt + '<br>function throws exception: ' + e.message;
         if (box) box.style.background='#d0d0ff'
         return undefined;
     }
     if (box) box.style.background='#d0ffd0'
-    E.filterr.textContent = filt + '<br>OK';
+    E.filterr.innerHTML = filt + '<br>OK';
     return filtfun;
 }
 
@@ -298,19 +298,20 @@ filtergui(evt) {
     try {
         // const f = new Function('d', 'return ' + ff);
         // box.style.background='#d0ffd0';
-        errbox.textContent = 'ctrl-enter to apply filter';
+        errbox.innerHTML = 'ctrl-enter to apply filter';
         if (evt.keyCode === 13) {
+            filtergui.last = filtergui.last || '';
             filtergui.lastn = this.dataToMarkersGui();
-            filtergui.last = ff;
-        }
-        if (ff.trim() === filtergui.last.trim()) {
-            box.style.background='#ffffff';
-            errbox.textContent = 'filter applied: #points=' + filtergui.lastn;
-            return;
+            if (ff.trim() === filtergui.last.trim()) {
+                filtergui.last = ff;
+                box.style.background='#ffffff';
+                errbox.innerHTML = 'filter applied: #points=' + filtergui.lastn;
+                return;
+            }
         }
     } catch (e) {
         box.style.background='#ffffd0';
-        errbox.textContent = e.message;
+        errbox.innerHTML = e.message;
     }
 }
 
@@ -421,5 +422,8 @@ https://sjpt.github.io/xyz/xyz.html?startdata=data/small_test.csv
 https://sjpt.github.io/xyz/xyz?startdata=https://sjpt.github.io/xyz/data/small_test.csv
 
 http://localhost:8800/,,/xyz/xyz.html?startdata=/remote/https://userweb.molbiol.ox.ac.uk//public/staylor/cyto/Steve_test_UMAP3_cyto_xyz.txt
+
+also
+https://gitcdn.link/cdn/sjpt/xyzviewer/master/xyz.html
 
 */

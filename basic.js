@@ -45,7 +45,7 @@ function posturiasync(puri, callb='auto', data='') {
     if (binary) req.responseType = 'arraybuffer';
     req.setRequestHeader("Content-type", binary ? "application/octet-stream" : "text/plain;charset=UTF-8");
     req.send(data);
-    req.onload = function (oEvent) { 
+    req.onload = function () { 
         callb(binary ? req.response : req.responseText, puri);
     }   // eslint-disable-line no-unused-vars
     req.onerror = function (oEvent) { console.error('cannot load', puri, oEvent); }

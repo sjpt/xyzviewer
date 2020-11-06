@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<script>lastModified = `Last modified: 2020/11/06 09:17:06
+`</script>
 <html lang="en">
 	<head>
 		<title>Virus</title>
@@ -23,12 +25,17 @@
             #colourbox { width: 20%; }
         </style>
         <script>
-            window.onload = ()=>console.log('document loaded');
+            window.onload = ()=>{
+                console.log('document loaded');
+                window.lastmod.textContent = lastModified;
+                init();
+            }; 
             document.addEventListener("DOMContentLoaded",()=>{console.log('DOMContentLoaded loaded')});
         </script>
 	</head>
 	<body>
         <div id="info">
+            <p id="lastmod">...</p>
             <p>On a small screen, scroll to the bottom to see the image.
             You can interact with the mouse: left button to rotate, centre button or wheel to zoom, right button to pan.
             <br>

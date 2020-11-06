@@ -6,6 +6,7 @@ export {addToMain, framenum, makeCircle, renderer, fullcanvas,
 //import {refit} from './refit.js';
 const {THREE, Stats, E, log, X, col3, WEBVR} = window;
 X.scale = scale;
+X.init = init;
 
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -17,7 +18,7 @@ var camera, maingroup, outerscene, renderer,
 X.defaultDistance = 50;
 var autoClear = false;
 
-window.onload = init;
+// window.onload = init;  // do in html
 
 let i; // very odd, to check
 /** initial call to read data and set up graphics */
