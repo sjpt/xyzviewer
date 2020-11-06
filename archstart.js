@@ -1,5 +1,5 @@
 'use strict';
-var appendNodeFromHTML, posturiasync, refit;
+var appendNodeFromHTML, posturiasync, handlerForFid, refit;
 
 var filelist = `
 contours.geojson
@@ -25,9 +25,9 @@ window.loaddrop = function loaddrop() {
     posturiasync('StarCarr/' + fid);
 }
 
-
-posturiasync('StarCarr/StarCarr_Flint.csv');
-setTimeout( () => {
+const starturi = 'StarCarr/StarCarr_Flint.csv';
+posturiasync(starturi, function(data, puri) {
+    handlerForFid(starturi)(data, puri);
     refit();
     posturiasync('StarCarr/contours.geojson');
-}, 200);  // wait till data loaded
+});

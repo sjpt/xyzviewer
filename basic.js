@@ -2,6 +2,7 @@
 export {addFileTypeHandler, showfirstdata, posturiasync};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
 X.posturiasync = posturiasync;
+X.handlerForFid = handlerForFid;
 
 const queryVariables = {};
 /** get query variables from search string */
