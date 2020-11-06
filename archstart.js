@@ -1,5 +1,5 @@
 'use strict';
-var gui, appendNodeFromHTML, posturiasync, refit;
+var appendNodeFromHTML, posturiasync, refit;
 
 var filelist = `
 contours.geojson
@@ -17,7 +17,7 @@ trenches.geojson
 woodplanned.geojson`.trim().split('\n');
 let filedrop = filelist.map(x=>`<option value="${x}">${x}</option>`).join();
 let hh = `<span><br><b>File choice:</b><select onchange="loaddrop();" id="filedropbox">${filedrop}</select></span>`
-appendNodeFromHTML(gui, hh);
+appendNodeFromHTML(window.gui, hh);
 //filedropbox.innerHTML = filedrop;
 // filehtml = '<select onchange="loaddrop();" id="colourby">' + filedrop + '</select>';
 window.loaddrop = function loaddrop() {
