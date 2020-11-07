@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/07 11:44:49
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/07 17:53:29
 `</script>
 <html lang="en">
 	<head>
@@ -33,6 +33,37 @@
                 z-index: 100;
             }
             #colourbox { width: 20%; }
+
+            .help {
+                display: none;  /* overridden on :hover on previous element */
+                background-color: #2f2f2f;
+                border-color: rgb(255, 72, 89);
+                border-style: solid;
+                color: rgb(255, 72, 89);
+                border-radius: 5px;
+                opacity: 1.0;
+                border-width: 1px 1px 1px 1px;
+                clear: left;
+                font-style: normal;
+                left: 0px;
+                margin: 10px;
+                padding: 5px;
+                position: absolute;
+                text-align: left;
+                /* top: 60px; */ /* leaving out seems best compromise, bottom odd on 'Save Main Image' */
+                z-index: 2000;
+                white-space: normal;
+                pointer-events: none;
+                text-indent: 0;
+                min-width: 25em;
+            }
+
+            .helpabove {top: -70px;}  /* for help that hovers above the item, not below */
+
+            :hover + .help {
+                display: block;
+            }
+
         </style>
         <script>
             window.onload = ()=>{
@@ -79,46 +110,65 @@
 
         <div id='container'>
                 <div id='gui'>
-                <b>visible:</b><span id='visibles'></span>
-                <br>
+                <b>visible: </b>
+                <span id='visibles'></span>
+                <span class="help">toggle visibility of loaded dataset</span>
+                <!-- <br>
                 <b>VR resolution, enter VR at chosen resolution (exit VR, or on Chrome restart page, to change res:</b>
                     1<input type="radio" name="vrres" onclick="vrres(1);"/>
                     1.2<input type="radio" name="vrres" onclick="vrres(1.2);"/>
-                    1.4 (standard)<input type="radio" name="vrres" onclick="vrres(1.4);"/>
+                    1.4 (standard)<input type="radio" name="vrres" onclick="vrres(1.4);"/> -->
                 <br>
-                <b>Z scale:</b>
-                1<input type="radio" id="zsc1" name="zscale" onclick="scale(1,1,1);"/>
-                2<input type="radio" id="zsc2" name="zscale" onclick="scale(1,1,2);"/>
-                5<input type="radio" id="zsc5" name="zscale" onclick="scale(1,1,5);"/>
-                10<input type="radio" id="zsc10" name="zscale" onclick="scale(1,1,10);"/>
+                <span>
+                    <b>Z scale:</b>
+                    1<input type="radio" id="zsc1" name="zscale" onclick="scale(1,1,1);"/>
+                    2<input type="radio" id="zsc2" name="zscale" onclick="scale(1,1,2);"/>
+                    5<input type="radio" id="zsc5" name="zscale" onclick="scale(1,1,5);"/>
+                    10<input type="radio" id="zsc10" name="zscale" onclick="scale(1,1,10);"/>
+                </span>
+                <span class="help">select amount to exaggerate depth</span>
                 <br>
                 <b>View:</b>
                 elevation:<input type="radio" id="elev" name="zscale" onclick="maingroup.rotation.set(Math.PI/2,0,0);"/>
+                <span class="help">jump to elevation view</span>
                 plan:<input type="radio" id="plan" name="zscale" onclick="maingroup.rotation.set(0,0,0);"/>
+                <span class="help">jump to plan view</span>
                 <br>
-                <b>Colour by:</b>
-                <select onchange="dataToMarkersGui();" id="colourby">
-                    <!-- will be filled in dynamically -->
-                </select>
+                <span>
+                    <b>Colour by:</b>
+                    <select onchange="dataToMarkersGui();" id="colourby">
+                        <!-- will be filled in dynamically -->
+                    </select>
+                </span>
+                <span class="help">Select a colouring strategy for this dataset from the dropdown.<br>
+                    'custom' will use the fixed colour or custom javascript code in the box to the right.</span>
                 <!-- can't find reliable single event or even events for when OK clicked with no change  -->
                 <input type="color" id="colourpick" value="#c0c0c0"
                     onchange="dataToMarkersGui('choose');" onclick="dataToMarkersGui('choose');"/>
+                <span class="help">Select a fixed colour for this dataset.</span>
                 <input type="text" id="colourbox" onkeyup="dataToMarkersGui('custom');"/>
+                <span class="help">Write custom colour code here.</span>
                 <br>
+                <span>
                 <b>Spot size:</b>
-                0.01<input type="radio" name="spotsize" onclick="spotsize(0.01);"/>
-                0.02<input type="radio" name="spotsize" onclick="spotsize(0.02);"/>
-                0.05<input type="radio" name="spotsize" onclick="spotsize(0.05);"/>
-                0.1<input type="radio" name="spotsize" onclick="spotsize(0.1);"/>
-                0.2<input type="radio" name="spotsize" onclick="spotsize(0.2);"/>
-                0.5<input type="radio" name="spotsize" onclick="spotsize(0.5);"/>
-                1<input type="radio" name="spotsize" onclick="spotsize(1);"/>
-                2<input type="radio" name="spotsize" onclick="spotsize(2);"/>
-                5<input type="radio" name="spotsize" onclick="spotsize(5);"/>
-                10<input type="radio" name="spotsize" onclick="spotsize(10);"/>
+                    0.01<input type="radio" name="spotsize" onclick="spotsize(0.01);"/>
+                    0.02<input type="radio" name="spotsize" onclick="spotsize(0.02);"/>
+                    0.05<input type="radio" name="spotsize" onclick="spotsize(0.05);"/>
+                    0.1<input type="radio" name="spotsize" onclick="spotsize(0.1);"/>
+                    0.2<input type="radio" name="spotsize" onclick="spotsize(0.2);"/>
+                    0.5<input type="radio" name="spotsize" onclick="spotsize(0.5);"/>
+                    1<input type="radio" name="spotsize" onclick="spotsize(1);"/>
+                    2<input type="radio" name="spotsize" onclick="spotsize(2);"/>
+                    5<input type="radio" name="spotsize" onclick="spotsize(5);"/>
+                    10<input type="radio" name="spotsize" onclick="spotsize(10);"/>
+                </span>
+                <span class="help">Choose size of each point.</span>
                 <br>
-                <b>Filter:</b>
-                <textarea id="filterbox" rows="1" cols="40" onkeyup="filtergui(event);"></textarea>
+                <span>
+                    <b>Filter:</b>
+                    <textarea id="filterbox" rows="1" cols="40" onkeyup="filtergui(event);"></textarea>
+                </span>
+                <span class="help">Custom code here for selection of points from dataset.</span>
                 <br>
                 <p id="filterr"></p>
                 <br>

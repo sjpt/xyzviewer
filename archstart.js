@@ -1,6 +1,6 @@
 'use strict';
 var appendNodeFromHTML, posturiasync, handlerForFid, refit, lastModified;
-lastModified.archstart = `Last modified: 2020/11/07 12:47:01
+lastModified.archstart = `Last modified: 2020/11/07 17:57:14
 `
 var filelist = `
 contours.geojson
@@ -17,7 +17,12 @@ StarCarr_Stones.csv
 trenches.geojson
 woodplanned.geojson`.trim().split('\n');
 let filedrop = filelist.map(x=>`<option value="${x}">${x}</option>`).join();
-let hh = `<span><br><b>File choice:</b><select onchange="loaddrop();" id="filedropbox">${filedrop}</select></span>`
+let hh = `
+<span><span><br><b>File choice:</b><select onchange="loaddrop();" id="filedropbox">${filedrop}</select></span>
+<span class="help">Load additional datasets from the available.<br>
+The dropdown has a list of all available datasets.
+</span></span>
+`
 appendNodeFromHTML(window.gui, hh);
 //filedropbox.innerHTML = filedrop;
 // filehtml = '<select onchange="loaddrop();" id="colourby">' + filedrop + '</select>';

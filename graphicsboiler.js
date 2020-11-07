@@ -1,6 +1,6 @@
 'use strict';
 import {showfirstdata} from './basic.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/07 16:37:26
+window.lastModified.graphicsboiler = `Last modified: 2020/11/07 17:59:48
 `
 
 
@@ -206,7 +206,11 @@ function addvis(obj, name) {
     let item= addvisList[name];
     if (!E.photoscheck) {
         const v = `
-            <b>photos:</b> <input id="photoscheck" type="checkbox" onclick="photoShader_clicked(event)"/></br>
+            <span><span><b>photos:</b> <input id="photoscheck" type="checkbox" onclick="photoShader_clicked(event)"/></br>
+            </span>
+            <span class="help">Select to impose photographs on each data point.<br>
+            Experimental, no sensible photos currently available in this demo.</span>
+            </span>
         `
         const sp = document.createElement('span');
         sp.innerHTML = v;
