@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/07 13:15:31
+window.lastModified.xyz = `Last modified: 2020/11/07 13:18:31
 `
 
 export {
@@ -395,10 +395,13 @@ setup(fid) {
         image.onload = function() { sprite.needsUpdate = true; };
     } else {
         var textureLoader = new THREE.TextureLoader();
-        sprite = textureLoader.load( "sprites/circle.png", spr => {this.material.map = spr;  this.material.needsUpdate = true;});
+        sprite = textureLoader.load( "sprites/circle.png", spr => {
+            this.material.map = spr;
+            this.material.needsUpdate = true;
+        });
     }
     const size = 0.3;
-    this.material = new THREE.PointsMaterial( { size: size, map: sprite, /**blending: THREE.AdditiveBlending, **/ depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: THREE.VertexColors } );
+    this.material = new THREE.PointsMaterial( { size: size, /**map: sprite, blending: THREE.AdditiveBlending, **/ depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: THREE.VertexColors } );
     this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.xyz = this;
     addToMain( this.particles, fid );
