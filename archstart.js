@@ -1,6 +1,6 @@
 'use strict';
 var appendNodeFromHTML, posturiasync, handlerForFid, refit, lastModified;
-lastModified.main = `Last modified: 2020/11/06 19:10:08
+lastModified.main = `Last modified: 2020/11/07 11:41:45
 `
 var filelist = `
 contours.geojson
@@ -34,6 +34,11 @@ posturiasync(starturi, function(data, puri) {
     posturiasync('StarCarr/contours.geojson');
 });
 
+let archxref = 
+`<a href="https://archaeologydataservice.ac.uk/archives/view/postglacial_2013/index.cfm" target="_blank">
+Project archive and further details
+</a>`
+
 let archhh = `
 <div iD="archhh">
 xyzviewer code:
@@ -42,6 +47,7 @@ xyzviewer code:
 </ul>
 Star Carr Data and Support:
 <ul>
+<li>${archxref}</li>
 <li>University of York</li>
 <li>Archaeology Data Services</li>
 <li>Manchester</li>
@@ -59,11 +65,8 @@ Star Carr Data and Support:
 </div>
 `
 
-window.ack.innerHTML = 
-`<a href="https://archaeologydataservice.ac.uk/archives/view/postglacial_2013/index.cfm" target="_blank">
-Star Carr data from these sources and contributors
-</a>` + archhh;
+window.ack.innerHTML = archhh;
 
-setTimeout(() => window.archhh.style.display = "none", 10000)
+setTimeout(() => window.ack.style.display = "none", 10000)
 
 // appendNodeFromHTML(window.document.body, archhh);

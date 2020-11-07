@@ -76,6 +76,7 @@ function init() {
     container.appendChild(canvas);
     canvas.id = 'canvas';
     canvas.style.position = 'fixed';
+    canvas.style.top = '0';
     canvas.onclick = () => document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
 
     stats = new Stats();
@@ -155,8 +156,9 @@ function onDocumentKeyDown(evt) {
 /** show the full canvas */
 function fullcanvas(full = E.info.style.display !== 'none' ) {
     const s = E.info.style;
-    s.display = full ? 'none' : '';
-    canvas.style.top = full ? '0' : '';
+    E.info.style.display = full ? 'none' : '';
+    E.ack.style.display = E.info.style.display
+    // canvas.style.top = full ? '0' : '0';
     canvas.focus();
 }
 

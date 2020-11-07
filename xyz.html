@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/06 18:42:16
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/07 11:44:49
 `</script>
 <html lang="en">
 	<head>
@@ -20,6 +20,16 @@
             #gui {
                 position: relative;
                 top: 10px;
+                z-index: 100;
+                pointer-events: none;
+            }
+            #gui * {
+                pointer-events: all;
+            }
+            #msgbox {
+                pointer-events: none;
+            }
+            #ack {
                 z-index: 100;
             }
             #colourbox { width: 20%; }
@@ -68,7 +78,7 @@
         </div>
 
         <div id='container'>
-            <div id='gui'>
+                <div id='gui'>
                 <b>visible:</b><span id='visibles'></span>
                 <br>
                 <b>VR resolution, enter VR at chosen resolution (exit VR, or on Chrome restart page, to change res:</b>
