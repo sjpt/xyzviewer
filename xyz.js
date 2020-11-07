@@ -395,7 +395,7 @@ setup(fid) {
         image.onload = function() { sprite.needsUpdate = true; };
     } else {
         var textureLoader = new THREE.TextureLoader();
-        sprite = textureLoader.load( "sprites/circle.png", spr => {
+        sprite = textureLoader.load( "sprites/circle.png", spr => { // TODO; check changes with three.js revisions
             this.material.map = spr;
             this.material.needsUpdate = true;
         });

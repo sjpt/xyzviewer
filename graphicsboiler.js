@@ -1,6 +1,6 @@
 'use strict';
 import {showfirstdata} from './basic.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/07 13:53:52
+window.lastModified.graphicsboiler = `Last modified: 2020/11/07 16:37:26
 `
 
 
@@ -134,12 +134,13 @@ camscene.matrix.fromArray(orbcamera.matrix.elements);
 camscene.matrixWorldNeedsUpdate = true;
 camscene.updateMatrixWorld(true);
 /***********/
-if (outerscene.children.length) {
+//if (outerscene.children.length) {
+    renderer.clear();   // if three.js does not see anything it doesn't clear???
     renderer.render( outerscene, camera );
-} else {  // temporary alternative for performance debug
-    if (renderer.autoClear) renderer.clear();
-    display.submitFrame();
-}
+// } else {  // temporary alternative for performance debug
+//     if (renderer.autoClear) renderer.clear();
+//     display.submitFrame();
+// }
 // renderer.context.viewport(0, 0, 3024, 1680);
 }
 
