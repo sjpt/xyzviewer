@@ -1,6 +1,9 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
+window.lastModified.xyz = `Last modified: 2020/11/07 12:46:44
+`
+
 export {
     centrerange, // for draw centre consistency
     spotsize,
@@ -85,7 +88,7 @@ dataToMarkers(pfilterfun, pcolourfun) {
     if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
     const filterfun = this.makefilterfun(pfilterfun, E.filterbox);
     const colourfun = this.makecolourfun(pcolourfun, E.colourbox);
-    const geometry = new THREE.Geometry();
+    const geometry = this.geometry = new THREE.Geometry();
     geometry.vertices = [];
     geometry.colors = [];
     for (let i = 0; i < this.datas.length; i ++ ) {

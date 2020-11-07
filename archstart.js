@@ -1,6 +1,6 @@
 'use strict';
 var appendNodeFromHTML, posturiasync, handlerForFid, refit, lastModified;
-lastModified.main = `Last modified: 2020/11/07 11:41:45
+lastModified.archstart = `Last modified: 2020/11/07 12:47:01
 `
 var filelist = `
 contours.geojson

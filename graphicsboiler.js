@@ -1,5 +1,8 @@
 'use strict';
 import {showfirstdata} from './basic.js';
+window.lastModified.graphicsboiler = `Last modified: 2020/11/07 12:47:17
+`
+
 
 export {addToMain, framenum, makeCircle, renderer, fullcanvas,
     camera, usePhotoShader, orbcamera, outerscene};
