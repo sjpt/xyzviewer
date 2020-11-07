@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/07 13:40:53
+window.lastModified.xyz = `Last modified: 2020/11/07 14:20:50
 `
 
 export {
@@ -384,7 +384,7 @@ setup(fid) {
     // 3: load from base4, seems to work always, but not very convenient
     // 4: leave undefined, we see squares of approriate size on screen
     let sprite;
-    // if (location.href.startsWith('file:') || navigator.userAgent.indexOf("Edge") > -1) {
+    if (location.href.startsWith('file:') || location.host.startsWith('combinatronics.com') || navigator.userAgent.indexOf("Edge") > -1) {
         // Chrome is too fussy with file: loading, so use this instead
         // the data was converted from circle.png using https://www.base64-image.de/
         // Edge did not assume sprite subdirectory authenticated even when higher level one OK
@@ -393,13 +393,13 @@ setup(fid) {
         sprite = new THREE.Texture();
         sprite.image = image;
         image.onload = function() { sprite.needsUpdate = true; };
-    // } else {
-    //     var textureLoader = new THREE.TextureLoader();
-    //     sprite = textureLoader.load( "sprites/circle.png", spr => {
-    //         this.material.map = spr;
-    //         this.material.needsUpdate = true;
-    //     });
-    // }
+    } else {
+        var textureLoader = new THREE.TextureLoader();
+        sprite = textureLoader.load( "sprites/circle.png", spr => {
+            this.material.map = spr;
+            this.material.needsUpdate = true;
+        });
+    }
     const size = 0.3;
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: THREE.VertexColors } );
     this.particles = new THREE.Points(new THREE.Geometry(), this.material);

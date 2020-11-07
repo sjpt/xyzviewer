@@ -1,6 +1,6 @@
 'use strict';
 import {showfirstdata} from './basic.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/07 12:47:17
+window.lastModified.graphicsboiler = `Last modified: 2020/11/07 13:53:52
 `
 
 
@@ -158,7 +158,6 @@ function onDocumentKeyDown(evt) {
 
 /** show the full canvas */
 function fullcanvas(full = E.info.style.display !== 'none' ) {
-    const s = E.info.style;
     E.info.style.display = full ? 'none' : '';
     E.ack.style.display = E.info.style.display
     // canvas.style.top = full ? '0' : '0';
