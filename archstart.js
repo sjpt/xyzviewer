@@ -1,6 +1,6 @@
 'use strict';
 var appendNodeFromHTML, posturiasync, handlerForFid, refit, lastModified;
-lastModified.archstart = `Last modified: 2020/11/07 17:57:14
+lastModified.archstart = `Last modified: 2020/11/07 18:24:32
 `
 var filelist = `
 contours.geojson
@@ -73,5 +73,6 @@ Star Carr Data and Support:
 window.ack.innerHTML = archhh;
 
 setTimeout(() => window.ack.style.display = "none", 10000)
+window.xexpbutton.style.display = 'none';
 
 // appendNodeFromHTML(window.document.body, archhh);

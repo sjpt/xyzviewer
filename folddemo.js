@@ -5,7 +5,7 @@ import {posturiasync} from './basic.js';
 
 import {expandchain, pdbReader} from './pdbreader.js';
 import {fullcanvas, orbcamera} from './graphicsboiler.js';
-const {E} = window;
+const {E, W} = window;
 
 let folddemo_st;  // folddemo start time to help script
 function folddemofun(tt = 10000, gap = 2000) {
@@ -39,5 +39,7 @@ function folddemofun(tt = 10000, gap = 2000) {
     expbutton.id = 'xexpbutton';
     E.gui.appendChild(expbutton);
     expbutton.textContent = 'fold demo';
+    var exphelp =  `<span class="help">Run demo of folding virus</span>`
+    W.appendNodeFromHTML(window.gui, exphelp);
     expbutton.onclick = () => folddemofun();
 //});
