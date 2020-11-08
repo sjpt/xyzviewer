@@ -313,7 +313,6 @@ function chaindists(sc = 1) {
 
 /** raycasting */
 var raycaster = new THREE.Raycaster();
-raycaster.linePrecision=0.1;
 var mouse = new THREE.Vector2();
 document.onmousemove = onMouseMove;
 document.onclick = onMouseMove;
@@ -329,6 +328,10 @@ function onMouseMove( event ) {
     // ~~~~~~~~ each frame?
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera( mouse, camera );
+    const th = 0.2;
+    raycaster.params.Points.threshold = th;
+    raycaster.params.Line.threshold = th;   // ?? have the three.js rules changed ??
+    raycaster.linePrecision = th;
 
     // calculate objects intersecting the picking ray
     console.time('inter')
@@ -360,7 +363,7 @@ function onMouseMove( event ) {
             }
         }
         const xyz = ii.object.xyz;
-        const row = xyz.datas[ii.index];
+        const row = xyz ? xyz.datas[ii.index] : 'no detailed information';
         E.msgbox.innerHTML += `<span>${ii.object.name}:${ii.index} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}</span>
             <span class="help">${JSON.stringify(row, undefined, '<br>')}</span><br>;
         `;
