@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/08 12:39:02
+window.lastModified.xyz = `Last modified: 2020/11/08 15:09:36
 `
 
 export {
@@ -40,10 +40,6 @@ const spotsize = a => {
 }
 const filtergui = g => { if (X.current) X.current.filtergui(g); }
 const dataToMarkersGui = (a,b) => X.current.dataToMarkersGui(a,b);
-//const makefilterfun = a => current.makefilterfun(a);
-//const makecolourfun = a => current.makecolourfun(a);
-//const genstats = (a,b) => current.genstats(a,b);
-// const setvals = a => current.setvals(a);
 const centrerange = new THREE.Vector3('unset');  // ranges for external use
 
 /***/
@@ -96,15 +92,20 @@ dataToMarkers(pfilterfun, pcolourfun) {
     const geometry = this.geometry = new THREE.BufferGeometry();
     let ii = 0;
     for (let i = 0; i < l; i ++ ) {
-        const d = this.datas[i];
-        if (filterfun && !filterfun(d)) continue;
+        const dd = this.datas[i];
+        let du = dd;
+        if (filterfun) {
+            const df = filterfun(dd);
+            if (!df) continue;
+            if (typeof df === 'object') du = df;
+        }
         const r = Math.random;
-        const c = colourfun ? colourfun(d) : col3(r(), r(), r());
-        vert[ii] = d.c_x || d.x;  // todo, change recentre mechanism
+        const c = colourfun ? colourfun(dd) : col3(r(), r(), r());
+        vert[ii] = du.x;  // todo, change recentre mechanism, and this is broken for du.c_x === 0
         col[ii++] = c.r;
-        vert[ii] = d.c_y || d.y;
+        vert[ii] = du.y;
         col[ii++] = c.g;
-        vert[ii] = d.c_z || d.z;
+        vert[ii] = du.z;
         col[ii++] = c.b;
     }
     const ll = ii/3;
@@ -177,7 +178,7 @@ makecolourfun(fn, box) {
  * If the value is a string it is converted to a function, using d as the input data row.
  * so a valid string could be 'd.x > 17'.
  * Also allows just x > 17
- * Can return a string if the function is not valid, giving reason for failure
+ * Flags any failure in E.filterr.innerHTML and returns undefined
  */
 makefilterfun(filt, box) {
     if (!filt) return undefined;
@@ -186,12 +187,17 @@ makefilterfun(filt, box) {
     if (typeof filt === 'function')
         filtfun = filt;
     else if (typeof filt === 'string') {
-        for (let fn in this.ranges) // replace known field fn with d.fn
-            // filt = filt.split(fn).join('d.' + fn);
-            filt = filt.replace( new RegExp('\\b' + fn + '\\b', 'g'), 'd.' + fn);
-        filt = filt.split('.d.').join('.');  // so things like ranges.x.mean will get correct
+        const used = [];
+        for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
+            if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) used.push(fn);
+        if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
+        filt = `
+            var x = 0, y = 0, z = 0, r = 1, g = 1, b = 1;
+            var {${used.join(',')}} = d;\n
+        ` + filt;
+        log(filt);
         try {
-            filtfun = new Function('d', 'return (' + filt + ')');
+            filtfun = new Function('d', filt);
         } catch (e) {
             E.filterr.innerHTML = filt + '<br>invalid function: ' + e.message;
             if (box) box.style.background='#ffd0d0'
@@ -263,22 +269,16 @@ finalize(fid) {
     this.dataToMarkers();    // display as markers
 }
 
-/** rebase a field based on centrerange, set c_ values */
+/** rebase a field based on centrerange, set o_ values */
 rebase(fn) {
     const c = centrerange[fn];
     this.datas.forEach(s => {
-        s['c_' + fn] = (s[fn] - c);
+        const o = s['o_' + fn] = s[fn];
+        s[fn] = s.pos[fn] = o - c;
     });
-    //const r = this.ranges[fn];
-    //this.datas.forEach(s => {
-    //    s['c_' + fn] = (s[fn] - r.mean);
-    //});
-    //this.ranges[fn].min = -r.range/2;
-    //this.ranges[fn].max = r.range/2;
-    //this.ranges[fn].mid = 0;
 }
 
-/** convenience function for interating fields of an object  */
+/** convenience function for iterating fields of an object  */
 sForEach(fun) {
     const s = this;
     for (let i in s) {
@@ -329,7 +329,7 @@ filtergui(evt) {
 
 /** generate stats from given data for a given field, or for all fields, also compute three.js position */
 genstats(datals = this.datas, name = undefined) {
-    datals.forEach(d => { d.pos = new THREE.Vector3(d.x, d.y, d.z); d.c_pos = d.pos.clone(); });
+    datals.forEach(d => { d.pos = new THREE.Vector3(d.x, d.y, d.z); d.o_pos = d.pos.clone(); });
     if (!name) {   // repeat for all fields
         const lranges = {};
         E.colourby.innerHTML = `<option value="choose">choose</option>`;

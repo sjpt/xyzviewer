@@ -43,10 +43,11 @@ function refit() {
     for (let g in rgroups) {
         const gr = rgroups[g];
         const col = col3(Math.random(), Math.random(), Math.random());
-        const cen = new THREE.Vector3(gr.x - centrerange.x, gr.y - centrerange.y, gr.z - centrerange.z);
+        // const cen = new THREE.Vector3(gr.x - centrerange.x, gr.y - centrerange.y, gr.z - centrerange.z); // not needed 8/11/2020, new centre scheme
+        const cen = new THREE.Vector3(gr.x, gr.y, gr.z);
         gr.inds.forEach( i=> {
             const d = datas[i];
-            const dv = new THREE.Vector3( d.c_x,  d.c_y,  d.c_z);
+            const dv = new THREE.Vector3( d.x,  d.y,  d.z);
             if (d.z == 0) return;
             //if (dv.distanceTo(cen) > 3)
             //    console.log('refit big', gr.gid, i, cen, dv);

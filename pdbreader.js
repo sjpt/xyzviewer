@@ -158,8 +158,8 @@ function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.
     chains.forEach(chain => {
         if (filterfun && !filterfun(pdbdatas[chain.start])) return;
         for (let i = chain.start; i < chain.end; i++) {
-            geom.vertices.push(pdbdatas[i].c_pos);
-            geom.vertices.push(pdbdatas[i+1].c_pos);
+            geom.vertices.push(pdbdatas[i].pos);
+            geom.vertices.push(pdbdatas[i+1].pos);
             //const col = col3(1,1,1); // temp
             geom.colors.push(colourfun(pdbdatas[i]));
             geom.colors.push(colourfun(pdbdatas[i+1]));
@@ -176,10 +176,10 @@ function expandchain(trik = 0, pentk = 0, cenk = 0) {
         const cen = ch.centroid.clone().multiplyScalar(cenk);
         const tri = ch.tripos.clone().multiplyScalar(trik);
         const pent = ch.pentpos.clone().multiplyScalar(pentk);
-        d.c_pos = cen.add(tri).add(pent).add(d.pos);
-        d.c_x = d.c_pos.x;
-        d.c_y = d.c_pos.y;
-        d.c_z = d.c_pos.z;
+        d.pos = cen.add(tri).add(pent).add(d.o_pos);
+        d.x = d.pos.x;
+        d.y = d.pos.y;
+        d.z = d.pos.z;
     });
     dataToMarkersGui();  // << could optimize this to avoid remake
 }
@@ -345,7 +345,7 @@ function onMouseMove( event ) {
     //
     //}
     E.msgbox.innerHTML = `hits ${num} shown ${intersects.length}. Hover for details.<br>`;
-    intersects.forEach(function(ii, i) {
+    intersects.forEach(function(ii) {
     //const ii = intersects[0];
         if (ii && ii.object === polygonmesh) {
             const face = ii.face;
@@ -363,9 +363,17 @@ function onMouseMove( event ) {
             }
         }
         const xyz = ii.object.xyz;
-        const row = xyz ? xyz.datas[ii.index] : 'no detailed information';
+        let frow;
+        if (xyz) {
+            const s = [];
+            const row = xyz.datas[ii.index];
+            for (const n in row) { const v = row[n]; if (typeof v !== 'object') s.push(n + ': ' + v); }
+            frow = s.join('<br>');
+        } else {
+            frow = 'no detailed information';
+        }
         E.msgbox.innerHTML += `<span>${ii.object.name}:${ii.index} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}</span>
-            <span class="help">${JSON.stringify(row, undefined, '<br>')}</span><br>;
+            <span class="help">${frow}</span><br>
         `;
    });
 
