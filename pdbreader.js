@@ -61,11 +61,6 @@ function pdbReader(data, fid) {
     dataToMarkersGui();
     if (fid === 'data/4bcufullCA.pdb') {
         chaindists();
-
-        //try {
-        //} catch(e) {
-        //    dataToMarkers();
-        //}
         virusshow();
     }
     document.title = '3dv: ' + fid;

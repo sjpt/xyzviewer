@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/08 15:09:36
+window.lastModified.xyz = `Last modified: 2020/11/08 18:36:08
 `
 
 export {
@@ -93,20 +93,23 @@ dataToMarkers(pfilterfun, pcolourfun) {
     let ii = 0;
     for (let i = 0; i < l; i ++ ) {
         const dd = this.datas[i];
-        let du = dd;
+        let du;
         if (filterfun) {
             const df = filterfun(dd);
             if (!df) continue;
             if (typeof df === 'object') du = df;
+        } else {
+            du = {x: dd.x, y: dd.y, z: dd.z};
         }
         const r = Math.random;
-        const c = colourfun ? colourfun(dd) : col3(r(), r(), r());
-        vert[ii] = du.x;  // todo, change recentre mechanism, and this is broken for du.c_x === 0
-        col[ii++] = c.r;
-        vert[ii] = du.y;
-        col[ii++] = c.g;
-        vert[ii] = du.z;
-        col[ii++] = c.b;
+        let c = colourfun ? colourfun(dd) : col3(r(), r(), r());
+        if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
+        vert[ii] = 'x' in du ? du.x : dd.x;  // todo, change recentre mechanism, and this is broken for du.c_x === 0
+        col[ii++] = 'r' in du ? du.r : c.r;
+        vert[ii] = 'y' in du ? du.y : dd.y;
+        col[ii++] = 'g' in du ? du.g : c.g;
+        vert[ii] = 'z' in du ? du.z : dd.z;
+        col[ii++] = 'b' in du ? du.b : c.b;
     }
     const ll = ii/3;
     if (ll !== l) {
@@ -181,7 +184,7 @@ makecolourfun(fn, box) {
  * Flags any failure in E.filterr.innerHTML and returns undefined
  */
 makefilterfun(filt, box) {
-    if (!filt) return undefined;
+    if (!filt) { if (box) box.style.background='#d0ffd0'; return undefined; }
     E.filterr.innerHTML = '';
     let filtfun;
     if (typeof filt === 'function')
@@ -306,20 +309,21 @@ spotsize(size) {
 filtergui(evt) {
     const box = E.filterbox;  // dom element
     const errbox = E.filterr;  // dom element
-    const ff = box.value;
+    const ff = box.value.trim();
+    filtergui.last = filtergui.last || '';
     try {
         // const f = new Function('d', 'return ' + ff);
         // box.style.background='#d0ffd0';
         errbox.innerHTML = 'ctrl-enter to apply filter';
+        const fun = this.makefilterfun(box.value, box);
+        if (!fun) return;
         if (evt.keyCode === 13) {
-            filtergui.last = filtergui.last || '';
             filtergui.lastn = this.dataToMarkersGui();
-            if (ff.trim() === filtergui.last.trim()) {
-                filtergui.last = ff;
-                box.style.background='#ffffff';
-                errbox.innerHTML = 'filter applied: #points=' + filtergui.lastn;
-                return;
-            }
+            errbox.innerHTML = 'filter applied: #points=' + filtergui.lastn;
+            filtergui.last = ff;
+        }
+        if (ff === filtergui.last) {
+            box.style.background='#ffffff';
         }
     } catch (e) {
         box.style.background='#ffffd0';
