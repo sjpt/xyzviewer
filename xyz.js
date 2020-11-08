@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/08 18:36:08
+window.lastModified.xyz = `Last modified: 2020/11/08 18:46:05
 `
 
 export {
@@ -98,9 +98,8 @@ dataToMarkers(pfilterfun, pcolourfun) {
             const df = filterfun(dd);
             if (!df) continue;
             if (typeof df === 'object') du = df;
-        } else {
-            du = {x: dd.x, y: dd.y, z: dd.z};
         }
+        if (!du) du = {x: dd.x, y: dd.y, z: dd.z};
         const r = Math.random;
         let c = colourfun ? colourfun(dd) : col3(r(), r(), r());
         if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
