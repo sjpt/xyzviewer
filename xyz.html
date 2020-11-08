@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/08 18:52:40
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/08 20:54:03
 `</script>
 <html lang="en">
 	<head>
@@ -34,7 +34,7 @@
             }
             #colourbox { width: 20%; }
 
-            .help {
+            .help, .helpabove {
                 display: none;  /* overridden on :hover on previous element */
                 background-color: #2f2f2f;
                 border-color: rgb(255, 72, 89);
@@ -58,9 +58,9 @@
                 min-width: 25em;
             }
 
-            .helpabove {top: -70px;}  /* for help that hovers above the item, not below */
+            .helpabove {position: fixed; top: 0.5em; height: fit-content }  /* for help that hovers above the item, not below */
 
-            :hover + .help {
+            :hover + .help, :hover + .helpabove {
                 display: block;
             }
 
@@ -168,15 +168,16 @@
                     <b>Filter:</b>
                     <textarea id="filterbox" rows="1" cols="40" onkeyup="filtergui(event);"></textarea>
                 </span>
-                <span class="help">Type custom javascript here for selection of points from dataset, and possibly colouring.
-                    <br>ctrl-enter to apply.
-                    <ul>
+                <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
+                    <ul style="margin:0">
+                        <li>ctrl-enter to apply.</li>
                         <li>green background indicates correct javascript but is pending application.</li>
                         <li>white background indicates javascript has been applied.</li>
                         <li>pink background indicates incorrect javascript.</li>
                         <li>blusih background indicates javascript inappropriate for this context.</li>
                     </ul>
                 </span>
+
                 <br>
                 <p id="filterr"></p>
                 <br>

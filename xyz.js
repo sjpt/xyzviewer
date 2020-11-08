@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/08 20:07:25
+window.lastModified.xyz = `Last modified: 2020/11/08 20:58:59
 `
 
 export {
@@ -183,8 +183,12 @@ makecolourfun(fn, box) {
  * Flags any failure in E.filterr.innerHTML and returns undefined
  */
 makefilterfun(filt, box) {
-    if (!filt) { if (box) box.style.background='#d0ffd0'; return undefined; }
-    E.filterr.innerHTML = '';
+    E.filterr.innerHTML = filt + ': testing';
+    if (!filt) { 
+        if (box) box.style.background='#d0ffd0'; 
+        E.filterr.innerHTML = 'empty filter';
+        return undefined;
+    }
     let filtfun;
     if (typeof filt === 'function')
         filtfun = filt;
@@ -206,7 +210,9 @@ makefilterfun(filt, box) {
             return undefined;
         }
     } else {
-        return undefined;
+        E.filterr.innerHTML = 'unexpected filter type';
+        if (box) box.style.background='#ff4040'
+    return undefined;
     }
 
     try {
@@ -268,7 +274,7 @@ finalize(fid) {
 
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
-    this.dataToMarkers();    // display as markers
+    this.filtergui({keyCode: 13});    // display as markers
 }
 
 /** rebase a field based on centrerange, set o_ values */
@@ -305,21 +311,21 @@ spotsize(size) {
 
 /** handle changes to the gui filter for markers
    on ctrl-enter filter the markers and redisplay */
-filtergui(evt) {
+filtergui(evt = {}) {
     const box = E.filterbox;  // dom element
     const errbox = E.filterr;  // dom element
-    const ff = box.value.trim();
-    filtergui.last = filtergui.last || '';
+    const boxv = box.value.trim();
+    filtergui.last = filtergui.last || 'unset';
     try {
         errbox.innerHTML = 'ctrl-enter to apply filter';
-        const fun = this.makefilterfun(box.value, box);
-        if (!fun && ff !== '') return;
+        const fun = this.makefilterfun(boxv, box);
+        if (!fun && boxv !== '') return;
         if (evt.keyCode === 13) {
             filtergui.lastn = this.dataToMarkersGui();
-            errbox.innerHTML = 'filter applied: #points=' + filtergui.lastn;
-            filtergui.last = ff;
+            errbox.innerHTML = (fun ? '' : 'no ' ) + 'filter applied: #points=' + filtergui.lastn;
+            filtergui.last = boxv;
         }
-        if (ff === filtergui.last) {
+        if (boxv === filtergui.last) {
             box.style.background='#ffffff';
         }
     } catch (e) {
