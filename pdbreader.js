@@ -341,8 +341,8 @@ function onMouseMove( event ) {
     //    //intersects[ i ].object.material.color.set( 0xff0000 );
     //
     //}
-    E.msgbox.innerHTML = `hits ${num} shown ${intersects.length} t=${Date.now()} <br>`;
-    intersects.forEach(function(ii) {
+    E.msgbox.innerHTML = `hits ${num} shown ${intersects.length}. Hover for details.<br>`;
+    intersects.forEach(function(ii, i) {
     //const ii = intersects[0];
         if (ii && ii.object === polygonmesh) {
             const face = ii.face;
@@ -359,7 +359,11 @@ function onMouseMove( event ) {
                 onMouseMove_lastface = face;
             }
         }
-        E.msgbox.innerHTML += `${ii.object.name} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}<br>`;
+        const xyz = ii.object.xyz;
+        const row = xyz.datas[ii.index];
+        E.msgbox.innerHTML += `<span>${ii.object.name}:${ii.index} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}</span>
+            <span class="help">${JSON.stringify(row, undefined, '<br>')}</span><br>;
+        `;
    });
 
 

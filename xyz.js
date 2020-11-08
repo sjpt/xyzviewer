@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/07 14:20:50
+window.lastModified.xyz = `Last modified: 2020/11/08 12:39:02
 `
 
 export {
@@ -18,6 +18,7 @@ export {
 
 
 const {THREE, addFileTypeHandler, E, X, col3} = window;
+X.xyzs = {};
 const {log} = window;
 const stdcols = [
     col3(0.5, 0.5, 0.5),
@@ -74,6 +75,7 @@ constructor(data, fid) {
     this.fid = fid;
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
+    X.xyzs[fid] = this;
 }
 
 /** load data based on gui values */
@@ -86,30 +88,36 @@ dataToMarkersGui(type) {
 /** load the data with given filter and colour functions if requred, and display as markers */
 dataToMarkers(pfilterfun, pcolourfun) {
     if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
+    const l = this.datas.length;
     const filterfun = this.makefilterfun(pfilterfun, E.filterbox);
     const colourfun = this.makecolourfun(pcolourfun, E.colourbox);
-    const geometry = this.geometry = new THREE.Geometry();
-    geometry.vertices = [];
-    geometry.colors = [];
-    for (let i = 0; i < this.datas.length; i ++ ) {
+    let vert = new Float32Array(l*3);
+    let col = new Float32Array(l*3);
+    const geometry = this.geometry = new THREE.BufferGeometry();
+    let ii = 0;
+    for (let i = 0; i < l; i ++ ) {
         const d = this.datas[i];
         if (filterfun && !filterfun(d)) continue;
-        const vertex = new THREE.Vector3();
-        vertex.x = d.c_x || d.x;  // todo, change recentre mechanism
-        vertex.y = d.c_y || d.y;
-        vertex.z = d.c_z || d.z;
-
-        geometry.vertices.push( vertex );
         const r = Math.random;
-        if (colourfun)
-            geometry.colors.push(colourfun(d));
-        else
-            geometry.colors.push(col3(r(), r(), r()));
+        const c = colourfun ? colourfun(d) : col3(r(), r(), r());
+        vert[ii] = d.c_x || d.x;  // todo, change recentre mechanism
+        col[ii++] = c.r;
+        vert[ii] = d.c_y || d.y;
+        col[ii++] = c.g;
+        vert[ii] = d.c_z || d.z;
+        col[ii++] = c.b;
     }
-    geometry.verticesNeedUpdate = true;
+    const ll = ii/3;
+    if (ll !== l) {
+        vert = vert.slice(0, ii);
+        col = col.slice(0, ii);
+    }
+    const verta = new THREE.BufferAttribute(vert , 3);
+    const cola = new THREE.BufferAttribute(col , 3);
+    geometry.addAttribute('position', verta);
+    geometry.addAttribute('color', cola);
     this.particles.geometry = geometry;
-    // console.log('vertices generated',  geometry.vertices.length);
-    return geometry.vertices.length;
+    return ll;
 }
 
 /** make a colour function for a field.
