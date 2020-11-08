@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/08 18:46:05
+window.lastModified.xyz = `Last modified: 2020/11/08 20:07:25
 `
 
 export {
@@ -311,11 +311,9 @@ filtergui(evt) {
     const ff = box.value.trim();
     filtergui.last = filtergui.last || '';
     try {
-        // const f = new Function('d', 'return ' + ff);
-        // box.style.background='#d0ffd0';
         errbox.innerHTML = 'ctrl-enter to apply filter';
         const fun = this.makefilterfun(box.value, box);
-        if (!fun) return;
+        if (!fun && ff !== '') return;
         if (evt.keyCode === 13) {
             filtergui.lastn = this.dataToMarkersGui();
             errbox.innerHTML = 'filter applied: #points=' + filtergui.lastn;
