@@ -69,7 +69,8 @@ class VRButton {
 					// be requested separately.)
 
 					const sessionInit = { optionalFeatures: [ 'local-floor', 'bounded-floor', 'hand-tracking' ] };
-					navigator.xr.requestSession( 'immersive-vr', sessionInit ).then( onSessionStarted );
+					navigator.xr.requestSession( 'immersive-vr', sessionInit ).then( onSessionStarted )
+						.catch(e => button.textContent = e); // sjpt
 
 				} else {
 
