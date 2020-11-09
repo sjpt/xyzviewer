@@ -138,8 +138,8 @@ function makechains(l = 5, data = pdbdatas) {
 function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.value) {
     if (chainlines && chainlines.visible === false) return;
     if (!pdbdatas) return;
-    const filterfun = myxyz.makefilterfun(pfilterfun);
-    const colourfun = myxyz.makecolourfun(pcolourfun);
+    const filterfun = myxyz.makefilterfun(pfilterfun, E.filterbox);
+    const colourfun = myxyz.makecolourfun(pcolourfun, E.colourby);
     if (chains.length === 0) makechains();
     var geom = new THREE.Geometry;
 
