@@ -25,7 +25,7 @@ function init() {
         function ( displays ) {
             log('display found');
             display = displays[0];
-            renderer.vr.setDevice(display);
+            renderer.xr.setDevice(display);
         });
     }
 

@@ -1,13 +1,14 @@
 'use strict';
 import {showfirstdata} from './basic.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/07 17:59:48
+import {VRButton} from './jsdeps/VRButton.js';
+window.lastModified.graphicsboiler = `Last modified: 2020/11/09 14:24:40
 `
 
 
 export {addToMain, framenum, makeCircle, renderer, fullcanvas,
     camera, usePhotoShader, orbcamera, outerscene};
 //import {refit} from './refit.js';
-const {THREE, Stats, E, log, X, col3, WEBVR} = window;
+const {THREE, Stats, E, log, X, col3} = window;
 X.scale = scale;
 X.init = init;
 
@@ -16,7 +17,7 @@ X.init = init;
 
 var container, stats;
 var camera, maingroup, outerscene, renderer,
-    controls, canvas, orbcamera, camscene, display, nobutton,
+    controls, canvas, orbcamera, camscene, display,
     photoShader, usePhotoShader = false, light0, light1;
 X.defaultDistance = 50;
 var autoClear = false;
@@ -61,19 +62,19 @@ function init() {
 
     showfirstdata();
 
-    renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
+    renderer = X.renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
     if (navigator.getVRDisplays) {
         navigator.getVRDisplays().then(
         function ( displays ) {
             log('display found');
             display = displays[0];
-            renderer.vr.setDevice(display);
+            renderer.xr.setDevice(display);
         });
     }
 
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.vr.enabled = true;   // will NOT??? be overwritten frame by frame
+    renderer.xr.enabled = true;   // will NOT??? be overwritten frame by frame
     renderer.autoClear = autoClear;
     canvas = renderer.domElement;
     container.appendChild(canvas);
@@ -96,7 +97,11 @@ function init() {
         controls.autoRotate = false;  // was is_webgl
     }
 
-    if (!nobutton && WEBVR) document.body.appendChild( WEBVR.createButton( renderer ) );
+    // three.js default (at 106) is 'local-floor', which should be supported but is not on Chrome 79.0.3942.0 and 81.0.4006.0
+    if (renderer.xr.setReferenceSpaceType)
+        renderer.xr.setReferenceSpaceType('local'); // ('bounded-floor');
+
+    document.body.appendChild(VRButton.createButton(renderer));
     animate();
 }
 
@@ -119,7 +124,7 @@ function render() {
 /**********/
     // If we are not presenting we don't want the VR headset camera to override nonVR navigation
     // We still need more navigation for VR, and smooth handover between nonVR and VR.
-    // renderer.vr.enabled = renderer.vr.getDevice() && renderer.vr.getDevice().isPresenting;
+    // renderer.xr.enabled = renderer.xr.getDevice() && renderer.xr.getDevice().isPresenting;
 
     if (controls) {
         controls.update(0.1);

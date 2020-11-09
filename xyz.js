@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/09 10:30:36
+window.lastModified.xyz = `Last modified: 2020/11/09 11:25:31
 `
 
 export {
@@ -114,8 +114,8 @@ dataToMarkers(pfilterfun, pcolourfun) {
     }
     const verta = new THREE.BufferAttribute(vert , 3);
     const cola = new THREE.BufferAttribute(col , 3);
-    geometry.addAttribute('position', verta);
-    geometry.addAttribute('color', cola);
+    geometry.setAttribute('position', verta);
+    geometry.setAttribute('color', cola);
     this.particles.geometry = geometry;
     if (filterfun)
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}`;

@@ -38,7 +38,7 @@ function ascReader(rawdata, fid) {
     X.ascgeom = geom;
 
     //const geometry = new THREE.BufferGeometry();
-    //geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( verts, 3 ) );
+    //geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( verts, 3 ) );
     const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
     mesh.material.side = THREE.DoubleSide;
     X.ascmesh = mesh;

@@ -76,7 +76,7 @@ function virusshow() {
         E.colourby.value = 'random';
     }
     dataToMarkersGui();
-    if (!renderer.vr.getDevice()) orbcamera.position.z = 200;
+    if (!renderer.xr.getDevice()) orbcamera.position.z = 200;
 }
 
 /**
@@ -326,7 +326,7 @@ function onMouseMove( event ) {
     const th = 0.2;
     raycaster.params.Points.threshold = th;
     raycaster.params.Line.threshold = th;   // ?? have the three.js rules changed ??
-    raycaster.linePrecision = th;
+    // raycaster.linePrecision = th;
 
     // calculate objects intersecting the picking ray
     console.time('inter')
