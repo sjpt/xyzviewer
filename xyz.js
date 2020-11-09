@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/08 20:58:59
+window.lastModified.xyz = `Last modified: 2020/11/09 10:30:36
 `
 
 export {
@@ -39,7 +39,7 @@ const spotsize = a => {
     //if (X.plymaterial) X.plymaterial.size = a;
 }
 const filtergui = g => { if (X.current) X.current.filtergui(g); }
-const dataToMarkersGui = (a,b) => X.current.dataToMarkersGui(a,b);
+const dataToMarkersGui = type => X.current.dataToMarkersGui(type);
 const centrerange = new THREE.Vector3('unset');  // ranges for external use
 
 /***/
@@ -61,9 +61,6 @@ class XYZ {
 //var datas;  // data as structure
 //var ranges; // data ranges, as structure of min/max
 // let particles, material;
-
-//let filtergui.lastn;
-//filtergui.last = '';
 
 
 constructor(data, fid) {
@@ -120,7 +117,13 @@ dataToMarkers(pfilterfun, pcolourfun) {
     geometry.addAttribute('position', verta);
     geometry.addAttribute('color', cola);
     this.particles.geometry = geometry;
-    return ll;
+    if (filterfun)
+        E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}`;
+    else 
+        E.filtcount.innerHTML = 'no filter applied: #points=' + l;
+    this.makefilterfun(pfilterfun, E.filterbox, true);                 // get gui display right
+
+    return [ll,l];
 }
 
 /** make a colour function for a field.
@@ -181,12 +184,25 @@ makecolourfun(fn, box) {
  * so a valid string could be 'd.x > 17'.
  * Also allows just x > 17
  * Flags any failure in E.filterr.innerHTML and returns undefined
+ * If applied === true the filter has been applied, record the fact
  */
-makefilterfun(filt, box) {
-    E.filterr.innerHTML = filt + ': testing';
+makefilterfun(filtin, box, applied=false) {
+    let filt = filtin;
+    const msg = (m, col) => {
+        E.filterr.innerHTML = `${m} <br><code> ${filt.split('\n').join('<br>')}<code>`;
+        if (box) box.style.background = col;
+        E.filterr.style.color = col;
+    }
+    if (applied || filtin === box.lastInputApplied) {
+        if (applied) box.lastCodeApplied = box.lastCodeGenerated;
+        box.lastInputApplied = filtin;
+        filt = box.lastCodeApplied || '';   // so msg comes right
+        return msg('filter applied', 'white');
+    }
+    box.lastInputTested = filtin;
+    msg('testing', '#101010');
     if (!filt) { 
-        if (box) box.style.background='#d0ffd0'; 
-        E.filterr.innerHTML = 'empty filter';
+        msg('empty filter', '#d0ffd0');
         return undefined;
     }
     let filtfun;
@@ -201,17 +217,15 @@ makefilterfun(filt, box) {
             var x = 0, y = 0, z = 0, r = 1, g = 1, b = 1;
             var {${used.join(',')}} = d;\n
         ` + filt;
-        log(filt);
+        box.lastCodeGenerated = filt;
         try {
             filtfun = new Function('d', filt);
         } catch (e) {
-            E.filterr.innerHTML = filt + '<br>invalid function: ' + e.message;
-            if (box) box.style.background='#ffd0d0'
+            msg('invalid function: ' + e.message, '#ffd0d0');
             return undefined;
         }
     } else {
-        E.filterr.innerHTML = 'unexpected filter type';
-        if (box) box.style.background='#ff4040'
+        msg('unexpected filter type', '#ff4040');
     return undefined;
     }
 
@@ -219,12 +233,10 @@ makefilterfun(filt, box) {
         // eslint-disable-next-line no-unused-vars
         const r = filtfun(this.datas[0]);
     } catch(e) {
-        E.filterr.innerHTML = filt + '<br>function throws exception: ' + e.message;
-        if (box) box.style.background='#d0d0ff'
+        msg('function throws exception: ' + e.message, '#d0d0ff');
         return undefined;
     }
-    if (box) box.style.background='#d0ffd0'
-    E.filterr.innerHTML = filt + '<br>OK';
+    msg('OK: ctrl-enter to apply filter', '#d0ffd0');
     return filtfun;
 }
 
@@ -313,24 +325,17 @@ spotsize(size) {
    on ctrl-enter filter the markers and redisplay */
 filtergui(evt = {}) {
     const box = E.filterbox;  // dom element
-    const errbox = E.filterr;  // dom element
+    const filterr = E.filterr;  // dom element
     const boxv = box.value.trim();
-    filtergui.last = filtergui.last || 'unset';
     try {
-        errbox.innerHTML = 'ctrl-enter to apply filter';
         const fun = this.makefilterfun(boxv, box);
         if (!fun && boxv !== '') return;
         if (evt.keyCode === 13) {
-            filtergui.lastn = this.dataToMarkersGui();
-            errbox.innerHTML = (fun ? '' : 'no ' ) + 'filter applied: #points=' + filtergui.lastn;
-            filtergui.last = boxv;
-        }
-        if (boxv === filtergui.last) {
-            box.style.background='#ffffff';
+            this.dataToMarkersGui();
         }
     } catch (e) {
         box.style.background='#ffffd0';
-        errbox.innerHTML = e.message;
+        filterr.innerHTML = e.message;
     }
 }
 
