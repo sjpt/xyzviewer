@@ -47,12 +47,15 @@ ${Object.keys(c).join('</li><li>')}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // not really speech, but to help with phones
 function touch(event) {
-    if (event.touches.length >= 4) {
+    if (!event || event.touches.length >= 4) {
         const s = window.gui.style;
+        const sb = window.speechbox.style;
         if (s.fontSize) {
-            s.fontSize = '40%'; s.transform='scale(3)'; s.transformOrigin='top left'
-        } else {
             s.fontSize = ''; s.transform=''; s.transformOrigin=''
+            sb.transform = ''
+        } else {
+            s.fontSize = '40%'; s.transform='scale(6)'; s.transformOrigin='top left'
+            sb.transform = 'scale(2)';  sb.transformOrigin='top left'
         }
     }
 }
