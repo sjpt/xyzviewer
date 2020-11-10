@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/09 14:24:40
+window.lastModified.graphicsboiler = `Last modified: 2020/11/10 11:13:37
 `
 
 
@@ -30,7 +30,7 @@ function init() {
     // interpretSearchString();
     container = document.getElementById('container');
 
-    X.camera = camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.position.z = 0;
     orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
     orbcamera.position.z = X.defaultDistance;
@@ -38,7 +38,6 @@ function init() {
     camscene.add(camera);
 
     maingroup = new THREE.Scene();
-    X.maingroup = maingroup;
     maingroup.rotateX(3.14159/2);   // so we see elevation z up by default
 	// scene.background = new THREE.Color( 0x505050 );
     // scene.add(camera);
@@ -62,7 +61,7 @@ function init() {
 
     showfirstdata();
 
-    renderer = X.renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
+    renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
     if (navigator.getVRDisplays) {
         navigator.getVRDisplays().then(
         function ( displays ) {
@@ -103,6 +102,7 @@ function init() {
 
     document.body.appendChild(VRButton.createButton(renderer));
     animate();
+    Object.assign(X, {controls, orbcamera, camera, maingroup, renderer }); // mainly for debug
 }
 
 function addToMain(obj, name, parent = maingroup) {
@@ -112,7 +112,7 @@ function addToMain(obj, name, parent = maingroup) {
 
 /** start the animation loop, managed by three.js */
 function animate() {
-	renderer.animate( render );
+	renderer.setAnimationLoop( render );
 }
 
 var framenum = 0;
@@ -130,6 +130,7 @@ function render() {
         controls.update(0.1);
         if (document.activeElement === document.body) controls.usekeys();  // use keys becuase of continuous mode
         orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
+        if (X.xyzspeechupdate) X.xyzspeechupdate();
     }
 //    outerscene.matrixAutoUpdate = false;
 //    outerscene.matrix.getInverse(orbcamera.matrix);
