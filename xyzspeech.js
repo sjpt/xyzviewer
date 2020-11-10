@@ -11,7 +11,7 @@ var OrganicSpeech, controls, maingroup, orbcamera;
     let o = OrganicSpeech;
     let c = o.commands;
     'forward back left right up down'.split(' ').forEach(k => c[k] = () => mode = k);
-    c.stop = () => mode = '';
+    c.stop = c.newsound = () => mode = '';
     c.faster = () => rate *= 2;
     c.slower = () => rate /= 2;
     c.elevation = () => maingroup.rotation.set(Math.PI/2,0,0)
@@ -43,6 +43,17 @@ ${Object.keys(c).join('</li><li>')}
 </li></ul>
 `
 }
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// not really speech, but to help with phones
+function touch(event) {
+    if (event.touches.length >= 4) {
+        const s = window.container.style;
+        s.fontSize = s.fontSize ? '' : '300%'
+    }
+}
+window.document.addEventListener( 'touchstart', touch, false );
+
 
 /**
  * note: 

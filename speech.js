@@ -22,13 +22,15 @@ var OrganicSpeech = (function() {
         recognition = new SpeechRecognition();
         // recognition.grammars = speechRecognitionList;
         recognition.maxAlternatives = 3;
-        recognition.interimResults = false; // interim are interesting, but too difficult to use
-                                            // it would help if words in results were time tagged so you could check duplicates etc???
+        recognition.interimResults = true; // interim are interesting, but too difficult to use
+                                        // it would help if words in results were time tagged so you could check duplicates etc???
+                                        // BUT interim are useful to stop continuous movement as soon as possible
         recognition.continuous = false;
         recognition.onstart = () => {/*log('started');*/ st = 0;}
         recognition.onend = () => { /*log('restarting');*/ recognition.start(); }
         recognition.onerror = event => { if (event.error !== 'no-speech') log('recognition error', event.error); };
-        var st = 0;
+        var st = 0, newsoundt = 0;
+        
         recognition.onresult = function(event) {
             const commands = OrganicSpeech.commands;
             // With continuous the final results accumulate; (almost?) always zero (just interim) or zero one extra result per call
@@ -46,12 +48,20 @@ var OrganicSpeech = (function() {
             }
             let done = 0;
             for (const results of event.results) {
-            // const results = event.results[len-1]; {
-                ll.push(results.isFinal ? '+++++++' : '???????');
-            // var result = event.results[0];
+                if (results.isFinal && newsoundt) {
+                    log('newsound to final', Date.now() - newsoundt);
+                    newsoundt = 0;
+                }
+                // newsound gives a chance to interrupt some other continuous action
+                // without waiting for any precise recognition
+                if (!results.isFinal && !newsoundt) { 
+                    if (OrganicSpeech.commands.newsound) OrganicSpeech.commands.newsound(); 
+                    log('###newsound###');
+                    newsoundt = Date.now();
+                }
+                if (!results.isFinal) break;
                 let heard = [];
                 for (const result of results) {
-                    if (result.confidence < 0.1 && !results.isFinal) break;  // assume results sorted by confidence, else continue
                     var rawtext = result.transcript;
                     heard.push(rawtext);
                     const ltext = rawtext.toLowerCase();
@@ -76,7 +86,7 @@ var OrganicSpeech = (function() {
                 if (heard.length) ll.push('heard: ' + heard.join(' | '));
                 msgfix('heard', heard.join('<br>'));
             }
-            if (ll.length > 2 || st === 0) log(dt, ll.join('\n')); else log(dt, ',');
+            if (ll.length > 2 || st === 0) log(dt, ll.join('\n')); // else log(dt, ',');
         }
     }
 
