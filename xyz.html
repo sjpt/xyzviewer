@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/10 11:02:47
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/10 15:42:58
 `</script>
 <html lang="en">
 	<head>
@@ -112,9 +112,11 @@
 
         <div id='container'>
             <div id='gui'>
-                <b>speech: </b>
-                <input type="checkbox" id="speech" onchange="OrganicSpeech.isRunning=this.checked"/>
-                <span class="help">check for speech input</span>
+                <span>
+                    <b>speech: </b>
+                    <input type="checkbox" id="speech" onchange="OrganicSpeech.isRunning=this.checked"/>
+                </span>
+                <span class="help" id="speechhelp">check for speech input</span>
                 <br>
                 <b>visible: </b>
                 <span id='visibles'></span>
