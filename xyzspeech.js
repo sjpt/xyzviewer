@@ -48,8 +48,12 @@ ${Object.keys(c).join('</li><li>')}
 // not really speech, but to help with phones
 function touch(event) {
     if (event.touches.length >= 4) {
-        const s = window.container.style;
-        s.fontSize = s.fontSize ? '' : '300%'
+        const s = window.gui.style;
+        if (s.fontSize) {
+            s.fontSize = '40%'; s.transform='scale(3)'; s.transformOrigin='top left'
+        } else {
+            s.fontSize = ''; s.transform=''; s.transformOrigin=''
+        }
     }
 }
 window.document.addEventListener( 'touchstart', touch, false );
