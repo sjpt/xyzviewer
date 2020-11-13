@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/10 11:13:37
+window.lastModified.graphicsboiler = `Last modified: 2020/11/13 14:24:39
 `
 
 
@@ -18,7 +18,7 @@ X.init = init;
 var container, stats;
 var camera, maingroup, outerscene, renderer,
     controls, canvas, orbcamera, camscene, display,
-    photoShader, usePhotoShader = false, light0, light1;
+    usePhotoShader = false, light0, light1;
 X.defaultDistance = 50;
 var autoClear = false;
 
@@ -210,24 +210,6 @@ const addvisList = {};
 function addvis(obj, name) {
     obj.name = name;
     let item= addvisList[name];
-    if (!E.photoscheck) {
-        const v = `
-            <span><span><b>photos:</b> <input id="photoscheck" type="checkbox" onclick="photoShader_clicked(event)"/></br>
-            </span>
-            <span class="help">Select to impose photographs on each data point.<br>
-            Experimental, no sensible photos currently available in this demo.</span>
-            </span>
-        `
-        const sp = document.createElement('span');
-        sp.innerHTML = v;
-        E.gui.appendChild(sp);
-        // window.visibles = document.getElementById('visibles');
-        // to consider, cleaner place to add 'plugins' such as photoShader
-        if (photoShader && usePhotoShader) {
-            E.photoscheck.checked = true; E.photoscheck.onclick();
-        }
-
-    }
     if (!item) {
         const sfid = name.split('\\').pop().split('/').pop();
         E.visibles.innerHTML += `${sfid}<input type="checkbox" checked="checked" onclick="addvis_clicked(event)" name="${sfid}"/>`

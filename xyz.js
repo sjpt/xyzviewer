@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/09 11:25:31
+window.lastModified.xyz = `Last modified: 2020/11/11 08:42:05
 `
 
 export {
@@ -452,5 +452,10 @@ http://localhost:8800/,,/xyz/xyz.html?startdata=/remote/https://userweb.molbiol.
 
 also
 https://gitcdn.link/cdn/sjpt/xyzviewer/master/xyz.html
+https://combinatronics.com/sjpt/xyzviewer/master/xyz.html?arch 
+   (better, but corrupted the circle.png file) 
+   BAD https://combinatronics.com/sjpt/xyzviewer/master/sprites/circle.png
+   GOOD https://sjpt.github.io/xyz/sprites/circle.png
+   GOOD https://gitcdn.link/cdn/sjpt/xyzviewer/master/sprites/circle.png
 
 */
