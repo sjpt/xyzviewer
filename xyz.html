@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/14 14:43:21
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/14 18:18:49
 `</script>
 <html lang="en">
 	<head>
@@ -152,7 +152,7 @@
                     'custom' will use the fixed colour or custom javascript code in the box to the right.</span>
                 <!-- can't find reliable single event or even events for when OK clicked with no change  -->
                 <input type="color" id="colourpick" value="#c0c0c0"
-                    onchange="dataToMarkersGui('choose');" onclick="dataToMarkersGui('choose');"/>
+                    oninput="dataToMarkersGui('choose');"/>
                 <span class="help">Select a fixed colour for this dataset.</span>
                 <input type="text" id="colourbox" onkeyup="dataToMarkersGui('custom');"/>
                 <span class="help">Write custom colour code here.</span>
@@ -223,6 +223,7 @@
 <script type="module" src="geojson.js"></script>
 <script type="module" src="refit.js"></script>
 <script type="module" src="plyreader.js"></script>
+<script type="module" src="dxfreader.js"></script>
 <script type="module" src="grid.js"></script>
 <script src="gldebug.js"></script>
 <script>console.log('last module read, window=', window)</script>

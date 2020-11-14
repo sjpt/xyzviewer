@@ -2,7 +2,6 @@
 // code for display of refit data
 export {refit};
 import {addToMain} from './graphicsboiler.js';
-import {centrerange} from './xyz.js';
 const {THREE, col3, X} = window;
 X.refit = refit;
 
@@ -13,7 +12,7 @@ let rgroups, rlines;
 // compute refit from preloaded data held in datas, make a refit set for each group
 // and display as lines from flints to centroid of group
 function refit() {
-    const datas = X.current.datas;
+    const datas = X.currentXyz.datas;
     if (!datas) {setTimeout(refit, 100); return; }
     // data prep, find groups
     rgroups = {};

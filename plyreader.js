@@ -10,7 +10,7 @@ function plyReader(data, fid) {
     const loader = new THREE.PLYLoader();
     const geometry = loader.parse(data);
 
-    X.current = new PLY(geometry, fid);
+    X.currentXyz = new PLY(geometry, fid);
 }
 
 /** test function for handling ply data */
@@ -19,12 +19,11 @@ function readply(fid = './data/p17.ply') {
     loader.load( fid, g => new PLY(g, fid));
 }
 
-
 class PLY {
     constructor(geometry, fid) {
         this.geometry = geometry;
         this.fid = fid;
-        this.mesh = this.meshmaker(geometry, fid);
+        window.currentObj = this.mesh = this.meshmaker(geometry, fid);
         this.spotsize(0.05);
         if (!geometry.attributes.color)  // choose white as base if colour will be added
             this.dataToMarkersGui();

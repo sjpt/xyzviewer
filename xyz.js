@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/14 14:50:21
+window.lastModified.xyz = `Last modified: 2020/11/14 18:22:37
 `
 
 export {
@@ -33,13 +33,15 @@ const stdcols = [
 const stdcol = X.stdcol = n => stdcols[n%8];
 
 // bridge to access current members
+// currentObj
+// current 
 /** */
 const spotsize = a => {
-    if (X.current) X.current.spotsize(a);
+    if (X.currentXyz) X.currentXyz.spotsize(a);
     //if (X.plymaterial) X.plymaterial.size = a;
 }
-const filtergui = g => { if (X.current) X.current.filtergui(g); }
-const dataToMarkersGui = type => X.current.dataToMarkersGui(type);
+const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
+const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
 const centrerange = new THREE.Vector3('unset');  // ranges for external use
 
 /***/
@@ -65,7 +67,7 @@ class XYZ {
 
 
 constructor(data, fid) {
-    window.current = this;
+    window.currentXyz = this;
     this.fid = fid;
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
@@ -74,9 +76,14 @@ constructor(data, fid) {
 
 /** load data based on gui values */
 dataToMarkersGui(type) {
-    if (type) E.colourby.value = type;
-    makechainlines(E.filterbox.value, E.colourby.value);
-    return this.dataToMarkers(E.filterbox.value, E.colourby.value)
+    if (X.currentObj.xyz) {
+        if (type) E.colourby.value = type;
+        makechainlines(E.filterbox.value, E.colourby.value);
+        return this.dataToMarkers(E.filterbox.value, E.colourby.value)
+    } else if (X.currentObj.material ) {
+        E.colourbox.value = E.colourpick.value;
+        currentObj.material.color.set(E.colourbox.value);
+    }
 }
 
 /** load the data with given filter and colour functions if requred, and display as markers */
@@ -122,7 +129,7 @@ dataToMarkers(pfilterfun, pcolourfun) {
         col = col.slice(0, ii);
     }
     if (noxyz) console.log('ddata/filter failed to give xyz for', noxyz, 'elements');
-    if (ll === 0) {console.log('ddata/filter failed to give any xyz'); return; }
+    if (ll === 0) {console.log('ddata/filter failed to give any xyz'); }
     const verta = new THREE.BufferAttribute(vert , 3);
     const cola = new THREE.BufferAttribute(col , 3);
     geometry.setAttribute('position', verta);
@@ -464,7 +471,7 @@ setup(fid) {
     }
     const size = 0.3;
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: THREE.VertexColors } );
-    this.particles = new THREE.Points(new THREE.Geometry(), this.material);
+    X.currentObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.xyz = this;
     addToMain( this.particles, fid );
 }
@@ -473,11 +480,11 @@ setup(fid) {
 // helpers, global
 function enumI(d,f) {
     if (f.substring(0,2) === 'd.') f=f.substring(2); 
-    return X.current.ranges[f].valueSet[d[f]];
+    return X.currentXyz.ranges[f].valueSet[d[f]];
 }
 function enumF(d,f) {
     if (f.substring(0,2) === 'd.') f=f.substring(2); 
-    const vs = X.current.ranges[f].valueSet;
+    const vs = X.currentXyz.ranges[f].valueSet;
     return vs[d[f]] / Object.keys(vs).length;
 }
 X.enumI = enumI; X.enumF = enumF; 

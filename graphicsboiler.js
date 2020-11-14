@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/13 14:24:39
+window.lastModified.graphicsboiler = `Last modified: 2020/11/14 17:46:10
 `
 
 
@@ -223,7 +223,8 @@ function addvis_clicked(evt) {
     const src = evt.target;
     const ele = addvisList[src.name];
     ele.obj.visible = src.checked;
-    if (ele.obj.xyz) window.current = ele.obj.xyz;
+    window.currentObj = ele.obj;
+    if (ele.obj.xyz) window.currentXyz = ele.obj.xyz;
 }
 window.addvis_clicked = addvis_clicked;
 

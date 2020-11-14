@@ -86,7 +86,7 @@ void main() {
 let nophotomaterial, photomaterial;
 function photoShader_clicked(evt) {
     const ele = evt  ? evt.srcElement : E.photoscheck;
-    const particles = X.current.particles;
+    const particles = X.currentXyz.particles;
     if (!nophotomaterial) nophotomaterial = particles.material;
 
     if (ele.checked) {
