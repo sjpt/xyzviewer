@@ -7,7 +7,7 @@
  * 
  * extra 1st person keys added by Stephen Todd WASD IJKL
  */
-/*global THREE, console */
+/*global THREE */ // , console */
 
 // This set of controls performs orbiting, dollying (zooming), and panning. It maintains
 // the "up" direction as +Y, unlike the TrackballControls. Touch on tablet and phones is
@@ -482,16 +482,24 @@ THREE.OrbitControls = function ( object, domElement ) {
         scope.keysdown[String.fromCharCode(event.keyCode)] = false;
         scope.modSpeed = scope.keysdown[','] ? 0.1 : scope.keysdown['.'] ? 10 : 1;
         //return killev(event);
-    }
+	}
+	
+	this.home = function() {
+		var camera  = scope.object;
+		var p = scope.object.position;
+		scope.reset();
+		p.set(0, 0, defaultDistance);  // add cleaner way ?
+		camera.setRotationFromMatrix(new THREE.Matrix4());
+		camera.up = new THREE.Vector3(0,1,0);
+		camera.updateMatrix();
+		scope.update();
+	}
         
     this.usekeys = function() {
 		if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
         var keysdown = scope.keysdown;
-		
-		var camera  = scope.object;
-		var p = scope.object.position;
+	
 		var d = 0.003;
-
 
         if (keysdown[scope.keys.UP]) {
             scope.pan( 0, scope.keyPanSpeed  * scope.modSpeed);
@@ -514,13 +522,8 @@ THREE.OrbitControls = function ( object, domElement ) {
             }
 
         if (keysdown[scope.keys.HOME]) {
-            scope.reset();
-            p.set(0, 0, defaultDistance);  // add cleaner way ?
-            camera.setRotationFromMatrix(new THREE.Matrix4());
-            camera.up = new THREE.Vector3(0,1,0);
-            camera.updateMatrix();
-            scope.update();
-            }
+			this.home();
+        }
 
         if (keysdown['W']) { scope.pan( 0,0, -scope.keyPanSpeed * scope.modSpeed); scope.update(); }
         if (keysdown['S']) { scope.pan( 0,0, scope.keyPanSpeed * scope.modSpeed); scope.update(); }

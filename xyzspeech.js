@@ -1,6 +1,6 @@
 // speech input for xyz
 //  
-var OrganicSpeech, controls, maingroup, orbcamera;
+var OrganicSpeech, controls, orbcamera, plan, elevation;
 //OrganicSpeech.commands = {};
 //OrganicSpeech.replace = {};
 
@@ -14,8 +14,8 @@ var OrganicSpeech, controls, maingroup, orbcamera;
     c.stop = c.newsound = () => mode = '';
     c.faster = () => rate *= 2;
     c.slower = () => rate /= 2;
-    c.elevation = () => maingroup.rotation.set(Math.PI/2,0,0)
-    c.plan = () => maingroup.rotation.set(0,0,0)
+    c.elevation = () => elevation()
+    c.plan = () => plan()
     c['go to centre'] = () => orbcamera.position.set(0,0,0)
     c['go to outside'] = () => orbcamera.position.set(0,0,30)
     c['look at centre'] = () => controls.target.set(0,0,0)

@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/14 12:12:25
+window.lastModified.xyz = `Last modified: 2020/11/14 14:50:21
 `
 
 export {
@@ -482,6 +482,20 @@ function enumF(d,f) {
 }
 X.enumI = enumI; X.enumF = enumF; 
 
+function plan() {
+    maingroup.rotation.set(0,0,0);
+    home();
+}
+
+function elevation() {
+    maingroup.rotation.set(Math.PI/2,0,0);
+    home();
+}
+X.plan = plan; X.elevation = elevation; 
+
+function home() {
+    controls.home();
+}
 /* reminder to me
 nb 
 http://localhost:8800/,,/xyz/xyz.html?startdata=/!C:/Users/Organic/Downloads/small_test_UMAP3A.csv
