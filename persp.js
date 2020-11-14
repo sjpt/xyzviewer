@@ -70,7 +70,7 @@ function init() {
     scene.background = new THREE.Color(0);
 
 
-    object(scene);
+    object();
     distort();
 
     animate();

@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/14 11:46:40
+window.lastModified.xyz = `Last modified: 2020/11/14 12:12:25
 `
 
 export {
@@ -331,10 +331,13 @@ finalize(fid) {
 /** rebase a field based on centrerange, set o_ values */
 rebase(fn) {
     const c = centrerange[fn];
+    const ofn = 'o_' + fn;
     this.datas.forEach(s => {
-        const o = s['o_' + fn] = s[fn];
+        const o = s[ofn] = s[fn];
         s[fn] = s.pos[fn] = o - c;
     });
+    this.ranges[ofn] = this.ranges[fn];
+    this.ranges[fn] = this.genstats(undefined, fn);     // could be more efficient here and just modify old stats
 }
 
 /** convenience function for iterating fields of an object  */
@@ -389,7 +392,7 @@ genstats(datals = this.datas, name = undefined) {
         for (name in datals[0])  {
             lranges[name] = this.genstats(datals, name);
         }
-        if (centrerange.x === 'unset')
+        if (centrerange.x === 'unset')  // centrerange is static set on first file, and use same for all subsequent files
             centrerange.set(lranges.x.mean, lranges.y.mean, lranges.z.mean);
         return lranges;
     }
