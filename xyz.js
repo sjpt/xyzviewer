@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/11 08:42:05
+window.lastModified.xyz = `Last modified: 2020/11/14 11:46:40
 `
 
 export {
@@ -50,6 +50,7 @@ X.csvReader = csvReader;
 X.pdbReader = pdbReader;
 addFileTypeHandler('.csv', csvReader);
 addFileTypeHandler('.txt', csvReader);
+addFileTypeHandler('.xlsx', csvReader);
 
 var usePhotoShader;
 function csvReader(data, fid) { return new XYZ(data, fid); }
@@ -88,6 +89,7 @@ dataToMarkers(pfilterfun, pcolourfun) {
     let col = new Float32Array(l*3);
     const geometry = this.geometry = new THREE.BufferGeometry();
     let ii = 0;
+    let noxyz = 0;
     for (let i = 0; i < l; i ++ ) {
         const dd = this.datas[i];
         let du;
@@ -100,18 +102,27 @@ dataToMarkers(pfilterfun, pcolourfun) {
         const r = Math.random;
         let c = colourfun ? colourfun(dd) : col3(r(), r(), r());
         if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
-        vert[ii] = 'x' in du ? du.x : dd.x;  // todo, change recentre mechanism, and this is broken for du.c_x === 0
-        col[ii++] = 'r' in du ? du.r : c.r;
-        vert[ii] = 'y' in du ? du.y : dd.y;
-        col[ii++] = 'g' in du ? du.g : c.g;
-        vert[ii] = 'z' in du ? du.z : dd.z;
-        col[ii++] = 'b' in du ? du.b : c.b;
+        let x = 'x' in du ? du.x : dd.x;
+        let y = 'y' in du ? du.y : dd.y;
+        let z = 'z' in du ? du.z : dd.z;
+        if (x === undefined || y === undefined || z === undefined) {
+            noxyz++;
+        } else {            
+            vert[ii] = x;
+            col[ii++] = 'r' in du ? du.r : c.r;
+            vert[ii] = y;
+            col[ii++] = 'g' in du ? du.g : c.g;
+            vert[ii] = z;
+            col[ii++] = 'b' in du ? du.b : c.b;
+        }
     }
     const ll = ii/3;
     if (ll !== l) {
         vert = vert.slice(0, ii);
         col = col.slice(0, ii);
     }
+    if (noxyz) console.log('ddata/filter failed to give xyz for', noxyz, 'elements');
+    if (ll === 0) {console.log('ddata/filter failed to give any xyz'); return; }
     const verta = new THREE.BufferAttribute(vert , 3);
     const cola = new THREE.BufferAttribute(col , 3);
     geometry.setAttribute('position', verta);
@@ -240,29 +251,47 @@ makefilterfun(filtin, box, applied=false) {
     return filtfun;
 }
 
+/** parse xlsl */
+async xlsxReader(raw, fid) {
+    // only load this converter plugin if needed
+    if (!window.XLSX) {
+        await addscript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.3/xlsx.full.min.js");
+        console.log('loaded', window.XLSX);
+        // window.XLSX = XLSX;
+    }
+    let XLSXX = window.XLSX;
+    let workbook = XLSXX.read(raw, {type: 'binary'});
+    let firstSheet = workbook.SheetNames[0];
+    let ss = workbook.Sheets[firstSheet];
+    this.datas = XLSXX.utils.sheet_to_json(ss);
+    this.header = Object.keys(this.datas[0]);
+    this.finalize(fid);
+}
 
 /** load the data as an array of arrays, and separate out header */
 csvReader(raw, fid) {
     log('csvReader', fid);
+    if (fid.endsWith('.xlsx')) return this.xlsxReader(raw, fid);
     const data = raw.split('\r').join('').split('\n');
     if (data[0] === '') data.splice(0,1);  // in case of initial empty line
     if (data.slice(-1)[0] === '')
         data.splice(-1, 1);  // remove blank line at end if any
     const dataa = [];  // todo remove need for intermediate saved dataa
-    data.forEach( x=> dataa.push(x.split('\t')));
-    this.header = data[0].toLowerCase().split('\t').map(x=>x.trim().split(',')[0]);
+    const sep = data[0].indexOf('\t') === -1 ? ',' : '\t';
+    // TODO proper comma parsing
+    data.forEach( x=> dataa.push(x.split(sep)));
+    this.header = data[0].toLowerCase().split(sep).map(x=>x.trim().split(',')[0]);
     dataa.splice(0, 1);  // remove header
 
     // convert data to an array of structures, and compute ranges
     this.datas = [];
     dataa.forEach(x => {
        const s = {};
-       for (let i=0; i<this.header.length; i++) {
+       for (let i=0; i<x.length; i++) {
            const fn = this.header[i];
            const rv = x[i].trim();  // raw value
            const v = isNaN(rv) ? rv : +rv;
            s[fn] = v;
-
        }
        if (s.x * s.y * s.z === 0) {
            // log('odd position', s.oid, s.x, s.y, s.z);
@@ -273,16 +302,26 @@ csvReader(raw, fid) {
        }
     });
 
-    if (!this.ranges) {
-        this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
-    }
     this.finalize(fid);
 }
 
 finalize(fid) {
-    this.rebase('x');
-    this.rebase('y');
-    this.rebase('z');
+    const me = this;
+    function finish(col) {
+        if (me.header.includes(col)) {
+            me.rebase(col);
+        } else {
+            console.error('data does not have expected column', col, fid);
+        }
+    }
+    
+    if (!this.ranges) {
+        this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
+    }
+    
+    finish('x');
+    finish('y');
+    finish('z');
 
     this.ranges.forEach = this.sForEach;
     this.setup(fid);

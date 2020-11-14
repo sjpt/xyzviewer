@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/06 17:39:12
+X.lastModified.basic = `Last modified: 2020/11/14 10:59:51
 `
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
@@ -112,6 +112,8 @@ function openfile(file) {
         const ext = getFileExtension(file.name);
         if (ext === '.tif' || ext === '.ply')   // TODO need to arrange this differently
             reader.readAsArrayBuffer(file);        // start read in the data file
+        else if (ext === '.xlsx')   // TODO need to arrange this differently
+            reader.readAsBinaryString(file);        // start read in the data file
         else
             reader.readAsText(file);        // start read in the data file
     } else {
@@ -132,14 +134,13 @@ function docdrop(evt) {
         openfiles(dt.files);
     } else if (data !== "") { // data drag/drop TODO
         try {
-            //msgfix('evaluate', data);
-            /** var r = **/ eval(data);
-            //msgfix('evaluate', data, 'result', r);
+            if (data.startsWith('http:') || data.startsWith('https:'))
+                posturiasync('/remote/' + data)
+            else
+                eval(data);
         } catch (e) {
-            //msgfix('evaluate', data, 'failed', e.message);
+            console.error('problem handling dropped text', data, e);
         }
-        // Poem.start(data); for now disable poem start by text drop
-        // does not work, 5 Mar 2014
     }
     return killev(evt);
 }
@@ -157,6 +158,3 @@ function getFileExtension(fid) {
     else
         return ".";
 }
-
-
-

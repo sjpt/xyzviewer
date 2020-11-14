@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2020/11/06 17:42:41
+window.lastModified.main = `Last modified: 2020/11/14 11:45:56
 `
 var fileTypeHandlers; //  = {};
 // eslint-disable-next-line no-unused-vars
@@ -48,9 +48,18 @@ function appendNodeFromHTML(parent, html) {
 
 /** add a script dynamically */
 // eslint-disable-next-line no-unused-vars
-function addscript(script) {
-	const s = document.createElement('script');
-	s.src = script;
-	document.body.appendChild(s);
-	// appendNodeFromHTML(document.body, `<script src="${script}"></script>`);
+function addscript(src) {
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = src;
+    head.appendChild(script);
+
+    return new Promise(resolve => {
+        script.onload = () => {
+            resolve();
+        }
+    });
 }
+
+
