@@ -33,6 +33,8 @@ function pdbReader(data, fid) {
     //[77,78, 'elesym'], //     Element symbol    right    character
     0]; format.pop();                     // dummy to make ending , easier
 
+    myxyz.header = format.map(f => f[2]);
+
     // process the pdb file to get the data
     pdbdatas = [];
     lines.forEach( l => {

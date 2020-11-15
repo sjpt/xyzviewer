@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/14 10:59:51
+X.lastModified.basic = `Last modified: 2020/11/15 14:43:08
 `
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
@@ -20,22 +20,27 @@ getQueryVariables();
 
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 function showfirstdata() {
-    if (window.location.search === '?arch') {
+    if (window.location.search.startsWith('?arch')) {
         window.addscript("archstart.js");
-        return;
     }
-    const startcode = queryVariables.startcode;
+    const {startcode, startdata, pdb} = queryVariables;
     if (startcode) eval(startcode);
-    const startdata = queryVariables.startdata;
+    if (pdb) posturiasync('https://files.rcsb.org/download/' + pdb + '.pdb');
     if (!startdata) return;
     const startlist = startdata
         .split("'").join('').split('"').join('')  // in case of old style interpret usage
         .split(',');
-    startlist.forEach(s => posturiasync(s));  // <<< WRONG, they get processed async so maybe wrong order
+    startlist.forEach(s => {
+        // this is special case to get around some CORS issues
+        if (s.startsWith('http') && location.hostname === 'localhost')
+            s = '/remote/' + s;
+        posturiasync(s);  // <<< WRONG, they get processed async so maybe wrong order
+    });
 }
 
 document.ondragover = docdragover;
-document.ondrop = docdrop;
+document.ondrop = docdroppaste;
+document.onpaste = docdroppaste;
 
 
 /** post a uri and process callback  */
@@ -123,8 +128,8 @@ function openfile(file) {
 
 /** document drop, if ctrl key keep dragDropDispobj which may be used by loader
 dragOverDispobj will be destroyed too soon because of asynchronous loader */
-function docdrop(evt) {
-    var dt = evt.dataTransfer;
+function docdroppaste(evt) {
+    var dt = evt.dataTransfer || evt.clipboardData;
     if (!dt) { console.error("unexpected dragdro"); return killev(evt); }
     dt.dropEffect = 'copy';
 
