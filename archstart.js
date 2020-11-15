@@ -1,6 +1,6 @@
 'use strict';
 var appendNodeFromHTML, posturiasync, handlerForFid, refit, lastModified;
-lastModified.archstart = `Last modified: 2020/11/15 19:58:58
+lastModified.archstart = `Last modified: 2020/11/15 20:35:12
 `
 var filelist = `
 contours.geojson
@@ -15,12 +15,25 @@ StarCarr_Flint.csv
 StarCarr_Fungi.csv
 StarCarr_Stones.csv
 trenches.geojson
-woodplanned.geojson`.trim().split('\n');
+woodplanned.geojson
+vp10_dr004.dxf`.trim().split('\n');
 let filedrop = filelist.map(x=>`<option value="${x}">${x}</option>`).join();
 let hh = `
 <span><span><br><b>File choice:</b><select onchange="loaddrop();" id="filedropbox">${filedrop}</select></span>
-<span class="help">Load additional datasets from the available.<br>
-The dropdown has a list of all available datasets.
+<span class="help">Load additional datasets from those available at our host.
+<br>
+The dropdown has a list of all such available datasets.
+<br>
+<br>
+You can also load additional datasets from your local filesystem
+<br>
+by drag/drop from explorer or similar onto the canvas.
+<br>
+<br>
+For some odd reason copy/paste works for text (including URLs), but does NOT work for files.
+<br>
+<br>
+In future we also hope to be able to drag/drop or copy/paste URLs from the Star Carr archive.
 </span></span>
 `
 appendNodeFromHTML(window.gui, hh);
