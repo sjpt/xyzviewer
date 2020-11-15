@@ -1,6 +1,6 @@
 'use strict';
 var appendNodeFromHTML, posturiasync, handlerForFid, refit, lastModified;
-lastModified.archstart = `Last modified: 2020/11/07 18:24:32
+lastModified.archstart = `Last modified: 2020/11/15 19:58:58
 `
 var filelist = `
 contours.geojson
@@ -37,6 +37,7 @@ posturiasync(starturi, function(data, puri) {
     handlerForFid(starturi)(data, puri);
     refit();
     posturiasync('StarCarr/contours.geojson');
+    window.plan();
 });
 
 let archxref = 
