@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/21 18:07:08
+X.lastModified.basic = `Last modified: 2020/11/21 18:11:14
 `
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
@@ -48,7 +48,7 @@ document.onpaste = docdroppaste;
 
 /** post a uri and process callback  */
 function posturiasync(puri, callb='auto', data='') {
-    console.time('load'+puri);
+    console.time('load: '+puri);
     const binary = puri.endsWith('.ply');
     if (callb === 'auto') callb = handlerForFid(puri);
     var req = new XMLHttpRequest();
