@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/19 20:28:40
+X.lastModified.basic = `Last modified: 2020/11/21 18:07:08
 `
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
@@ -48,6 +48,7 @@ document.onpaste = docdroppaste;
 
 /** post a uri and process callback  */
 function posturiasync(puri, callb='auto', data='') {
+    console.time('load'+puri);
     const binary = puri.endsWith('.ply');
     if (callb === 'auto') callb = handlerForFid(puri);
     var req = new XMLHttpRequest();
@@ -56,6 +57,7 @@ function posturiasync(puri, callb='auto', data='') {
     req.setRequestHeader("Content-type", binary ? "application/octet-stream" : "text/plain;charset=UTF-8");
     req.send(data);
     req.onload = function () { 
+        console.timeEnd('load: '+puri);
         callb(binary ? req.response : req.responseText, puri);
     }   // eslint-disable-line no-unused-vars
     req.onerror = function (oEvent) { console.error('cannot load', puri, oEvent); }
@@ -133,7 +135,7 @@ function openfile(file) {
 dragOverDispobj will be destroyed too soon because of asynchronous loader */
 function docdroppaste(evt) {
     var dt = evt.dataTransfer || evt.clipboardData;
-    if (!dt) { console.error("unexpected dragdro"); return killev(evt); }
+    if (!dt) { console.error("unexpected dragdrop"); return killev(evt); }
     dt.dropEffect = 'copy';
 
     var data = dt.getData("text/plain");

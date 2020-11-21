@@ -290,7 +290,7 @@ csvReader(raw, fid) {
 
         const csvp = csv({
             separator, 
-            quote: undefined, raw: false,
+            // quote: undefined, raw: false,
             mapHeaders: ({header, i}) => header.toLowerCase().trim().split(',')[0]
         }); // get a parser
 
@@ -327,9 +327,10 @@ csvReader(raw, fid) {
             if (!sep) {
                 sep = row.indexOf('\t') === -1 ? ',' : '\t';
                 header = this.header = row.toLowerCase().split(sep).map(x=>x.trim().split(',')[0]);
-                xi = header.indexOf('x');
-                yi = header.indexOf('y');
-                zi = header.indexOf('z');
+                // experiments with saving as array, not tuple
+                // xi = header.indexOf('x');
+                // yi = header.indexOf('y');
+                // zi = header.indexOf('z');
                 // rowst = this.header.reduce((c,v) => (c[v] = true, c), {})
                 continue;
             }
