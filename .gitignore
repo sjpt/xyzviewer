@@ -1,3 +1,3 @@
-package-lock.json
+# package-lock.json *** SHOULD be in version control ***
 data/mesh.ply
 node_modules

@@ -1,9 +1,12 @@
-export {addFileTypeHandler, showfirstdata, posturiasync};
+export {addFileTypeHandler, showfirstdata, posturiasync, streamReader};
 const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/15 14:43:08
+X.lastModified.basic = `Last modified: 2020/11/19 20:28:40
 `
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
+X.streamReader = streamReader;
+
+X.proxy = '/remote/';
 
 const queryVariables = {};
 /** get query variables from search string */
@@ -33,7 +36,7 @@ function showfirstdata() {
     startlist.forEach(s => {
         // this is special case to get around some CORS issues
         if (s.startsWith('http') && location.hostname === 'localhost')
-            s = '/remote/' + s;
+            s = X.proxy + s;
         posturiasync(s);  // <<< WRONG, they get processed async so maybe wrong order
     });
 }
@@ -140,7 +143,7 @@ function docdroppaste(evt) {
     } else if (data !== "") { // data drag/drop TODO
         try {
             if (data.startsWith('http:') || data.startsWith('https:'))
-                posturiasync('/remote/' + data)
+                posturiasync(X.proxy + data)
             else
                 eval(data);
         } catch (e) {
@@ -163,3 +166,47 @@ function getFileExtension(fid) {
     else
         return ".";
 }
+
+/** code for streaming input from http  */
+function streamReader(url, chunkProcess, endProcess) {
+    const td = new TextDecoder("ascii")
+    const log = console.log
+    let n = 0, len, reader;
+    function processText({done, value}) {
+        if (done) {
+            log(url, 'done', n, len);
+            if (endProcess) endProcess(n, len);
+            return;
+        }
+        n += value.length;
+        chunkProcess(td.decode(value), n, len);
+        return reader.read().then(processText);
+    }
+
+    fetch(url).then(resp => {
+        resp.headers.forEach((...x) => console.log(x));
+        len = +resp.headers.get('content-length');
+        reader = resp.body.getReader()
+        reader.read().then(processText);
+    })
+}
+// e.g. streamReader("StarCarr/StarCarr_Flint.csv", (x,n,len) => log('... ', x.length, n, len, x.substring(0,20)), () => log('END'))
+
+
+
+/** code for encoding integers with NaNs */
+var _kkk = new Float32Array([NaN]);
+var _iii = new Uint32Array(_kkk.buffer);
+var _bbb = new Uint8Array(_kkk.buffer)
+var iNaN = _iii[0];
+function i2NaN(i) {
+    _kkk[0] = NaN;
+    _iii[0] += i;
+    return _kkk[0];
+}
+function NaN2i(f) {
+    _kkk[0] = f;
+    return _iii[0] - iNaN;
+}
+
+

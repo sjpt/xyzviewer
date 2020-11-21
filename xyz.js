@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/14 18:22:37
+window.lastModified.xyz = `Last modified: 2020/11/21 17:53:46
 `
 
 export {
@@ -279,38 +279,91 @@ async xlsxReader(raw, fid) {
 csvReader(raw, fid) {
     log('csvReader', fid);
     if (fid.endsWith('.xlsx')) return this.xlsxReader(raw, fid);
-    const data = raw.split('\r').join('').split('\n');
-    if (data[0] === '') data.splice(0,1);  // in case of initial empty line
-    if (data.slice(-1)[0] === '')
-        data.splice(-1, 1);  // remove blank line at end if any
-    const dataa = [];  // todo remove need for intermediate saved dataa
-    const sep = data[0].indexOf('\t') === -1 ? ',' : '\t';
-    // TODO proper comma parsing
-    data.forEach( x=> dataa.push(x.split(sep)));
-    this.header = data[0].toLowerCase().split(sep).map(x=>x.trim().split(',')[0]);
-    dataa.splice(0, 1);  // remove header
+    const separator = raw.substring(0,100).indexOf('\t') === -1 ? ',' : '\t';
+    const odatas = [], ndatas = [];
 
-    // convert data to an array of structures, and compute ranges
-    this.datas = [];
-    dataa.forEach(x => {
-       const s = {};
-       for (let i=0; i<x.length; i++) {
-           const fn = this.header[i];
-           const rv = x[i].trim();  // raw value
-           const v = isNaN(rv) ? rv : +rv;
-           s[fn] = v;
-       }
-       if (s.x * s.y * s.z === 0) {
-           // log('odd position', s.oid, s.x, s.y, s.z);
-       } else if (isNaN(s.x * s.y * s.z)) {
-           log('odd data');
-       } else {
-           this.datas.push(s);
-       }
-    });
+    console.time('parse');
+    window.newparse = false;
+    window.oldparse = true;
+    if (window.newparse) {
+        console.time('newparse');
 
+        const csvp = csv({
+            separator, 
+            quote: undefined, raw: false,
+            mapHeaders: ({header, i}) => header.toLowerCase().trim().split(',')[0]
+        }); // get a parser
+
+        csvp.on('data', (s) => {
+            for (const h in s) if (!isNaN(s[h])) s[h] = +s[h];
+            if (s.x + s.y + s.z === 0) {
+                // log('odd position', s.oid, s.x, s.y, s.z);
+            } else if (isNaN(s.x + s.y + s.z)) {
+                log('odd data');
+            } else {
+                ndatas.push(s);
+            }
+        });
+        // process in chunks, simulate continiuous read, and maybe avoid some sillies in parser?
+        const chl = 1000;
+        for (let i=0; i < raw.length; i += chl)
+            csvp.write(raw.substr(i, chl));
+        csvp.end();
+        this.header = csvp.headers;
+        this.datas = ndatas;
+        console.timeEnd('newparse');
+        log('newparse rows', ndatas.length);
+        // csvp.destroy();
+    }
+    if (window.oldparse) {
+        console.time('oldparse');
+        //console.profile('oldparse');
+        const data = raw.split('\n');           // data is array of rows as strings
+        let sep, header, xi,yi,zi;
+
+        for (let row of data) {           // row is row as string
+            if (row.trim() === '') continue;
+        // TODO proper comma parsing
+            if (!sep) {
+                sep = row.indexOf('\t') === -1 ? ',' : '\t';
+                header = this.header = row.toLowerCase().split(sep).map(x=>x.trim().split(',')[0]);
+                xi = header.indexOf('x');
+                yi = header.indexOf('y');
+                zi = header.indexOf('z');
+                // rowst = this.header.reduce((c,v) => (c[v] = true, c), {})
+                continue;
+            }
+            const rowa = row.split(sep);    // rowa row as array
+            // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
+            // with testing 300 => 500
+            const s = {};                   // s is row as tuple 
+            for (let i = 0; i < rowa.length; i++) {
+                const fn = this.header[i];
+                const rv = rowa[i].trim();  // raw value
+                const v = isNaN(rv) ? rv : +rv;
+                s[fn] = v;
+            }
+            const xyztest = s.x + s.y + s.z;
+            // const xyztest = +rowa[xi] + +rowa[yi] + +rowa[zi] // when not makiong tuples
+            if (xyztest === 0) {
+                // log('odd position', s.oid, s.x, s.y, s.z);
+            } else if (isNaN(xyztest)) {
+                log('odd data');
+            } else {
+               odatas.push(s);
+            }
+        };
+        this.datas = odatas;
+        //console.profileEnd('oldparse');
+        console.timeEnd('oldparse');
+        log('oldparse rows', odatas.length);
+
+    }
+    
+    console.time('finalize');
     this.finalize(fid);
-}
+    console.timeEnd('finalize');
+}   // csvReader
 
 finalize(fid) {
     const me = this;
@@ -341,7 +394,8 @@ rebase(fn) {
     const ofn = 'o_' + fn;
     this.datas.forEach(s => {
         const o = s[ofn] = s[fn];
-        s[fn] = s.pos[fn] = o - c;
+        // s[fn] = s.pos[fn] = o - c;   // do not keep pos, overhead of all those Vector3 too high
+        s[fn] = o - c;
     });
     this.ranges[ofn] = this.ranges[fn];
     this.ranges[fn] = this.genstats(undefined, fn);     // could be more efficient here and just modify old stats
@@ -390,7 +444,13 @@ filtergui(evt = {}) {
 
 /** generate stats from given data for a given field, or for all fields, also compute three.js position */
 genstats(datals = this.datas, name = undefined) {
-    datals.forEach(d => { d.pos = new THREE.Vector3(d.x, d.y, d.z); d.o_pos = d.pos.clone(); });
+    // function tothreepos(datals) {
+    //     for (const d of datals) { 
+    //         d.pos = new THREE.Vector3(d.x, d.y, d.z); 
+    //         d.o_pos = d.pos.clone(); 
+    //     };
+    // }
+    // tothreepos(datals); // do not keep pos, overhead of all those Vector3 too high
     if (!name) {   // repeat for all fields
         const lranges = {};
         E.colourby.innerHTML = `<option value="choose">choose</option>`;
