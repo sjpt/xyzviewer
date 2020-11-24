@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2020/11/14 11:45:56
+window.lastModified.main = `Last modified: 2020/11/22 17:13:25
 `
 var fileTypeHandlers; //  = {};
 // eslint-disable-next-line no-unused-vars
@@ -63,3 +63,19 @@ function addscript(src) {
 }
 
 
+/** code for encoding integers with NaNs, first 16 reserved */
+var _kkk = new Float32Array([NaN]);
+var _iii = new Uint32Array(_kkk.buffer);
+var _bbb = new Uint8Array(_kkk.buffer)
+var iNaN = _iii[0];
+function i2NaN(i) {
+    _kkk[0] = NaN;
+    _iii[0] += i+16;
+    return _kkk[0];
+}
+function NaN2i(f) {
+    _kkk[0] = f;
+    return _iii[0] - iNaN - 16;
+}
+
+const NaN4null = i2NaN(-15);

@@ -1,7 +1,9 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-window.lastModified.xyz = `Last modified: 2020/11/21 17:53:46
+import {fileReader, lineSplitter} from './basic.js';
+//let E = window, X = window;
+window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
 `
 
 export {
@@ -17,7 +19,8 @@ export {
 // let filtergui;
 
 
-const {THREE, addFileTypeHandler, E, X, col3} = window;
+const {THREE, addFileTypeHandler, col3, E, X, addscript, currentObj, csv, NaN4null, i2NaN, NaN2i} = window;
+// let E = window, X = window;
 X.xyzs = {};
 const {log} = window;
 const stdcols = [
@@ -42,7 +45,7 @@ const spotsize = a => {
 }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
 const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
-const centrerange = new THREE.Vector3('unset');  // ranges for external use
+const centrerange = X.centrerange = new THREE.Vector3('unset');  // ranges for external use
 
 /***/
 X.spotsize = spotsize;
@@ -56,12 +59,12 @@ addFileTypeHandler('.xlsx', csvReader);
 
 var usePhotoShader;
 function csvReader(data, fid) { return new XYZ(data, fid); }
+csvReader.rawhandler = true;
 
 class XYZ {
     // comment in line below for typescript checking, comment out for js runtime
-    // header, datas, ranges, particles, material;
+    // header, da tas, ranges, particles, material;
 //var header; // header, as array
-//var datas;  // data as structure
 //var ranges; // data ranges, as structure of min/max
 // let particles, material;
 
@@ -89,7 +92,8 @@ dataToMarkersGui(type) {
 /** load the data with given filter and colour functions if requred, and display as markers */
 dataToMarkers(pfilterfun, pcolourfun) {
     if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
-    const l = this.datas.length;
+    const l = this.cols[0].length;
+    const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const filterfun = this.makefilterfun(pfilterfun, E.filterbox);
     const colourfun = this.makecolourfun(pcolourfun, E.colourbox);
     let vert = new Float32Array(l*3);
@@ -98,20 +102,19 @@ dataToMarkers(pfilterfun, pcolourfun) {
     let ii = 0;
     let noxyz = 0;
     for (let i = 0; i < l; i ++ ) {
-        const dd = this.datas[i];
         let du;
         if (filterfun) {
-            const df = filterfun(dd);
+            const df = filterfun(this, i);
             if (!df) continue;
             if (typeof df === 'object') du = df;
         }
-        if (!du) du = {x: dd.x, y: dd.y, z: dd.z};
+        if (!du) du = {x: xc[i], y: yc[i], z: zc[i]};
         const r = Math.random;
-        let c = colourfun ? colourfun(dd) : col3(r(), r(), r());
+        let c = colourfun ? colourfun(this, i) : col3(r(), r(), r());
         if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
-        let x = 'x' in du ? du.x : dd.x;
-        let y = 'y' in du ? du.y : dd.y;
-        let z = 'z' in du ? du.z : dd.z;
+        let x = 'x' in du ? du.x : xc[i];
+        let y = 'y' in du ? du.y : yc[i];
+        let z = 'z' in du ? du.z : zc[i];
         if (x === undefined || y === undefined || z === undefined) {
             noxyz++;
         } else {            
@@ -144,6 +147,19 @@ dataToMarkers(pfilterfun, pcolourfun) {
     return [ll,l];
 }
 
+/** extract the value for an element
+ * This is largely a convenience function for generating filters.
+ * TODO: It should be replaced by something more efficient (especially for pure numeric or pure alpha columns)
+ * when compiling the filter functions.
+ */
+val(name, i) {
+    const rv = this.namecols[name][i];
+    if (!isNaN(rv)) return rv;
+    const k = NaN2i(rv);
+    if (k === -15) return '';
+    return this.namevseti[name][k];
+}
+
 /** make a colour function for a field.
  * the input may be just field name,
  * or a structure with field fn (field name) and optional low and high values
@@ -167,7 +183,7 @@ makecolourfun(fn, box) {
                 return ()=>cc;
             }
             const f = this.makefilterfun(c, box);
-            //const col = f(datas[0]);  // test
+            //const col = f(da tas[0]);  // test
             return f;
         } catch(e) {
             return undefined;
@@ -176,10 +192,12 @@ makecolourfun(fn, box) {
     if (typeof fn === 'string') fn = { fn }
     const r = this.ranges[fn.fn];               // range
     const name = fn.fn;
+    const col = this.namecols[name];
     if (isNaN(r.sd)) {
-        const cf = function cfxval(d) {     // colorby enumerated column
-            const v = d[name];                // raw value
-            return stdcol(r.valueSet[v]);
+        const cf = function colourbyEnum(xyz, i) {    // colorby enumerated column
+            const v = col[i];    // raw value
+            const ii = NaN2i(v);                // just use the  valueset index
+            return stdcol(ii);
         }
         return cf;
     } else {                            // colorby value column
@@ -188,10 +206,10 @@ makecolourfun(fn, box) {
         const low = fn.low;
         const range = fn.high - fn.low;
 
-        const cf = function cfx(d) {
-            const v = d[name];                // raw value
-            const nv = ( v - low) / range;  // normalized value
-            return col3(nv, 1-nv, 1-nv);    // colour
+        const cf = function colourbyVal(xyz, i) {
+            const v = col[i];    // raw value
+            const nv = ( v - low) / range;      // normalized value
+            return col3(nv, 1-nv, 1-nv);        // colour
         }
         return cf;
     }
@@ -211,6 +229,7 @@ makefilterfun(filtin, box, applied=false) {
         if (box) box.style.background = col;
         E.filterr.style.color = col;
     }
+
     if (applied || filtin === box.lastInputApplied) {
         if (applied) box.lastCodeApplied = box.lastCodeGenerated;
         box.lastInputApplied = filtin;
@@ -231,13 +250,15 @@ makefilterfun(filtin, box, applied=false) {
         for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
             if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) used.push(fn);
         if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
+        // todo: make special case filters for pure number/pure alpha columns???
+        const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
         filt = `
             var x = 0, y = 0, z = 0, r = 1, g = 1, b = 1;
-            var {${used.join(',')}} = d;\n
+            ${uu}\n
         ` + filt;
         box.lastCodeGenerated = filt;
         try {
-            filtfun = new Function('d', filt);
+            filtfun = new Function('xyz', 'i', filt);
         } catch (e) {
             msg('invalid function: ' + e.message, '#ffd0d0');
             return undefined;
@@ -249,7 +270,7 @@ makefilterfun(filtin, box, applied=false) {
 
     try {
         // eslint-disable-next-line no-unused-vars
-        const r = filtfun(this.datas[0]);
+        const r = filtfun(this, 0);
     } catch(e) {
         msg('function throws exception: ' + e.message, '#d0d0ff');
         return undefined;
@@ -270,104 +291,197 @@ async xlsxReader(raw, fid) {
     let workbook = XLSXX.read(raw, {type: 'binary'});
     let firstSheet = workbook.SheetNames[0];
     let ss = workbook.Sheets[firstSheet];
-    this.datas = XLSXX.utils.sheet_to_json(ss);
-    this.header = Object.keys(this.datas[0]);
-    this.finalize(fid);
+    // could be made much more efficient if needed
+    // also neither this nor main line allows for empty header field name, or repeated ones
+    this.extocsv = XLSXX.utils.sheet_to_csv(ss);
+    return this.csvReader(this.extocsv, fid + '!');
 }
 
-/** load the data as an array of arrays, and separate out header */
-csvReader(raw, fid) {
+/** load the data as an array of arrays, and separate out header 
+ * raw may file file contents, or a File object
+*/
+async csvReader(raw, fid) {
     log('csvReader', fid);
     if (fid.endsWith('.xlsx')) return this.xlsxReader(raw, fid);
-    const separator = raw.substring(0,100).indexOf('\t') === -1 ? ',' : '\t';
-    const odatas = [], ndatas = [];
 
-    console.time('parse');
-    window.newparse = false;
+    this.prep();
+    // let {cols, namecols, vset, namevset} = this;
+    
+    window.newparse = false;    // separate tests rather than if else to allow both for quick performance comparison
     window.oldparse = true;
-    if (window.newparse) {
+
+    let header;
+    if (window.newparse) {    // use csv-parser, appears to be about twice as slow as using split (but more correct for ,")
         console.time('newparse');
+        const separator = raw.substring(0,100).indexOf('\t') === -1 ? ',' : '\t';
 
         const csvp = csv({
             separator, 
             // quote: undefined, raw: false,
-            mapHeaders: ({header, i}) => header.toLowerCase().trim().split(',')[0]
+            mapHeaders: ({header}) => header.toLowerCase().trim().split(',')[0]
         }); // get a parser
 
         csvp.on('data', (s) => {
-            for (const h in s) if (!isNaN(s[h])) s[h] = +s[h];
-            if (s.x + s.y + s.z === 0) {
-                // log('odd position', s.oid, s.x, s.y, s.z);
-            } else if (isNaN(s.x + s.y + s.z)) {
-                log('odd data');
-            } else {
-                ndatas.push(s);
-            }
+            if (!this.header) this.addHeader(Object.keys(s));
+            this.addRow(Object.values(s));  // what a waste making an object and destroying it again, but ...
         });
         // process in chunks, simulate continiuous read, and maybe avoid some sillies in parser?
         const chl = 1000;
         for (let i=0; i < raw.length; i += chl)
             csvp.write(raw.substr(i, chl));
         csvp.end();
-        this.header = csvp.headers;
-        this.datas = ndatas;
+        header = this.header = csvp.headers;
         console.timeEnd('newparse');
-        log('newparse rows', ndatas.length);
         // csvp.destroy();
     }
     if (window.oldparse) {
-        console.time('oldparse');
-        //console.profile('oldparse');
-        const data = raw.split('\n');           // data is array of rows as strings
-        let sep, header, xi,yi,zi;
-
-        for (let row of data) {           // row is row as string
-            if (row.trim() === '') continue;
-        // TODO proper comma parsing
-            if (!sep) {
+        X.currentObj = X.currentXyz = this; this.xyz = this;
+        let sep;
+        const st = Date.now();
+        this.line = function linex(row) {
+            if (row.trim() === '') return;
+            // TODO proper comma parsing
+            if (!sep) {                     // first non-empty row is treated as header
                 sep = row.indexOf('\t') === -1 ? ',' : '\t';
-                header = this.header = row.toLowerCase().split(sep).map(x=>x.trim().split(',')[0]);
-                // experiments with saving as array, not tuple
-                // xi = header.indexOf('x');
-                // yi = header.indexOf('y');
-                // zi = header.indexOf('z');
-                // rowst = this.header.reduce((c,v) => (c[v] = true, c), {})
-                continue;
+                header = this.header = row.split(sep).map(x=>x.trim().toLowerCase().split(',')[0]);
+                this.addHeader(header);
+                return;
             }
             const rowa = row.split(sep);    // rowa row as array
-            // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
-            // with testing 300 => 500
-            const s = {};                   // s is row as tuple 
-            for (let i = 0; i < rowa.length; i++) {
-                const fn = this.header[i];
-                const rv = rowa[i].trim();  // raw value
-                const v = isNaN(rv) ? rv : +rv;
-                s[fn] = v;
+            this.addRow(rowa);
+            if (this.n % this.tellUpdateInterval === 0)
+                log('reading file, line ', this.n);
+            if (this.n % this.graphicsUpdateInterval === 0 || this.n === this.firstUpdate)
+                this.finalize(fid, true); // needs some but NOT all
+        }
+
+        if (raw instanceof File) {
+            console.time('oldparsestream');
+            await fileReader(raw, lineSplitter(l => this.line(l)));
+            console.timeEnd('oldparsestream');
+        } else {
+            console.time('oldparse');
+            //console.profile('oldparse');
+            const data = raw.split('\n');           // data is array of rows as strings
+            for (let row of data) {             // row is row as string
+                this.line(row);
             }
-            const xyztest = s.x + s.y + s.z;
-            // const xyztest = +rowa[xi] + +rowa[yi] + +rowa[zi] // when not makiong tuples
-            if (xyztest === 0) {
-                // log('odd position', s.oid, s.x, s.y, s.z);
-            } else if (isNaN(xyztest)) {
-                log('odd data');
-            } else {
-               odatas.push(s);
-            }
-        };
-        this.datas = odatas;
-        //console.profileEnd('oldparse');
-        console.timeEnd('oldparse');
-        log('oldparse rows', odatas.length);
+            //console.profileEnd('oldparse');
+            console.timeEnd('oldparse');
+        }
 
     }
-    
+    log('parse rows', this.n);
+
     console.time('finalize');
     this.finalize(fid);
     console.timeEnd('finalize');
 }   // csvReader
 
-finalize(fid) {
+// prepare to add header/data
+prep() {
+    this.cols = [],
+    this.namecols = {}, 
+    this.vset = [], 
+    this.namevset = {};
+    this.vsetlen = [];
+    this.colnstrs = [];
+    this.colnnull = [];
+    this.colnnum = [];
+    this.namevseti = {};
+    this.n = 0;
+    this.tellUpdateInterval = 10000;
+    this.firstUpdate = 10000;
+    this.graphicsUpdateInterval = 250000;
+}
+
+// add header, array of names
+addHeader(header) {
+    header = this.header = header.map(x=>x.trim().toLowerCase().split(',')[0]);
+    // experiments with saving as array, not tuple
+    this.xi = header.indexOf('x');
+    this.yi = header.indexOf('y');
+    this.zi = header.indexOf('z');
+    for (let i = 0; i < header.length; i++) {
+        this.cols[i] = new Float32Array(1000);
+        this.vset[i] = {};
+        this.vsetlen[i] = 0;
+        this.colnstrs[i] = 0;
+        this.colnnull[i] = 0;
+        this.colnnum[i] = 0;
+    }
+}
+
+// add a row, array of values, return new n
+addRow(rowa) {
+    const cols = this.cols, header = this.header;
+    if (!this.header) {
+        this.addHeader(rowa);
+        return 0;
+    }
+    const n = this.n;
+    
+    // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
+    // with testing 300 => 500
+    const xyztest = +rowa[this.xi] + +rowa[this.yi] //  + +rowa[zi] // when not makiong tuples
+    if (xyztest === 0) {
+        // log('odd position', s.oid, s.x, s.y, s.z);
+    } else if (isNaN(xyztest)) {
+        log('odd data');
+    } else {
+        // extend column arrays if necessary
+        const ll = cols[0].length;
+        if (n >= ll) {
+            for (let i = 0; i < header.length; i++) {
+                const na = new Float32Array(ll*2);
+                na.set(cols[i]);
+                cols[i] = na;
+            }
+        }
+
+        // fill in data values, allowing for number/text and hybrid columns
+        for (let i = 0; i < header.length; i++) {
+            let v = rowa[i];
+            if (v === '') {          // '' value
+            this.colnnull[i]++;
+            v = NaN4null;
+            } else if (isNaN(v)) {   // text value
+                let k = this.vset[i][v];
+                if (k === undefined) {
+                    k = this.vset[i][v] = this.vsetlen[i];
+                    this.vsetlen[i]++;
+                }
+                v = i2NaN(k);
+                this.colnstrs[i]++;
+            } else {                 // number value
+                v = +v;
+                this.colnnum[i]++;
+            }
+            cols[i][n] = v;
+        }
+        this.n++;
+    }
+    return this.n;
+} // addRow
+
+// finalize and show graphics, partial if part way through
+finalize(fid, partial = false) {
     const me = this;
+    const {header, cols, namecols, vset, namevset} = this;
+
+    // now we have collected the data trim the columns and prepare helper derived data
+    for (let i = 0; i < header.length; i++) {
+        cols[i] = cols[i].slice(0, this.n);
+        namecols[header[i]] = cols[i];
+        namevset[header[i]] = vset[i];
+        this.namevseti[header[i]] = Object.keys(vset[i]);
+    }         
+    
+    
+    if (!this.ranges || !partial) {
+        this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
+    }
+    
     function finish(col) {
         if (me.header.includes(col)) {
             me.rebase(col);
@@ -375,14 +489,11 @@ finalize(fid) {
             console.error('data does not have expected column', col, fid);
         }
     }
-    
-    if (!this.ranges) {
-        this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
+    if (!partial) {
+        finish('x');
+        finish('y');
+        finish('z');
     }
-    
-    finish('x');
-    finish('y');
-    finish('z');
 
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
@@ -392,13 +503,10 @@ finalize(fid) {
 /** rebase a field based on centrerange, set o_ values */
 rebase(fn) {
     const c = centrerange[fn];
-    const ofn = 'o_' + fn;
-    this.datas.forEach(s => {
-        const o = s[ofn] = s[fn];
-        // s[fn] = s.pos[fn] = o - c;   // do not keep pos, overhead of all those Vector3 too high
-        s[fn] = o - c;
-    });
-    this.ranges[ofn] = this.ranges[fn];
+    // we used to keep extra columns for original data
+    // and also three vectors for position, but overhead too high
+    const col = this.namecols[fn];
+    for (let i = 0; i < col.length; i++) col[i] -= c;
     this.ranges[fn] = this.genstats(undefined, fn);     // could be more efficient here and just modify old stats
 }
 
@@ -444,7 +552,7 @@ filtergui(evt = {}) {
 }
 
 /** generate stats from given data for a given field, or for all fields, also compute three.js position */
-genstats(datals = this.datas, name = undefined) {
+genstats(datalsNO = this.NOdatas, name = undefined) {
     // function tothreepos(datals) {
     //     for (const d of datals) { 
     //         d.pos = new THREE.Vector3(d.x, d.y, d.z); 
@@ -457,16 +565,15 @@ genstats(datals = this.datas, name = undefined) {
         E.colourby.innerHTML = `<option value="choose">choose</option>`;
         E.colourby.innerHTML += `<option value="random">random</option>`;
         E.colourby.innerHTML += `<option value="custom">custom</option>`;
-        for (name in datals[0])  {
-            lranges[name] = this.genstats(datals, name);
+        for (name of this.header)  {
+            lranges[name] = this.genstats(datalsNO, name);
         }
         if (centrerange.x === 'unset')  // centrerange is static set on first file, and use same for all subsequent files
             centrerange.set(lranges.x.mean, lranges.y.mean, lranges.z.mean);
         return lranges;
     }
 
-
-    const data = datals.map(d => d[name]);  // just extract this field
+    const data = this.namecols[name];   // just extract this field
     let sum = 0, sum2 = 0, n = 0;
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
@@ -500,14 +607,14 @@ genstats(datals = this.datas, name = undefined) {
 
 /** setvals, for use with pdbreader, later to be subclass */
 setvals(vals) {
-
     this.datas = vals;
-    this.ranges = this.genstats(this.datas);
+    this.ranges = this.genstats();
     // this.ranges = vals.ranges;
-    // ({this.ranges, this.datas} = vals);  // checker does not like this with this.
+    // ({this.ranges, this.data s} = vals);  // checker does not like this with this.
 }
 
 setup(fid) {
+    if (this.material) return;
     // options for sprite1:
     // 1: load as image defined in html, will not work for file: from chrome unless you set the flag --allow-file-access-from-files will do it but inconvenient
     // 2: load as image using textureLoader, will not work for file: from chrome as for 1
@@ -551,18 +658,18 @@ function enumF(d,f) {
 X.enumI = enumI; X.enumF = enumF; 
 
 function plan() {
-    maingroup.rotation.set(0,0,0);
+    window.maingroup.rotation.set(0,0,0);
     home();
 }
 
 function elevation() {
-    maingroup.rotation.set(Math.PI/2,0,0);
+    window.maingroup.rotation.set(Math.PI/2,0,0);
     home();
 }
 X.plan = plan; X.elevation = elevation; 
 
 function home() {
-    controls.home();
+    window.controls.home();
 }
 /* reminder to me
 nb 

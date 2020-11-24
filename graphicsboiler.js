@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/14 17:46:10
+window.lastModified.graphicsboiler = `Last modified: 2020/11/22 16:51:57
 `
 
 
@@ -120,7 +120,7 @@ var framenum = 0;
 function render() {
     framenum++;
     if (stats) stats.update();
-    // if (!datas) return; // not ready yet
+    // if (!da tas) return; // not ready yet
 /**********/
     // If we are not presenting we don't want the VR headset camera to override nonVR navigation
     // We still need more navigation for VR, and smooth handover between nonVR and VR.

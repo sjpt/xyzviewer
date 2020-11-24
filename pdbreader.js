@@ -28,25 +28,25 @@ function pdbReader(data, fid) {
     [39,46, 'y'], //     Y orthogonal Å coordinate    right    real (8.3)
     [47,54, 'z'], //     Z orthogonal Å coordinate    right    real (8.3)
     //[55,60,    'occupancy'], // Occupancy    right    real (6.2)
-    [61,66,    'tempfac'], // Temperature factor    right    real (6.2)
+    [61,66,    'tempfac'] // Temperature factor    right    real (6.2)
     //[73,76,    'segid'], // Segment identifier¶    left    character
     //[77,78, 'elesym'], //     Element symbol    right    character
-    0]; format.pop();                     // dummy to make ending , easier
+    ]; format.pop();                     // dummy to make ending , easier
 
-    myxyz.header = format.map(f => f[2]);
+    myxyz.prep();
+    myxyz.addHeader(format.map(f => f[2]));
 
     // process the pdb file to get the data
-    pdbdatas = [];
+    
     lines.forEach( l => {
         if (l.substr(0,4) !== 'ATOM') return;
-        const d = {};
+        const d = [];
         format.forEach( f => {
             if (!f) return;  // final dummy one
             let v = l.substring(f[0] - 1, f[1]).trim();
-            if (!isNaN(v)) v = +v;
-            d[f[2]] = v;
+            d.push(v);
         });
-        pdbdatas.push(d);
+        myxyz.addRow(d);
     });
 
     // process the format and data to get the ranges
@@ -57,7 +57,7 @@ function pdbReader(data, fid) {
 
     // push data to main graphics
     // maingroup.remove(rlines);
-    myxyz.setvals(pdbdatas);  // will also do a genstats
+    // myxyz.setvals(pdbdatas);  // will also do a genstats
     myxyz.finalize(fid);
     
     dataToMarkersGui();
@@ -363,8 +363,9 @@ function onMouseMove( event ) {
         let frow;
         if (xyz) {
             const s = [];
-            const row = xyz.datas[ii.index];
-            for (const n in row) { const v = row[n]; if (typeof v !== 'object') s.push(n + ': ' + v); }
+            const i = ii.index;
+            // const row = xyz.datas[ii.index];
+            for (const name of xyz.header) { const v = xyz.val(name, i); if (typeof v !== 'object') s.push(name + ': ' + v); }
             frow = s.join('<br>');
         } else {
             frow = 'no detailed information';

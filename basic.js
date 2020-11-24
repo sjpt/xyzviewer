@@ -1,6 +1,6 @@
-export {addFileTypeHandler, showfirstdata, posturiasync, streamReader};
-const {killev, addFileTypeHandler, E, X} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/21 18:11:14
+export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter};
+const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
+X.lastModified.basic = `Last modified: 2020/11/24 10:43:11
 `
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
@@ -107,18 +107,24 @@ function handlerForFid(fid) {
 
 /** read and process a single file, given a File object */
 function openfile(file) {
+    console.time('load file: ' + file.name)
     const handler = handlerForFid(file.name);
 
     if (handler && handler.rawhandler) {
-        handler(file);
+        handler(file, file.name);
     } else if (handler) {
         var reader = new FileReader();
         // ??? reader.fff = f;
         // Closure to capture the file information.
         reader.onload = function(e) {
             var data = e.target.result;
+            console.timeEnd('load file: ' + file.name)
+            log('load', file.name, data.length);
             handler(data, file.name);
         };
+        reader.onerror = function(e) {
+            console.error('failure reading', file.name, e)
+        }
         const ext = getFileExtension(file.name);
         if (ext === '.tif' || ext === '.ply')   // TODO need to arrange this differently
             reader.readAsArrayBuffer(file);        // start read in the data file
@@ -141,6 +147,7 @@ function docdroppaste(evt) {
     var data = dt.getData("text/plain");
 
     if (dt.files.length > 0) {   // file dragdrop
+        log('dragdrop', dt.files)
         openfiles(dt.files);
     } else if (data !== "") { // data drag/drop TODO
         try {
@@ -194,21 +201,27 @@ function streamReader(url, chunkProcess, endProcess) {
 }
 // e.g. streamReader("StarCarr/StarCarr_Flint.csv", (x,n,len) => log('... ', x.length, n, len, x.substring(0,20)), () => log('END'))
 
-
-
-/** code for encoding integers with NaNs */
-var _kkk = new Float32Array([NaN]);
-var _iii = new Uint32Array(_kkk.buffer);
-var _bbb = new Uint8Array(_kkk.buffer)
-var iNaN = _iii[0];
-function i2NaN(i) {
-    _kkk[0] = NaN;
-    _iii[0] += i;
-    return _kkk[0];
-}
-function NaN2i(f) {
-    _kkk[0] = f;
-    return _iii[0] - iNaN;
+async function fileReader(file, chunkProcess = log, endProcess = () => log('end'), chunksize = 2**17) {
+    let off = 0;
+    while (true) {
+        const slice = file.slice(off, off + chunksize);
+        const chunk = await slice.text();
+        if (chunk.length === 0) break;
+        chunkProcess(chunk);
+        off += chunksize;
+    }
+    endProcess();
 }
 
-
+function lineSplitter(lineProcess = (l,n) => {if (n%100 === 0) log(n, l);} ) {
+    let pend = '';
+    let l = 0;
+    return function(chunk) {
+        const ll = chunk.split('\n');
+        ll[0] = pend + ll[0];
+        pend = ll[ll.length-1];
+        for (let i = 0; i < ll.length-1; i++)
+            lineProcess(ll[i], ++l);
+    }
+}
+// fileReader(xxfile, lineSplitter)

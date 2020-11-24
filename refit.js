@@ -7,24 +7,25 @@ X.refit = refit;
 
 let rgroups, rlines;
 
-// var datas, scene, rgroups, rlines;
+// var da tas, scene, rgroups, rlines;
 
-// compute refit from preloaded data held in datas, make a refit set for each group
+// compute refit from preloaded data held in xyz cols, make a refit set for each group
 // and display as lines from flints to centroid of group
 function refit() {
-    const datas = X.currentXyz.datas;
-    if (!datas) {setTimeout(refit, 100); return; }
+    const xyz = X.currentXyz;
+    const refitcol = xyz.namecols.refit_grou;
+    const xc = xyz.namecols.x, yc = xyz.namecols.y, zc = xyz.namecols.z;
+    if (!refitcol) {setTimeout(refit, 100); return; }
     // data prep, find groups
     rgroups = {};
-    for(let i=0; i < datas.length; i++) {
-        const d = datas[i];
-        const gid = d.refit_grou;
-        if (gid === 0) continue;
+    for(let i=0; i < refitcol.length; i++) {
+        const gid = refitcol[i];
+        if (isNaN(gid)) continue;
         let gr = rgroups[gid];
         if (!gr) gr = rgroups[gid] = {gid, sx: 0, sy:0, sz: 0, n: 0, inds: []};
-        gr.sx += d.x;
-        gr.sy += d.y;
-        gr.sz += d.z;
+        gr.sx += xc[i];
+        gr.sy += yc[i];
+        gr.sz += zc[i];
         gr.n++;
         gr.inds.push(i);
     }
@@ -45,9 +46,8 @@ function refit() {
         // const cen = new THREE.Vector3(gr.x - centrerange.x, gr.y - centrerange.y, gr.z - centrerange.z); // not needed 8/11/2020, new centre scheme
         const cen = new THREE.Vector3(gr.x, gr.y, gr.z);
         gr.inds.forEach( i=> {
-            const d = datas[i];
-            const dv = new THREE.Vector3( d.x,  d.y,  d.z);
-            if (d.z == 0) return;
+            const dv = new THREE.Vector3( xc[i],  yc[i],  zc[i]);
+            if (dv.z == 0) return;
             //if (dv.distanceTo(cen) > 3)
             //    console.log('refit big', gr.gid, i, cen, dv);
 
