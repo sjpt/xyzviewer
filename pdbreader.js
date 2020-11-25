@@ -365,7 +365,11 @@ function onMouseMove( event ) {
             const s = [];
             const i = ii.index;
             // const row = xyz.datas[ii.index];
-            for (const name of xyz.header) { const v = xyz.val(name, i); if (typeof v !== 'object') s.push(name + ': ' + v); }
+            for (const name in xyz.namecols) { 
+                const v = xyz.val(name, i); 
+                if (typeof v !== 'object') 
+                    s.push(name + ': ' + v);
+            }
             frow = s.join('<br>');
         } else {
             frow = 'no detailed information';

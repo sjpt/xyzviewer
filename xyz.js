@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {makechainlines, pdbReader} from './pdbreader.js';
-import {fileReader, lineSplitter} from './basic.js';
+import {fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles} from './basic.js';
 //let E = window, X = window;
 window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
 `
@@ -56,6 +56,10 @@ X.pdbReader = pdbReader;
 addFileTypeHandler('.csv', csvReader);
 addFileTypeHandler('.txt', csvReader);
 addFileTypeHandler('.xlsx', csvReader);
+addFileTypeHandler('.yaml', csvReader);
+const binnop = () => {};
+binnop.rawhandler = true;
+addFileTypeHandler('.colbin', binnop);
 
 var usePhotoShader;
 function csvReader(data, fid) { return new XYZ(data, fid); }
@@ -89,13 +93,13 @@ dataToMarkersGui(type) {
     }
 }
 
-/** load the data with given filter and colour functions if requred, and display as markers */
-dataToMarkers(pfilterfun, pcolourfun) {
+/** load the data with given filter and colour functions if required, and display as markers */
+async dataToMarkers(pfilterfun, pcolourfun) {
     if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
-    const l = this.cols[0].length;
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
-    const filterfun = this.makefilterfun(pfilterfun, E.filterbox);
-    const colourfun = this.makecolourfun(pcolourfun, E.colourbox);
+    const l = xc.length;
+    const filterfun = await this.makefilterfun(pfilterfun, E.filterbox);
+    const colourfun = await this.makecolourfun(pcolourfun, E.colourbox);
     let vert = new Float32Array(l*3);
     let col = new Float32Array(l*3);
     const geometry = this.geometry = new THREE.BufferGeometry();
@@ -142,7 +146,7 @@ dataToMarkers(pfilterfun, pcolourfun) {
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}`;
     else 
         E.filtcount.innerHTML = 'no filter applied: #points=' + l;
-    this.makefilterfun(pfilterfun, E.filterbox, true);                 // get gui display right
+    await this.makefilterfun(pfilterfun, E.filterbox, true);                 // get gui display right
 
     return [ll,l];
 }
@@ -166,7 +170,7 @@ val(name, i) {
  * If low and high are not given they are used as 1.5 standard deviations from the mean.
  * We may later add low and high colour values for greater flexibility.
  */
-makecolourfun(fn, box) {
+async makecolourfun(fn, box) {
     if (typeof fn === 'function') return fn;
     if (fn === undefined || fn === '' || fn === 'random') return ()=>col3(Math.random(),Math.random(),Math.random());
     if (fn === 'choose') {
@@ -182,7 +186,7 @@ makecolourfun(fn, box) {
                 E.colourpick.value = '#' + cc.getHexString();
                 return ()=>cc;
             }
-            const f = this.makefilterfun(c, box);
+            const f = await this.makefilterfun(c, box);
             //const col = f(da tas[0]);  // test
             return f;
         } catch(e) {
@@ -192,7 +196,7 @@ makecolourfun(fn, box) {
     if (typeof fn === 'string') fn = { fn }
     const r = this.ranges[fn.fn];               // range
     const name = fn.fn;
-    const col = this.namecols[name];
+    let col = await this.lazyLoadCol(name);
     if (isNaN(r.sd)) {
         const cf = function colourbyEnum(xyz, i) {    // colorby enumerated column
             const v = col[i];    // raw value
@@ -222,7 +226,7 @@ makecolourfun(fn, box) {
  * Flags any failure in E.filterr.innerHTML and returns undefined
  * If applied === true the filter has been applied, record the fact
  */
-makefilterfun(filtin, box, applied=false) {
+async makefilterfun(filtin, box, applied=false) {
     let filt = filtin;
     const msg = (m, col) => {
         E.filterr.innerHTML = `${m} <br><code> ${filt.split('\n').join('<br>')}<code>`;
@@ -248,7 +252,12 @@ makefilterfun(filtin, box, applied=false) {
     else if (typeof filt === 'string') {
         const used = [];
         for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
-            if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) used.push(fn);
+            if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
+                used.push(fn);
+                await this.lazyLoadCol(fn);
+            }
+
+        // generate filter
         if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
         // todo: make special case filters for pure number/pure alpha columns???
         const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
@@ -297,12 +306,46 @@ async xlsxReader(raw, fid) {
     return this.csvReader(this.extocsv, fid + '!');
 }
 
+/** lazy load a columns and return it */
+async lazyLoadCol(id) {
+    const t = this.namecols[id]; if (t) return t;
+
+    const fid = this.bfid + '_' + id + '.colbin'
+    const f = readyFiles[fid];
+    if (!f) return console.error('no ready file', fid);
+    const buff = await f.arrayBuffer();
+    return this.namecols[id] = new Float32Array(buff);
+}
+
+async yamlReader(raw, fid) { 
+    this.prep();
+    X.currentObj = X.currentXyz = this.xyz = this;
+    // get information available in yaml
+    const yaml = await raw.text();
+    Object.assign(this, X.jsyaml.safeLoad(yaml));
+
+    // and synthesize some more
+    const {namevset, namevseti} = this;
+    this.namecols = {};
+    for (const n in namevset)
+        namevseti[n] = Object.keys(namevset[n]);
+    this.gencolby();   
+
+    this.bfid = fid.substring(0, fid.length - 5);
+    await this.lazyLoadCol('x');
+    await this.lazyLoadCol('y');
+    await this.lazyLoadCol('z');
+
+    dataToMarkersGui();
+}
+
 /** load the data as an array of arrays, and separate out header 
  * raw may file file contents, or a File object
 */
 async csvReader(raw, fid) {
     log('csvReader', fid);
     if (fid.endsWith('.xlsx')) return this.xlsxReader(raw, fid);
+    if (fid.endsWith('.yaml')) return this.yamlReader(raw, fid);
 
     this.prep();
     // let {cols, namecols, vset, namevset} = this;
@@ -385,6 +428,7 @@ prep() {
     this.vset = [], 
     this.namevset = {};
     this.vsetlen = [];
+    this.namevsetlen = {};
     this.colnstrs = [];
     this.colnnull = [];
     this.colnnum = [];
@@ -467,15 +511,24 @@ addRow(rowa) {
 // finalize and show graphics, partial if part way through
 finalize(fid, partial = false) {
     const me = this;
-    const {header, cols, namecols, vset, namevset} = this;
+    const {header, cols, namecols, vset, namevset, vsetlen, namevsetlen} = this;
 
     // now we have collected the data trim the columns and prepare helper derived data
     for (let i = 0; i < header.length; i++) {
         cols[i] = cols[i].slice(0, this.n);
         namecols[header[i]] = cols[i];
         namevset[header[i]] = vset[i];
+        namevsetlen[header[i]] = vsetlen[i];
         this.namevseti[header[i]] = Object.keys(vset[i]);
-    }         
+    }
+
+    // delete some number based fields; they have done their work during preparation, no longer needed
+    // they aren't using much space as the big things they point to are pointed to from namecols etc
+    if (!partial) {
+        delete this.cols;
+        delete this.vset;
+        delete this.vsetlen;
+    }
     
     
     if (!this.ranges || !partial) {
@@ -535,12 +588,12 @@ spotsize(size) {
 
 /** handle changes to the gui filter for markers
    on ctrl-enter filter the markers and redisplay */
-filtergui(evt = {}) {
+async filtergui(evt = {}) {
     const box = E.filterbox;  // dom element
     const filterr = E.filterr;  // dom element
     const boxv = box.value.trim();
     try {
-        const fun = this.makefilterfun(boxv, box);
+        const fun = await this.makefilterfun(boxv, box);
         if (!fun && boxv !== '') return;
         if (evt.keyCode === 13) {
             this.dataToMarkersGui();
@@ -549,6 +602,15 @@ filtergui(evt = {}) {
         box.style.background='#ffffd0';
         filterr.innerHTML = e.message;
     }
+}
+
+/** generate colourby */
+gencolby() {
+    E.colourby.innerHTML = `<option value="choose">choose</option>`;
+    E.colourby.innerHTML += `<option value="random">random</option>`;
+    E.colourby.innerHTML += `<option value="custom">custom</option>`;
+    for (const name of this.header)
+        E.colourby.innerHTML += `<option value="${name}">${name}</option>`;
 }
 
 /** generate stats from given data for a given field, or for all fields, also compute three.js position */
@@ -562,9 +624,6 @@ genstats(datalsNO = this.NOdatas, name = undefined) {
     // tothreepos(datals); // do not keep pos, overhead of all those Vector3 too high
     if (!name) {   // repeat for all fields
         const lranges = {};
-        E.colourby.innerHTML = `<option value="choose">choose</option>`;
-        E.colourby.innerHTML += `<option value="random">random</option>`;
-        E.colourby.innerHTML += `<option value="custom">custom</option>`;
         for (name of this.header)  {
             lranges[name] = this.genstats(datalsNO, name);
         }
@@ -577,12 +636,11 @@ genstats(datalsNO = this.NOdatas, name = undefined) {
     let sum = 0, sum2 = 0, n = 0;
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
-    let valueSet = {};                  // for non-numeric vals
     if (isNaN(data[0])) {min = max = data[0]}
     data.forEach(v => {
         if (!v) return;  // '' or 0 are sometimes used for missing/undefined (not for pdb chains, never mind ...!!!)
         if (isNaN(v)) {
-            valueSet[v] = true;
+            //
         } else {
             sum += +v;
             sum2 += v*v;
@@ -592,17 +650,11 @@ genstats(datalsNO = this.NOdatas, name = undefined) {
             max = Math.max(max, v);
         }
     });
-    const valueList = Object.keys(valueSet);
-    for (let i in valueList) valueSet[valueList[i]] = i;
 
     const sd = Math.sqrt((sum2 - 1/n * sum*sum) / n);
-    if (sd !== 0) {
-        const n = `<option value="${name}">${name}</option>`;
-        if (E.colourby.innerHTML.indexOf(n) === -1)
-        E.colourby.innerHTML += `<option value="${name}">${name}</option>`;
-    }
+    this.gencolby();
 
-    return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n, valueSet};
+    return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n};
 }
 
 /** setvals, for use with pdbreader, later to be subclass */
@@ -642,18 +694,50 @@ setup(fid) {
     X.currentObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.xyz = this;
     addToMain( this.particles, fid );
-}
+} // setup
+
+// save the xyz as separate column files
+async savefiles() {
+    const saver = saveData; // for download eg to downloads, could be writeFile if we have local server
+    // make an object with most metadata but no data
+    var xxx = this;
+    var obj = Object.assign({}, xxx);
+    delete obj.cols;
+    delete obj.namecols;
+    delete obj.xyz;
+//     delete obj.namevset;
+//     delete obj.namevsetlen;
+    delete obj.namevseti;    
+    delete obj.vset;
+    delete obj.vsetlen;
+    delete obj.vseti;       // ???
+       
+    delete obj.material;
+    delete obj.geometry;
+    delete obj.particles;
+    var yaml = X.jsyaml.safeDump(obj, {skipInvalid: true})
+    console.log('yaml size', yaml.length);
+
+    saver(this.fid + '.yaml', yaml);
+    for (const n in this.namecols) {
+        await sleep(200);
+        const fid = this.fid + '_' + n + '.colbin';
+        log('save', fid);
+        await saver(fid, this.namecols[n]);
+    }
+    log('saves done');
+}  // savefiles
+
 } // end class XYZ
 
 // helpers, global
 function enumI(d,f) {
     if (f.substring(0,2) === 'd.') f=f.substring(2); 
-    return X.currentXyz.ranges[f].valueSet[d[f]];
+    return X.currentXyz.namevset[f][d];
 }
 function enumF(d,f) {
     if (f.substring(0,2) === 'd.') f=f.substring(2); 
-    const vs = X.currentXyz.ranges[f].valueSet;
-    return vs[d[f]] / Object.keys(vs).length;
+    return X.currentXyz.namevset[f][d] / X.currentXyz.namevsetlen[f];
 }
 X.enumI = enumI; X.enumF = enumF; 
 
@@ -671,6 +755,8 @@ X.plan = plan; X.elevation = elevation;
 function home() {
     window.controls.home();
 }
+
+
 /* reminder to me
 nb 
 http://localhost:8800/,,/xyz/xyz.html?startdata=/!C:/Users/Organic/Downloads/small_test_UMAP3A.csv

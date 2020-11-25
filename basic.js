@@ -1,14 +1,19 @@
-export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter};
+export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/24 10:43:11
+X.lastModified.basic = `Last modified: 2020/11/25 15:34:35
 `
+// most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
 X.handlerForFid = handlerForFid;
 X.streamReader = streamReader;
+X.saveData = saveData;
+X.readyFiles = readyFiles;
 
 X.proxy = '/remote/';
 
 const queryVariables = {};
+var readyFiles = {};
+
 /** get query variables from search string */
 function getQueryVariables() {
     var query = window.location.search.substring(1);
@@ -79,22 +84,17 @@ function interpretSearchString() {
 /////////~~~~~~~~~ generic file io
 E.fileChooser.onclick = function (evtp) { this.value = null; }  // eslint-disable-line no-unused-vars
 E.fileChooser.onchange = function (evtp) {
-    openfiles(evtp.target.files);
+    openfiles(evtp.target);
 }
-//fileChooser.click();
 
+var lastdroptarget;
 /** handle the input file selection */
-//function openfileevt(evt) {
-//    openfiles(evt.target.files);
-//    return killev(evt);
-//}
-
-var lastopenfiles;
-/** handle the input file selection */
-function openfiles(files) {
-    if (!files) files = lastopenfiles;
-    lastopenfiles = files;
-    for (let f=0; f<files.length; f++) openfile(files[f]);
+function openfiles(droptarget = lastdroptarget) {
+    lastdroptarget = droptarget;
+    let {files, items} = droptarget;
+    if (!items) items = {};             // for file open
+    for (let f=0; f<files.length; f++) 
+        openfile(files[f], items[f]);
 }
 
 /** get the correct handler for a file name */
@@ -106,7 +106,14 @@ function handlerForFid(fid) {
 }
 
 /** read and process a single file, given a File object */
-function openfile(file) {
+function openfile(file, item) {
+    // const getAsEntry = window.getAsEntry || window.webkitGetAsEntry;
+    if (item) {
+        const entry = item.webkitGetAsEntry();
+        if (entry.isDirectory) return openDirectory(entry);
+    }
+    readyFiles[file.name] = file;
+
     console.time('load file: ' + file.name)
     const handler = handlerForFid(file.name);
 
@@ -137,6 +144,58 @@ function openfile(file) {
     }
 }
 
+/** helper for docdrop to scan directories, top level for debug,
+returns full list but does not process
+N.b. it seems that you can drop mixed files/directories, but CANNOT open them (ctrl-o)
+*/
+async function _scanFiles(item, fileEntries = {}, directoryEntries = {}) {
+    return new Promise( (resolve) => {
+        // log('entry item', item)
+        if (item.isDirectory) {
+            directoryEntries[item.fullPath] = item;
+            // const key = 'xxx' + Math.random();
+            let directoryReader = item.createReader();
+            let getEntries = async function() {
+                directoryReader.readEntries(async function(entries) {
+                    if (entries.length === 0) { 
+                        resolve(); 
+                        return;
+                    }
+                    for(const entry of entries) {
+                        await _scanFiles(entry, fileEntries, directoryEntries);
+                    }
+                    getEntries();
+                });
+            };
+            getEntries();
+        } else if (item.isFile) {
+            // log('file found', item);
+            fileEntries[item.fullPath] = item;
+            readyFiles[item.fullPath] = item;
+            resolve();
+        }
+    });
+}
+
+async function openDirectory(entry) {
+    let fileEntries = {}, directoryEntries= {};
+    await _scanFiles(entry, fileEntries, directoryEntries);  // <<<< this kills dt.files
+    window.fileEntries = fileEntries;
+
+    // await Promise.all(promises);
+    log('found files:', Object.keys(fileEntries), Object.keys(directoryEntries));
+
+}
+
+// write a file to local file storage, assuming running via our local server 
+function writeFile(fid, text, append=false) {
+    var oReq = new XMLHttpRequest();
+    oReq.open("POST", append ? "appendfile.php" : "savefile.php", false);
+    oReq.setRequestHeader("Content-Disposition", fid);
+    oReq.send(text);
+    log("writetextremote", fid, "response text", oReq.responseText);
+}
+
 /** document drop, if ctrl key keep dragDropDispobj which may be used by loader
 dragOverDispobj will be destroyed too soon because of asynchronous loader */
 function docdroppaste(evt) {
@@ -148,7 +207,7 @@ function docdroppaste(evt) {
 
     if (dt.files.length > 0) {   // file dragdrop
         log('dragdrop', dt.files)
-        openfiles(dt.files);
+        openfiles(dt);
     } else if (data !== "") { // data drag/drop TODO
         try {
             if (data.startsWith('http:') || data.startsWith('https:'))
@@ -225,3 +284,20 @@ function lineSplitter(lineProcess = (l,n) => {if (n%100 === 0) log(n, l);} ) {
     }
 }
 // fileReader(xxfile, lineSplitter)
+
+// save data as a downloaded file (typically downloads directory)
+function saveData(fileName, ...data) { // does the same as FileSaver.js
+    const blob = new Blob(data);
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// permit await sleep(xxx)
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
