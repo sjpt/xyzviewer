@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/25 18:02:24
+X.lastModified.basic = `Last modified: 2020/11/25 19:43:50
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -37,7 +37,7 @@ function showfirstdata() {
     if (!startdata) return;
     const startlist = startdata
         .split("'").join('').split('"').join('')  // in case of old style interpret usage
-        .split(',');
+        .split(';');
     startlist.forEach(s => {
         // this is special case to get around some CORS issues
         if (s.startsWith('http') && location.hostname === 'localhost')

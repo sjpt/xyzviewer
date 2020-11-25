@@ -306,14 +306,22 @@ async xlsxReader(raw, fid) {
     return this.csvReader(this.extocsv, fid + '!');
 }
 
-/** lazy load a columns and return it */
+/** lazy load a columns and return it
+ * May be from a File or from a url. TODO Also to handle case of FileEntry, after dropping of Directory
+ * Test for which is temporary, and the split should maybe be made somewhere more generic.
+ */
 async lazyLoadCol(id) {
     const t = this.namecols[id]; if (t) return t;
-
-    const fid = this.bfid + '_' + id + '.colbin'
-    const f = readyFiles[fid];
-    if (!f) return console.error('no ready file', fid);
-    const buff = await f.arrayBuffer();
+    const fid = this.bfid + '_' + id + '.colbin';
+    let fblob;
+    if (fid.startsWith(',,')) { // NOT correct test!
+        const resp = await fetch(fid);
+        fblob = await resp.blob();
+    } else {
+        fblob = readyFiles[fid];
+        if (!fblob) throw new Error('no ready file ' + fid);
+    }
+    const buff = await fblob.arrayBuffer();
     return this.namecols[id] = new Float32Array(buff);
 }
 
@@ -321,7 +329,7 @@ async yamlReader(raw, fid) {
     this.prep();
     X.currentObj = X.currentXyz = this.xyz = this;
     // get information available in yaml
-    const yaml = await raw.text();
+    const yaml = typeof raw === 'string' ? raw : await raw.text();
     Object.assign(this, X.jsyaml.safeLoad(yaml));
 
     // and synthesize some more
@@ -783,4 +791,6 @@ https://combinatronics.com/sjpt/xyzviewer/master/xyz.html?arch
    GOOD https://sjpt.github.io/xyz/sprites/circle.png
    GOOD https://gitcdn.link/cdn/sjpt/xyzviewer/master/sprites/circle.png
 
+
+http://localhost:8800/,,/xyz/xyz.html?startdata=,,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml
 */
