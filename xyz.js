@@ -381,7 +381,8 @@ async csvReader(raw, fid) {
         X.currentObj = X.currentXyz = this; this.xyz = this;
         let sep;
         const st = Date.now();
-        this.line = function linex(row) {
+        this.line = function linex(row, numLines, bytesProcessedSoFar, bytesReadSoFar, length) {
+            this.byteLength = length;
             if (row.trim() === '') return;
             // TODO proper comma parsing
             if (!sep) {                     // first non-empty row is treated as header
@@ -392,29 +393,36 @@ async csvReader(raw, fid) {
             }
             const rowa = row.split(sep);    // rowa row as array
             this.addRow(rowa);
-            if (this.n % this.tellUpdateInterval === 0)
-                log('reading file, line ', this.n);
+            if (this.n % this.tellUpdateInterval === 0) {
+                const dt = ((Date.now() - st)/1000).toFixed();
+                E.msgbox.innerHTML = `reading file ${fid}, line ${this.n}, bytes ${bytesProcessedSoFar} of ${length}, ${(bytesProcessedSoFar/length*100).toFixed()}%, ${dt} secs`;
+            }
             if (this.n % this.graphicsUpdateInterval === 0 || this.n === this.firstUpdate)
                 this.finalize(fid, true); // needs some but NOT all
         }
 
         if (raw instanceof File) {
             console.time('oldparsestream');
-            await fileReader(raw, lineSplitter(l => this.line(l)));
+            await fileReader(raw, lineSplitter((line, numLines, bytesProcessedSoFar, bytesReadSoFar, length) => 
+                this.line(line, numLines, bytesProcessedSoFar, bytesReadSoFar, length)));
             console.timeEnd('oldparsestream');
         } else {
             console.time('oldparse');
+            const length = raw.length;
             //console.profile('oldparse');
             const data = raw.split('\n');           // data is array of rows as strings
+            let bytesProcessedSoFar = 0;
             for (let row of data) {             // row is row as string
-                this.line(row);
+                bytesProcessedSoFar += row.length + 1;
+                this.line(row, this.n, bytesProcessedSoFar, length, length);
             }
             //console.profileEnd('oldparse');
             console.timeEnd('oldparse');
         }
-
+        const dt = ((Date.now() - st)/1000).toFixed();
+        E.msgbox.innerHTML = `read ${fid} lines ${this.n}, bytes ${this.byteLength}, ${dt} secs`;
+        setTimeout( () => E.msgbox.innerHTML = '', 5000);
     }
-    log('parse rows', this.n);
 
     console.time('finalize');
     this.finalize(fid);

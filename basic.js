@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/25 15:34:35
+X.lastModified.basic = `Last modified: 2020/11/25 18:02:24
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -260,27 +260,31 @@ function streamReader(url, chunkProcess, endProcess) {
 }
 // e.g. streamReader("StarCarr/StarCarr_Flint.csv", (x,n,len) => log('... ', x.length, n, len, x.substring(0,20)), () => log('END'))
 
+/** read file in chunks and submit chunks to chunkProcess(chunk, bytesSoFar, length) */
 async function fileReader(file, chunkProcess = log, endProcess = () => log('end'), chunksize = 2**17) {
     let off = 0;
     while (true) {
         const slice = file.slice(off, off + chunksize);
         const chunk = await slice.text();
         if (chunk.length === 0) break;
-        chunkProcess(chunk);
         off += chunksize;
+        chunkProcess(chunk, off, file.size);
     }
     endProcess();
 }
 
+/** read file in chunks, break into lines, and submit lines to lineProcess(line, numLines, bytesProcessedSoFar, bytesReadSoFar, length) */
 function lineSplitter(lineProcess = (l,n) => {if (n%100 === 0) log(n, l);} ) {
     let pend = '';
-    let l = 0;
-    return function(chunk) {
+    let lines = 0, bytes = 0;
+    return function(chunk, bytesSoFar, length) {
         const ll = chunk.split('\n');
         ll[0] = pend + ll[0];
         pend = ll[ll.length-1];
-        for (let i = 0; i < ll.length-1; i++)
-            lineProcess(ll[i], ++l);
+        for (let i = 0; i < ll.length-1; i++) {
+            bytes += ll[i].length + 1;
+            lineProcess(ll[i], ++lines, bytes, bytesSoFar, length);
+        }
     }
 }
 // fileReader(xxfile, lineSplitter)
