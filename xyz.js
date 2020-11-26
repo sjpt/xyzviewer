@@ -1,6 +1,6 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
-import {makechainlines, pdbReader} from './pdbreader.js';
+import {pdbReader} from './pdbreader.js';
 import {fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles} from './basic.js';
 //let E = window, X = window;
 window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
@@ -85,7 +85,8 @@ constructor(data, fid) {
 dataToMarkersGui(type) {
     if (X.currentObj.xyz) {
         if (type) E.colourby.value = type;
-        makechainlines(E.filterbox.value, E.colourby.value);
+        if (this.makechainlines)
+            this.makechainlines(E.filterbox.value, E.colourby.value);
         return this.dataToMarkers(E.filterbox.value, E.colourby.value)
     } else if (X.currentObj.material ) {
         E.colourbox.value = E.colourpick.value;

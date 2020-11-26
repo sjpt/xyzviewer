@@ -1,5 +1,5 @@
 'use strict';
-export {pdbReader, makechainlines, expandchain};
+export {pdbReader, expandchain};
 import {addToMain, usePhotoShader, orbcamera, renderer,
     outerscene, camera} from './graphicsboiler.js';
 import {dataToMarkersGui, XYZ} from './xyz.js';
@@ -14,6 +14,7 @@ let polygonmesh, rlines, groupgeom, chainlines, myxyz;
 /** call pdbReader when pdb data read and ready to be parsed */
 function pdbReader(data, fid) {
     myxyz = new XYZ(undefined, fid);  // will become current
+    myxyz.makechainlines = makechainlines;
     const lines = data.split('\n');
     const format = [
     [1,4, 'atom'], //    “ATOM”        character
@@ -188,7 +189,7 @@ function expandchain(trik = 0, pentk = 0, cenk = 0) {
         xc[i] = cen.x;
         yc[i] = cen.y;
         zc[i] = cen.z;
-    };
+    }
     dataToMarkersGui();  // << could optimize this to avoid remake
 }
 

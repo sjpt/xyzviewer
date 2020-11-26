@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/22 16:51:57
+window.lastModified.graphicsboiler = `Last modified: 2020/11/26 15:15:56
 `
 
 
@@ -11,6 +11,7 @@ export {addToMain, framenum, makeCircle, renderer, fullcanvas,
 const {THREE, Stats, E, log, X, col3} = window;
 X.scale = scale;
 X.init = init;
+X.select = select;
 
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -212,10 +213,19 @@ function addvis(obj, name) {
     let item= addvisList[name];
     if (!item) {
         const sfid = name.split('\\').pop().split('/').pop();
-        E.visibles.innerHTML += `${sfid}<input type="checkbox" checked="checked" onclick="addvis_clicked(event)" name="${sfid}"/>`
+        E.visibles.innerHTML += `
+            <span id="${sfid}_k" onclick="select('${sfid}')">${sfid}</span>
+            <input type="checkbox" checked="checked" onclick="addvis_clicked(event)" name="${sfid}"/>
+        `
         item = addvisList[sfid] = {name: sfid, obj};
     }
     item.obj = obj;
+}
+
+/** select given object, w.i.p */
+function select(sfid) {
+    for (const f in addvisList)
+        E[f+'_k'].style.color = f === sfid ? 'lightgreen' : 'white';
 }
 
 /** function called on click of visibility checkbox */
