@@ -23,7 +23,7 @@ class PLY {
     constructor(geometry, fid) {
         this.geometry = geometry;
         this.fid = fid;
-        window.currentObj = this.mesh = this.meshmaker(geometry, fid);
+        window.currentThreeObj = this.mesh = this.meshmaker(geometry, fid);
         this.spotsize(0.05);
         if (!geometry.attributes.color)  // choose white as base if colour will be added
             this.dataToMarkersGui();

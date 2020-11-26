@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/25 18:16:29
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/26 17:26:33
 `</script>
 <html lang="en">
 	<head>
@@ -33,6 +33,7 @@
                 z-index: 100;
             }
             #colourbox { width: 20%; }
+            input[type='checkbox'] { margin-left: -0.5em; }
 
             .help, .helpabove {
                 display: none;  /* overridden on :hover on previous element */
@@ -120,7 +121,7 @@
                 <br>
                 <b>visible: </b>
                 <span id='visibles'></span>
-                <span class="help">toggle visibility of loaded dataset</span>
+                <!-- <span class="help">toggle visibility of loaded dataset</span> separate help generated for each item -->
                 <!-- <br>
                 <b>VR resolution, enter VR at chosen resolution (exit VR, or on Chrome restart page, to change res:</b>
                     1<input type="radio" name="vrres" onclick="vrres(1);"/>
@@ -159,16 +160,16 @@
                 <br>
                 <span>
                 <b>Spot size:</b>
-                    0.01<input type="radio" name="spotsize" onclick="spotsize(0.01);"/>
-                    0.02<input type="radio" name="spotsize" onclick="spotsize(0.02);"/>
-                    0.05<input type="radio" name="spotsize" onclick="spotsize(0.05);"/>
-                    0.1<input type="radio" name="spotsize" onclick="spotsize(0.1);"/>
-                    0.2<input type="radio" name="spotsize" onclick="spotsize(0.2);"/>
-                    0.5<input type="radio" name="spotsize" onclick="spotsize(0.5);"/>
-                    1<input type="radio" name="spotsize" onclick="spotsize(1);"/>
-                    2<input type="radio" name="spotsize" onclick="spotsize(2);"/>
-                    5<input type="radio" name="spotsize" onclick="spotsize(5);"/>
-                    10<input type="radio" name="spotsize" onclick="spotsize(10);"/>
+                    0.01<input type="radio" name="spotsize" onclick="spotsize(0.01);" id="spot0.01"/>
+                    0.02<input type="radio" name="spotsize" onclick="spotsize(0.02);" id="spot0.02"/>
+                    0.05<input type="radio" name="spotsize" onclick="spotsize(0.05);" id="spot0.05"/>
+                    0.1<input type="radio" name="spotsize" onclick="spotsize(0.1);" id="spot0.1"/>
+                    0.2<input type="radio" name="spotsize" onclick="spotsize(0.2);" id="spot0.2"/>
+                    0.5<input type="radio" name="spotsize" onclick="spotsize(0.5);" id="spot0.5"/>
+                    1<input type="radio" name="spotsize" onclick="spotsize(1);" id="spot1"/>
+                    2<input type="radio" name="spotsize" onclick="spotsize(2);" id="spot2"/>
+                    5<input type="radio" name="spotsize" onclick="spotsize(5);" id="spot5"/>
+                    10<input type="radio" name="spotsize" onclick="spotsize(10);" id="spot10"/>
                 </span>
                 <span class="help">Choose size of each point.</span>
                 <br>

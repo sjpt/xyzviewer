@@ -4,7 +4,7 @@ interface MyExternals {
     killev, icol, csvReader, geojsonReader,
     photoShader_clicked, addvis_clicked, spotsize, xexpbutton, expbutton, addFileTypeHandler, fileTypeHandlers, log,
     scale, maingroup, dataToMarkersGui, defaultDistance, col3, rgb, hsv, filtergui, posturiasync, refit, addscript,
-    currentXyz, currentObj, readply, WEBVR, ascgeom, ascmesh, plygeometry, plyobj, plymaterial, camera, cube, cubemesh, ascReader,
+    currentXyz, currentThreeObj, readply, WEBVR, ascgeom, ascmesh, plygeometry, plyobj, plymaterial, camera, cube, cubemesh, ascReader,
     enumI, enumF
     W:Window, X:MyExternals, E:MyElements;
 }

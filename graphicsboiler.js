@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/26 16:52:31
+window.lastModified.graphicsboiler = `Last modified: 2020/11/26 19:01:11
 `
 
 
@@ -106,9 +106,9 @@ function init() {
     Object.assign(X, {controls, orbcamera, camera, maingroup, renderer }); // mainly for debug
 }
 
-function addToMain(obj, name, parent = maingroup) {
+function addToMain(obj, name, parent = maingroup, xyz) {
     parent.add(obj);
-    addvis(obj, name);
+    addvis(obj, name, xyz);
 }
 
 /** start the animation loop, managed by three.js */
@@ -208,34 +208,47 @@ function makeCircle(s = 64) {
 const addvisList = {};
 
 /** function to add visibility gui and photo swapper */
-function addvis(obj, name) {
-    obj.name = name;
-    let item= addvisList[name];
-    if (!item) {
-        const sfid = name.split('\\').pop().split('/').pop();
-        E.visibles.innerHTML += `
-            <span id="${sfid}_k" onclick="select('${sfid}')">${sfid}</span>
-            <input type="checkbox" checked="checked" onclick="addvis_clicked(event)" name="${sfid}"/>
-        `
-        item = addvisList[sfid] = {name: sfid, obj};
+function addvis(obj, bname, xyz) {
+    let name;
+    // make a new name if needed for duplicate load
+    for(let i = 0; i < 20; i++) {
+        name = bname + (i===0 ? '' : '_'+i);
+        if (!addvisList[name]) break;
     }
+    obj.name = name;
+    const sfid = name.split('\\').pop().split('/').pop();
+    E.visibles.innerHTML += `
+        <span id="${name}_k" onclick="select('${name}')">${sfid}:</span>
+        <span class="help">click on the item to select for filter/colour etc selection</span>
+        <input type="checkbox" checked="checked" onclick="addvis_clicked(event)" name="${name}"/>
+        <span class="help">make item visible/invisible</span>
+    `
+    const item = addvisList[name] = {name, sfid, obj};
     item.obj = obj;
+    if (xyz) {
+        item.xyz = xyz;
+        xyz.name = name;
+        xyz.sfid = sfid;
+    }
 }
 
 /** select given object, w.i.p */
-function select(sfid) {
+function select(fid) {
     for (const f in addvisList)
-        E[f+'_k'].style.color = f === sfid ? 'lightgreen' : 'white';
-    X.currentObj = addvisList[sfid].obj;
-    const cobj = X.currentObj.xyz
-    if (cobj.xyz) {
-        X.currentXyz = cobj.xyz;  // this logic need thought
-        const guiset = cobj.xyz.guiset;
+        E[f+'_k'].style.color = f === fid ? 'lightgreen' : 'white';
+    const avl = addvisList[fid];
+    log('sselect', fid, avl);
+    X.currentThreeObj = avl.obj;
+    const xyz = avl.xyz;
+    if (xyz) {
+        X.currentXyz = xyz;  // this logic need thought
+        const guiset = xyz.guiset;
         if (guiset) {
             E.colourby.value = guiset.colourby;
             E.colourbox.value = guiset.colourbox;
             E.filterbox.value = guiset.filterbox;
             E.colourpick.value = guiset.colourpick;
+            E['spot'+guiset.spotsize].checked = true;
         }
     }
 }
@@ -245,8 +258,8 @@ function addvis_clicked(evt) {
     const src = evt.target;
     const ele = addvisList[src.name];
     ele.obj.visible = src.checked;
-    window.currentObj = ele.obj;
-    if (ele.obj.xyz) window.currentXyz = ele.obj.xyz;
+    //window.currentThreeObj = ele.obj;
+    //if (ele.obj.xyz) window.currentXyz = ele.obj.xyz;
 }
 window.addvis_clicked = addvis_clicked;
 

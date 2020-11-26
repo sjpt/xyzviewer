@@ -19,7 +19,7 @@ export {
 // let filtergui;
 
 
-const {THREE, addFileTypeHandler, col3, E, X, addscript, currentObj, csv, NaN4null, i2NaN, NaN2i} = window;
+const {THREE, addFileTypeHandler, col3, E, X, addscript, currentThreeObj, csv, NaN4null, i2NaN, NaN2i} = window;
 // let E = window, X = window;
 X.xyzs = {};
 const {log} = window;
@@ -36,7 +36,7 @@ const stdcols = [
 const stdcol = X.stdcol = n => stdcols[n%8];
 
 // bridge to access current members
-// currentObj
+// currentThreeObj
 // current 
 /** */
 const spotsize = a => {
@@ -74,24 +74,24 @@ class XYZ {
 
 
 constructor(data, fid) {
-    window.currentXyz = this;
+    X.currentXyz = X.currentThreeObj = this.xyz = this;
     this.fid = fid;
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
-    X.xyzs[fid] = this;
+    this.guiset = {spotsize: 0.2};
 }
 
 /** load data based on gui values */
 dataToMarkersGui(type) {
-    if (X.currentObj.xyz) {
+    if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
-        this.guiset = {colourby: E.colourby.value, colourbox: E.colourbox.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value};
+        Object.assign(this.guiset, {colourby: E.colourby.value, colourbox: E.colourbox.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
         if (this.makechainlines)
             this.makechainlines(E.filterbox.value, E.colourby.value);
         return this.dataToMarkers(E.filterbox.value, E.colourby.value)
-    } else if (X.currentObj.material ) {
+    } else if (X.currentThreeObj.material ) {
         E.colourbox.value = E.colourpick.value;
-        X.currentObj.material.color.set(E.colourbox.value);
+        X.currentThreeObj.material.color.set(E.colourbox.value);
     }
 }
 
@@ -236,13 +236,14 @@ async makefilterfun(filtin, box, applied=false) {
         E.filterr.style.color = col;
     }
 
-    if (applied || filtin === box.lastInputApplied) {
-        if (applied) box.lastCodeApplied = box.lastCodeGenerated;
-        box.lastInputApplied = filtin;
-        filt = box.lastCodeApplied || '';   // so msg comes right
-        return msg('filter applied', 'white');
+    if (applied || filtin === this.lastInputApplied) {
+        if (applied) this.lastCodeApplied = this.lastCodeGenerated;
+        this.lastInputApplied = filtin;
+        filt = this.lastCodeApplied || '';   // so msg comes right
+        msg('filter applied', 'white');
+        return this.lastFunction;
     }
-    box.lastInputTested = filtin;
+    this.lastInputTested = filtin;
     msg('testing', '#101010');
     if (!filt) { 
         msg('empty filter', '#d0ffd0');
@@ -267,9 +268,10 @@ async makefilterfun(filtin, box, applied=false) {
             var x = 0, y = 0, z = 0, r = 1, g = 1, b = 1;
             ${uu}\n
         ` + filt;
-        box.lastCodeGenerated = filt;
+        this.lastCodeGenerated = filt;
         try {
             filtfun = new Function('xyz', 'i', filt);
+            this.lastFunction = filtfun;
         } catch (e) {
             msg('invalid function: ' + e.message, '#ffd0d0');
             return undefined;
@@ -329,7 +331,7 @@ async lazyLoadCol(id) {
 
 async yamlReader(raw, fid) { 
     this.prep();
-    X.currentObj = X.currentXyz = this.xyz = this;
+    X.currentThreeObj = X.currentXyz = this.xyz = this;
     // get information available in yaml
     const yaml = typeof raw === 'string' ? raw : await raw.text();
     Object.assign(this, X.jsyaml.safeLoad(yaml));
@@ -388,7 +390,7 @@ async csvReader(raw, fid) {
         // csvp.destroy();
     }
     if (window.oldparse) {
-        X.currentObj = X.currentXyz = this; this.xyz = this;
+        X.currentThreeObj = X.currentXyz = this; this.xyz = this;
         let sep;
         const st = Date.now();
         this.line = function linex(row, numLines, bytesProcessedSoFar, bytesReadSoFar, length) {
@@ -569,6 +571,7 @@ finalize(fid, partial = false) {
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
     this.filtergui({keyCode: 13});    // display as markers
+    X.select(fid);
 }
 
 /** rebase a field based on centrerange, set o_ values */
@@ -593,6 +596,7 @@ sForEach(fun) {
 
 /** set/get the spotsize.  TODO, allow for number of pixels so value has similar effect on different devices */
 spotsize(size) {
+    this.spotsize
     if (usePhotoShader) {
         const k = 1000;
         const r = this.material.uniforms.size.value / k;
@@ -601,6 +605,7 @@ spotsize(size) {
     }
     const r = this.material.size;
     if (size !== undefined) this.material.size = size;
+    this.guiset.spotsize = size;
     return r;
 }
 
@@ -709,9 +714,10 @@ setup(fid) {
     }
     const size = 0.3;
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: THREE.VertexColors } );
-    X.currentObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
+    X.currentThreeObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.xyz = this;
-    addToMain( this.particles, fid );
+    addToMain( this.particles, fid, undefined, this );
+    X.xyzs[this.name] = this;
 } // setup
 
 // save the xyz as separate column files

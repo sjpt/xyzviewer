@@ -17,7 +17,7 @@ async function dxfReader(data, fid) {
     const dxff = parser.parseSync(data);
     let xoff = centrerange.x, yoff = centrerange.y;
 
-    const dxfscene = window.currentObj = new THREE.Scene();
+    const dxfscene = window.currentThreeObj = new THREE.Scene();
     const dxfmaterial = new THREE.LineBasicMaterial();
     dxfscene.material = dxfmaterial;                    // to satisfy obj level has material
     dxfscene.name = fid;
