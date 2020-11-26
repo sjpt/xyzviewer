@@ -76,7 +76,7 @@ function virusshow() {
         E.colourby.value = 'random';
     }
     dataToMarkersGui();
-    if (!renderer.xr.getDevice()) orbcamera.position.z = 200;
+    if (!renderer.xr.getSession()) orbcamera.position.z = 200;
 }
 
 /**
@@ -161,9 +161,6 @@ async function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.col
         for (let i = chain.start; i < chain.end; i++) {
             geom.vertices.push(new THREE.Vector3(xc[i], yc[i], zc[i]));
             geom.vertices.push(new THREE.Vector3(xc[i+1], yc[i+1], zc[i+1]));
-            const col = col3(1,1,1); // temp
-            geom.colors.push(col);
-            geom.colors.push(col);
             geom.colors.push(colourfun(myxyz, i));
             geom.colors.push(colourfun(myxyz, i+1));
         }
@@ -174,6 +171,12 @@ async function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.col
 /** expand all the chains out from their trimer, pentagon and centroid */
 function expandchain(trik = 0, pentk = 0, cenk = 0) {
     const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'], chainnc = myxyz.namecols['chainn'];
+    let opos = myxyz.opos;
+    if (!opos) {
+        opos = myxyz.opos = [];
+        for (let i = 0; i < xc.length; i++)
+            myxyz.opos[i] = new THREE.Vector3(xc[i], yc[i], zc[i]);
+    }
 
     if (!rlines) chaindists();
     for (let i=0; i < xc.length; i++) {
@@ -181,7 +184,7 @@ function expandchain(trik = 0, pentk = 0, cenk = 0) {
         const cen = ch.centroid.clone().multiplyScalar(cenk);
         const tri = ch.tripos.clone().multiplyScalar(trik);
         const pent = ch.pentpos.clone().multiplyScalar(pentk);
-        cen.add(tri).add(pent).add(d.o_pos);
+        cen.add(tri).add(pent).add(opos[i]);
         xc[i] = cen.x;
         yc[i] = cen.y;
         zc[i] = cen.z;
