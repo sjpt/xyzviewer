@@ -9,7 +9,7 @@ const {THREE, addFileTypeHandler, log, col3, E} = window;  // killev from OrbitC
 addFileTypeHandler('.pdb', pdbReader);
 addFileTypeHandler('.vdb', pdbReader);
 
-let pdbdatas, polygonmesh, rlines, groupgeom, chainlines, myxyz;
+let polygonmesh, rlines, groupgeom, chainlines, myxyz;
 
 /** call pdbReader when pdb data read and ready to be parsed */
 function pdbReader(data, fid) {
@@ -50,14 +50,12 @@ function pdbReader(data, fid) {
     });
 
     // process the format and data to get the ranges
-    // const ranges = myxyz.genstats(pdbdatas);
     // add our special colourby
     E.colourby.innerHTML += `<option value="pdbcol">pdbcol</option>`;
 
 
     // push data to main graphics
     // maingroup.remove(rlines);
-    // myxyz.setvals(pdbdatas);  // will also do a genstats
     myxyz.finalize(fid);
     
     dataToMarkersGui();
@@ -102,25 +100,29 @@ function pdbcol(d) {
 let chains = [];
 
 /** make chains based on backbone distances > l, and compute centroids and other chain stats */
-function makechains(l = 5, data = pdbdatas) {
+function makechains(l = 5, cols = myxyz.namecols) {
+    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'];
+    const chainnc = cols.chainn = new Float32Array(xc.length);
     chains = [];
     let c = -1;
-    let s = new THREE.Vector3(), near=s, far=s,  i = -1;
+    let s, near, far,  i = -1;
+    const posi = new THREE.Vector3(), posn = new THREE.Vector3();
     startc();
 
     function startc() {
         c++;
         s = new THREE.Vector3();
-        near = new THREE.Vector3(1e9,1e9,1e9);
+        near = new THREE.Vector3(Infinity, Infinity, Infinity);
         far = new THREE.Vector3(0,0,0);
         chains[c] = {start: i+1, s, near, far};
     }
-    for (i = 0; i < data.length; i++) {
-        data[i].chainn = c;
-        const posi = data[i].pos;
+    for (i = 0; i < xc.length; i++) {
+        chainnc[i] = c;
+        posi.set(xc[i], yc[i], zc[i]);
+        posn.set(xc[i+1], yc[i+1], zc[i+1]);
         s.addVectors(s, posi);
-        const dummyend = i === data.length - 1;
-        const d = dummyend ? 99999 : posi.distanceTo(data[i+1].pos);
+        const dummyend = i === xc.length - 1;
+        const d = dummyend ? 99999 : posi.distanceTo(posn);
         if (posi.length() < near.length()) near.copy(posi);
         if (posi.length() > far.length()) far.copy(posi);
         if (d > l) {  // complete chainn
@@ -133,15 +135,15 @@ function makechains(l = 5, data = pdbdatas) {
     }
 
     log('number of chains for separation', l, 'is',  c);
-    myxyz.ranges.chainn = myxyz.genstats(data, 'chainn');
+    myxyz.ranges.chainn = myxyz.genstats(-9999, 'chainn');
 }
 
 /** make graphics for chain as lines */
-function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.value) {
+async function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.value) {
     if (chainlines && chainlines.visible === false) return;
-    if (!pdbdatas) return;
-    const filterfun = myxyz.makefilterfun(pfilterfun, E.filterbox);
-    const colourfun = myxyz.makecolourfun(pcolourfun, E.colourby);
+    if (!myxyz.namecols) return;
+    const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
+    const colourfun = await myxyz.makecolourfun(pcolourfun, E.colourby);
     if (chains.length === 0) makechains();
     var geom = new THREE.Geometry;
 
@@ -152,14 +154,18 @@ function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.
         addToMain(chainlines, 'chainlines');
     }
 
+    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'];
     chains.forEach(chain => {
-        if (filterfun && !filterfun(pdbdatas[chain.start])) return;
+        if (filterfun && !filterfun(myxyz, chain.start)) return;
+
         for (let i = chain.start; i < chain.end; i++) {
-            geom.vertices.push(pdbdatas[i].pos);
-            geom.vertices.push(pdbdatas[i+1].pos);
-            //const col = col3(1,1,1); // temp
-            geom.colors.push(colourfun(pdbdatas[i]));
-            geom.colors.push(colourfun(pdbdatas[i+1]));
+            geom.vertices.push(new THREE.Vector3(xc[i], yc[i], zc[i]));
+            geom.vertices.push(new THREE.Vector3(xc[i+1], yc[i+1], zc[i+1]));
+            const col = col3(1,1,1); // temp
+            geom.colors.push(col);
+            geom.colors.push(col);
+            geom.colors.push(colourfun(myxyz, i));
+            geom.colors.push(colourfun(myxyz, i+1));
         }
     });
     chainlines.geometry = geom;
@@ -167,17 +173,19 @@ function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.
 
 /** expand all the chains out from their trimer, pentagon and centroid */
 function expandchain(trik = 0, pentk = 0, cenk = 0) {
+    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'], chainnc = myxyz.namecols['chainn'];
+
     if (!rlines) chaindists();
-    pdbdatas.forEach(d => {
-        const ch = chains[d.chainn];
+    for (let i=0; i < xc.length; i++) {
+        const ch = chains[chainnc[i]];
         const cen = ch.centroid.clone().multiplyScalar(cenk);
         const tri = ch.tripos.clone().multiplyScalar(trik);
         const pent = ch.pentpos.clone().multiplyScalar(pentk);
-        d.pos = cen.add(tri).add(pent).add(d.o_pos);
-        d.x = d.pos.x;
-        d.y = d.pos.y;
-        d.z = d.pos.z;
-    });
+        cen.add(tri).add(pent).add(d.o_pos);
+        xc[i] = cen.x;
+        yc[i] = cen.y;
+        zc[i] = cen.z;
+    };
     dataToMarkersGui();  // << could optimize this to avoid remake
 }
 
