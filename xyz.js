@@ -85,12 +85,13 @@ constructor(data, fid) {
 dataToMarkersGui(type) {
     if (X.currentObj.xyz) {
         if (type) E.colourby.value = type;
+        this.guiset = {colourby: E.colourby.value, colourbox: E.colourbox.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value};
         if (this.makechainlines)
             this.makechainlines(E.filterbox.value, E.colourby.value);
         return this.dataToMarkers(E.filterbox.value, E.colourby.value)
     } else if (X.currentObj.material ) {
         E.colourbox.value = E.colourpick.value;
-        currentObj.material.color.set(E.colourbox.value);
+        X.currentObj.material.color.set(E.colourbox.value);
     }
 }
 

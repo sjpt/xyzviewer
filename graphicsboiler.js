@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/26 15:15:56
+window.lastModified.graphicsboiler = `Last modified: 2020/11/26 16:52:31
 `
 
 
@@ -226,6 +226,18 @@ function addvis(obj, name) {
 function select(sfid) {
     for (const f in addvisList)
         E[f+'_k'].style.color = f === sfid ? 'lightgreen' : 'white';
+    X.currentObj = addvisList[sfid].obj;
+    const cobj = X.currentObj.xyz
+    if (cobj.xyz) {
+        X.currentXyz = cobj.xyz;  // this logic need thought
+        const guiset = cobj.xyz.guiset;
+        if (guiset) {
+            E.colourby.value = guiset.colourby;
+            E.colourbox.value = guiset.colourbox;
+            E.filterbox.value = guiset.filterbox;
+            E.colourpick.value = guiset.colourpick;
+        }
+    }
 }
 
 /** function called on click of visibility checkbox */
