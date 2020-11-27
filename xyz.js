@@ -8,7 +8,7 @@ window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
 
 export {
     centrerange, // for draw centre consistency
-    spotsize,
+    spotsizeset, spotin, spotout,
     dataToMarkersGui,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
@@ -35,20 +35,16 @@ const stdcols = [
     ];
 const stdcol = X.stdcol = n => stdcols[n%8];
 
-// bridge to access current members
-// currentThreeObj
-// current 
-/** */
-const spotsize = a => {
-    if (X.currentXyz) X.currentXyz.spotsize(a);
-    //if (X.plymaterial) X.plymaterial.size = a;
-}
+// ??? to engineer below more cleanly
+const spotsizeset = a => { if (X.currentXyz) X.currentXyz.spotsizeset(a); }
+const spotin = a => { if (X.currentXyz) X.currentXyz.spotin(a); }
+const spotout = a => { if (X.currentXyz) X.currentXyz.spotout(a); }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
 const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
 const centrerange = X.centrerange = new THREE.Vector3('unset');  // ranges for external use
 
 /***/
-X.spotsize = spotsize;
+X.spotsizeset = spotsizeset; X.spotin = spotin; X.spotout = spotout;
 X.dataToMarkersGui = dataToMarkersGui;
 X.filtergui = filtergui;
 X.csvReader = csvReader;
@@ -78,7 +74,9 @@ constructor(data, fid) {
     this.fid = fid;
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
-    this.guiset = {spotsize: 0.2};
+    // colourby is dropdown, colourpick is colour picker, colourbox is forumula
+    this.guiset = {spotsize: 0.2, colourby: '', colourbox: '', colourpick: '#ffffff', filterbox: ''};
+    X.select(fid);
 }
 
 /** load data based on gui values */
@@ -593,10 +591,17 @@ sForEach(fun) {
     }
 }
 
+// code below enables hover to perform temporary spotsize change
+spotin(event) { this.spotsizeset(event, 'in'); }
+spotout(event) { this.spotsizeset(event, 'out'); }
 
-/** set/get the spotsize.  TODO, allow for number of pixels so value has similar effect on different devices */
-spotsize(size) {
-    this.spotsize
+/** set/get the spotsize. input may be size or may be event from spotsize gui
+TODO, allow for number of pixels so value has similar effect on different devices */
+spotsizeset(eventsize, temp=false) {
+    let size = eventsize.srcElement ? +eventsize.srcElement.id.substring(4) : +eventsize;
+    if (temp === 'out') size = this.permspotsize || this.guiset.spotsize;
+    this.permspotsize = (temp === 'in') ? this.guiset.spotsize : size;
+    this.guiset.spotsize = size;
     if (usePhotoShader) {
         const k = 1000;
         const r = this.material.uniforms.size.value / k;
@@ -606,6 +611,8 @@ spotsize(size) {
     const r = this.material.size;
     if (size !== undefined) this.material.size = size;
     this.guiset.spotsize = size;
+    const radio = E['spot'+this.guiset.spotsize];
+    if (radio) radio.checked = true;
     return r;
 }
 

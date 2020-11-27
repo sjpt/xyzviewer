@@ -1,6 +1,6 @@
-export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles};
+export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles, addToFilelist};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/25 19:43:50
+X.lastModified.basic = `Last modified: 2020/11/27 19:50:28
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -8,6 +8,7 @@ X.handlerForFid = handlerForFid;
 X.streamReader = streamReader;
 X.saveData = saveData;
 X.readyFiles = readyFiles;
+X.addToFilelist = addToFilelist;
 
 X.proxy = '/remote/';
 
@@ -184,8 +185,30 @@ async function openDirectory(entry) {
 
     // await Promise.all(promises);
     log('found files:', Object.keys(fileEntries), Object.keys(directoryEntries));
-
+    for (const fe in fileEntries) {
+        if (handlerForFid(fe))
+            addToFilelist(fe, fileEntries[fe]);
+    }
 }
+
+/** add an item to filelist */
+var filelist = {};
+function addToFilelist(x, fid=x) {
+    E.filedropbox.innerHTML += `<option value="${x}">${x}</option>`;
+    filelist[x] = fid;
+}
+
+/** process a file from the dropdown list, maybe a fid, or a FileEntry */
+window.loaddrop = function loaddrop() {
+    const fid = document.getElementById('filedropbox').value;
+    const ff = filelist[fid];
+    if (ff.isFile) {
+        ff.file( f => openfile(f))
+    } else {
+        posturiasync(ff);
+    }
+}
+
 
 // write a file to local file storage, assuming running via our local server 
 function writeFile(fid, text, append=false) {

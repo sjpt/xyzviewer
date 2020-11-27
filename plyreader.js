@@ -24,12 +24,12 @@ class PLY {
         this.geometry = geometry;
         this.fid = fid;
         window.currentThreeObj = this.mesh = this.meshmaker(geometry, fid);
-        this.spotsize(0.05);
+        this.spotsizeset(0.05);
         if (!geometry.attributes.color)  // choose white as base if colour will be added
             this.dataToMarkersGui();
     }
 
-    spotsize(size) { this.mesh.material.size = size; }
+    spotsizeset(size) { this.mesh.material.size = size; }
 
     dataToMarkersGui() { this.mesh.material.color = new THREE.Color().setStyle(E.colourpick.value); }
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/26 17:26:33
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/27 21:00:37
 `</script>
 <html lang="en">
 	<head>
@@ -160,18 +160,18 @@
                 <br>
                 <span>
                 <b>Spot size:</b>
-                    0.01<input type="radio" name="spotsize" onclick="spotsize(0.01);" id="spot0.01"/>
-                    0.02<input type="radio" name="spotsize" onclick="spotsize(0.02);" id="spot0.02"/>
-                    0.05<input type="radio" name="spotsize" onclick="spotsize(0.05);" id="spot0.05"/>
-                    0.1<input type="radio" name="spotsize" onclick="spotsize(0.1);" id="spot0.1"/>
-                    0.2<input type="radio" name="spotsize" onclick="spotsize(0.2);" id="spot0.2"/>
-                    0.5<input type="radio" name="spotsize" onclick="spotsize(0.5);" id="spot0.5"/>
-                    1<input type="radio" name="spotsize" onclick="spotsize(1);" id="spot1"/>
-                    2<input type="radio" name="spotsize" onclick="spotsize(2);" id="spot2"/>
-                    5<input type="radio" name="spotsize" onclick="spotsize(5);" id="spot5"/>
-                    10<input type="radio" name="spotsize" onclick="spotsize(10);" id="spot10"/>
+                    0.01<input type="radio" name="spotsize" id="spot0.01"/>
+                    0.02<input type="radio" name="spotsize" id="spot0.02"/>
+                    0.05<input type="radio" name="spotsize" id="spot0.05"/>
+                    0.1<input type="radio" name="spotsize" id="spot0.1"/>
+                    0.2<input type="radio" name="spotsize" id="spot0.2"/>
+                    0.5<input type="radio" name="spotsize" id="spot0.5"/>
+                    1<input type="radio" name="spotsize" id="spot1"/>
+                    2<input type="radio" name="spotsize" id="spot2"/>
+                    5<input type="radio" name="spotsize" id="spot5"/>
+                    10<input type="radio" name="spotsize" id="spot10"/>
                 </span>
-                <span class="help">Choose size of each point.</span>
+                <span class="help">Choose size of each point.<br>Hover to preview, click to select.</span>
                 <br>
                 <span><span><b>photos:</b> <input id="photoscheck" type="checkbox" onclick="photoShader_clicked(event)"/></br>
                 </span>
@@ -204,6 +204,24 @@
                 <br>
                 <p id="msgbox"></p>
                 <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
+
+                <span><span><br><b>File choice:</b><select onchange="loaddrop(event);" id="filedropbox"></select></span>
+                    <span class="help">Load additional datasets from those available at our host.
+                    <br>
+                    The dropdown has a list of all such available datasets.
+                    <br>
+                    <br>
+                    You can also load additional datasets from your local filesystem
+                    <br>
+                    by drag/drop from explorer or similar onto the canvas.
+                    <br>
+                    <br>
+                    For some odd reason copy/paste works for text (including URLs), but does NOT work for files.
+                    <br>
+                    <br>
+                    In future we also hope to be able to drag/drop or copy/paste URLs from the Star Carr archive.
+                </span></span>
+
             </div>
         </div>
 		<script src="jsdeps/three121.js"></script>

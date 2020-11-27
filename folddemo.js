@@ -1,6 +1,6 @@
 'use strict';
 /** dynamic expansion, todo add easier scripting */
-import {centrerange, spotsize} from './xyz.js';
+import {centrerange, spotsizeset} from './xyz.js';
 import {posturiasync} from './basic.js';
 
 import {expandchain, pdbReader} from './pdbreader.js';
@@ -14,7 +14,7 @@ function folddemofun(tt = 10000, gap = 2000) {
             (d,f) => { pdbReader(d,f); folddemofun(); });
         return;
     }
-    spotsize(5);
+    spotsizeset(5);
     orbcamera.position.set(0,0,250);
     fullcanvas(true);
 

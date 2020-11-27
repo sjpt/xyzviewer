@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/26 19:01:11
+window.lastModified.graphicsboiler = `Last modified: 2020/11/27 21:27:42
 `
 
 
@@ -28,6 +28,13 @@ var autoClear = false;
 let i; // very odd, to check
 /** initial call to read data and set up graphics */
 function init() {
+    // make sure all spotsize elements ready for appropriate events
+    document.getElementsByName('spotsize').forEach(e => {
+        e.onmouseenter = X.spotin; 
+        e.onmouseleave = X.spotout;
+        e.onclick = X.spotsizeset;
+    });
+
     // interpretSearchString();
     container = document.getElementById('container');
 
@@ -248,7 +255,8 @@ function select(fid) {
             E.colourbox.value = guiset.colourbox;
             E.filterbox.value = guiset.filterbox;
             E.colourpick.value = guiset.colourpick;
-            E['spot'+guiset.spotsize].checked = true;
+            xyz.spotsizeset(guiset.spotsize)
+            // E['spot'+guiset.spotsize].checked = true;
         }
     }
 }

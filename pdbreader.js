@@ -3,7 +3,7 @@ export {pdbReader, expandchain};
 import {addToMain, usePhotoShader, orbcamera, renderer,
     outerscene, camera} from './graphicsboiler.js';
 import {dataToMarkersGui, XYZ} from './xyz.js';
-const {THREE, addFileTypeHandler, log, col3, E} = window;  // killev from OrbitControls ????
+const {THREE, addFileTypeHandler, log, col3, E, X} = window;  // killev from OrbitControls ????
 
 
 addFileTypeHandler('.pdb', pdbReader);
@@ -73,7 +73,7 @@ function virusshow() {
     E.colourbox.value = 'icol(chainn%7)';
     E.colourby.value = 'custom';
     if (usePhotoShader) {  // quick demo for Steve
-        myxyz.spotsize(2);
+        myxyz.spotsizeset(2);
         E.colourby.value = 'random';
     }
     dataToMarkersGui();
@@ -337,7 +337,7 @@ function onMouseMove( event ) {
     // ~~~~~~~~ each frame?
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera( mouse, camera );
-    const th = 0.2;
+    const th = X.raywidth || 0.2;
     raycaster.params.Points.threshold = th;
     raycaster.params.Line.threshold = th;   // ?? have the three.js rules changed ??
     // raycaster.linePrecision = th;
