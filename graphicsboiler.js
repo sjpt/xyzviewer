@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/27 21:27:42
+window.lastModified.graphicsboiler = `Last modified: 2020/11/28 13:27:32
 `
 
 
@@ -83,6 +83,8 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.xr.enabled = true;   // will NOT??? be overwritten frame by frame
     renderer.autoClear = autoClear;
+    // 28/11/2020 next line related to https://github.com/mrdoob/three.js/issues/20715 ... may become unnecessary in future
+    renderer.getContext().makeXRCompatible().then(x => log('XR compatibility set', x));
     canvas = renderer.domElement;
     container.appendChild(canvas);
     canvas.id = 'canvas';
