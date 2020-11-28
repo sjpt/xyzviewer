@@ -505,8 +505,8 @@ addRow(rowa) {
         for (let i = 0; i < header.length; i++) {
             let v = rowa[i];
             if (v === '') {          // '' value
-            this.colnnull[i]++;
-            v = NaN4null;
+                this.colnnull[i]++;
+                v = NaN4null;
             } else if (isNaN(v)) {   // text value
                 let k = this.vset[i][v];
                 if (k === undefined) {
@@ -685,14 +685,6 @@ genstats(datalsNO = this.NOdatas, name = undefined) {
     this.gencolby();
 
     return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n};
-}
-
-/** setvals, for use with pdbreader, later to be subclass */
-setvals(vals) {
-    this.datas = vals;
-    this.ranges = this.genstats();
-    // this.ranges = vals.ranges;
-    // ({this.ranges, this.data s} = vals);  // checker does not like this with this.
 }
 
 setup(fid) {

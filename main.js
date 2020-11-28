@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2020/11/22 17:13:25
+window.lastModified.main = `Last modified: 2020/11/28 14:49:38
 `
 var fileTypeHandlers; //  = {};
 // eslint-disable-next-line no-unused-vars
@@ -78,4 +78,4 @@ function NaN2i(f) {
     return _iii[0] - iNaN - 16;
 }
 
-const NaN4null = i2NaN(-15);
+var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null
