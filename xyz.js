@@ -229,7 +229,7 @@ async makefilterfun(filtin, box, applied=false) {
         E.filterr.style.color = col;
     }
 
-    if (applied || filtin === this.lastInputApplied) {
+    if (applied) { // remove optimization  || filtin === this.lastInputApplied) {
         if (applied) this.lastCodeApplied = this.lastCodeGenerated;
         this.lastInputApplied = filtin;
         filt = this.lastCodeApplied || '';   // so msg comes right
@@ -256,7 +256,7 @@ async makefilterfun(filtin, box, applied=false) {
 
             filt = filt.split('\n').map(l => {
                 if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
-                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_col = ' + X.COLS.gencol(ll, this)}
+                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_col = ' + X.COLS.gencol(this, ll)}
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
                 else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;

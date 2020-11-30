@@ -1,0 +1,2338 @@
+yr:
+  SC04: darkmagenta
+  SC05: darkturquoise
+  SC06: darkslateblue
+  Sc05: navy
+  SC07: mediumaquamarine
+  SC08: lightcyan
+  SC10: limegreen
+  SC13: mediumspringgreen
+  SC14: lightseagreen
+  SC15: seagreen
+  sc15: aquamarine
+tp:
+  SC1: mediumorchid
+  SC2: dodgerblue
+  SC4: chocolate
+  SC3: lavender
+  SC5: indianred
+  SC8: forestgreen
+  SC6: slategray
+  SC10: darksalmon
+  fw: orchid
+  SC12: lightseagreen
+  SC14: palegoldenrod
+  SC16: greenyellow
+  SC18: aqua
+  SC20: darkred
+  SC22: slategray
+  SC21: limegreen
+  SC24: darkorchid
+  SC23: bisque
+  SC26: silver
+  fw?: mediumblue
+  SC25: lime
+  SC27: darkorange
+  FW: indianred
+  ct2: seagreen
+  ct2X: lightcoral
+  ct2x: orchid
+  surface: sienna
+  SC24x: lavender
+  VP85aX: lightgrey
+  VP85AX: mediumblue
+  sc33: mediumblue
+  '?': lightgrey
+  Backfill: royalblue
+sq_no:
+  H5: orange
+  J2: red
+  E1: gold
+  J8: beige
+  A3: darkgoldenrod
+  A7: mediumorchid
+  B12: white
+  B10: lightgrey
+  I4: springgreen
+  G5: gold
+  G1: darkorchid
+  P1: seashell
+  sc2: darkslategray
+  sc1: floralwhite
+  E31: plum
+  E32: royalblue
+  E30: mediumvioletred
+  H30: midnightblue
+  G30: darkorchid
+  F30: lightgoldenrodyellow
+  B31: mediumturquoise
+  '??': rosybrown
+  H31: beige
+  I31: green
+  A31: mediumturquoise
+  C31: mediumpurple
+  D30: beige
+  D31: lightsalmon
+  Z20: wheat
+  R18: springgreen
+  U16: white
+  S15: mediumspringgreen
+  U15: mediumseagreen
+  S12: lightsalmon
+  W16: springgreen
+  A24: darkslategray
+  V16: darkslateblue
+  W12: steelblue
+  S14: black
+  B24: coral
+  V14: lightskyblue
+  R16: midnightblue
+  T16: pink
+  U14: brown
+  T11: lightyellow
+  T15: plum
+  F29: silver
+  Z29: dimgray
+  I29: lightcyan
+  E29: linen
+  M29: snow
+  X16: lime
+  X17: grey
+  Y16: indigo
+  Z16: mediumslateblue
+  H28: aquamarine
+  W15: tan
+  J29: coral
+  W14: silver
+  V15: beige
+  Y15: aquamarine
+  W17: lightblue
+  X18: mediumspringgreen
+  W18: turquoise
+  Y18: palegoldenrod
+  X19: springgreen
+  Z19: darkturquoise
+  W19: saddlebrown
+  G29: olivedrab
+  H29: blueviolet
+  A20: mediumspringgreen
+  A18: palegreen
+  A17: salmon
+  A19: slategray
+  I30: lightcyan
+  F31: silver
+  G31: beige
+  D22: seagreen
+  C23: mediumorchid
+  D23: burlywood
+  D32: cornsilk
+  C22: green
+  B22: peachpuff
+  A22: dimgray
+  C24: darkgreen
+  J30: springgreen
+  E23: firebrick
+  C26: darkblue
+  B26: darkorange
+  C27: olive
+  B23: antiquewhite
+  D27: lawngreen
+  A15: orange
+  H39: saddlebrown
+  G28: oldlace
+  J31: mediumaquamarine
+  V30: lightskyblue
+  J25: darkkhaki
+  W31: mediumblue
+  L24: palegreen
+  I24: slateblue
+  J28: darkblue
+  H25: snow
+  I20: burlywood
+  T31: bisque
+  H24: royalblue
+  N29: aquamarine
+  I25: peachpuff
+  H26: linen
+  U30: mediumblue
+  I34: lightcyan
+  K30: oldlace
+  T29: mediumturquoise
+  H23: burlywood
+  T30: lightgrey
+  Z31: red
+  D26: dimgray
+  C28: slategray
+  H22: mediumslateblue
+  J24: maroon
+  V29: cornsilk
+  S31: maroon
+  L31: lightseagreen
+  I28: darkorange
+  M31: lightblue
+  S30: fuchsia
+  AA30: lightyellow
+  M30: ivory
+  L23: darkgrey
+  N24: palegoldenrod
+  AA29: mediumvioletred
+  AA31: darkorange
+  I23: slategray
+  I22: darkorchid
+  M24: lightcoral
+  A28: lightslategray
+  J23: darkorchid
+  V31: lightsalmon
+  C32: crimson
+  A25: lightsteelblue
+  B25: mediumorchid
+  S13: forestgreen
+  K24: mintcream
+  K25: cornflowerblue
+  A23: aliceblue
+  E25: chartreuse
+  D25: darkseagreen
+  E26: blanchedalmond
+  W29: peru
+  A26: palegoldenrod
+  D29: darkgreen
+  C25: magenta
+  A27: darkgray
+  AB31: burlywood
+  K31: rebeccapurple
+  K21: limegreen
+  E22: purple
+  D28: darkmagenta
+  B21: yellow
+  L25: ivory
+  L26: slategray
+  P26: mediumturquoise
+  D24: midnightblue
+  E24: darkmagenta
+  B27: peru
+  S11: black
+  V13: aquamarine
+  U12: moccasin
+  R14: rosybrown
+  V12: rebeccapurple
+  J13: blue
+  H12: darkturquoise
+  W13: forestgreen
+  O11: darkblue
+  T13: darkslateblue
+  T12: dimgray
+  B30: slategrey
+  B29: gainsboro
+  E28: forestgreen
+  K29: darkseagreen
+  B28: chocolate
+  A29: paleturquoise
+  C30: chartreuse
+  E27: silver
+  Y31: ivory
+  R30: yellowgreen
+  AC27: darkorange
+  AD27: rebeccapurple
+  N30: dodgerblue
+  AD25: darkgray
+  T19: olive
+  S29: brown
+  AC29: darkkhaki
+  AA23: orangered
+  Q31: palegreen
+  O30: peachpuff
+  X22: lightsteelblue
+  AA20: darkslategrey
+  AB27: mediumpurple
+  P30: silver
+  Z23: mediumturquoise
+  Q30: darkslategrey
+  AB20: mediumblue
+  Y21: lightcoral
+  Y19: gainsboro
+  AA21: cyan
+  AA27: antiquewhite
+  O23: royalblue
+  F25: darkseagreen
+  X21: bisque
+  AC28: palegoldenrod
+  O29: darkorange
+  P29: violet
+  AB24: darkslategrey
+  Y20: darkgoldenrod
+  P21: skyblue
+  R20: cornsilk
+  T28: navajowhite
+  X20: royalblue
+  Z25: lavender
+  AB29: yellowgreen
+  H18: darkseagreen
+  O28: dodgerblue
+  R22: lightgoldenrodyellow
+  Q21: honeydew
+  P20: cyan
+  AB23: silver
+  W20: sienna
+  Z17: cornsilk
+  T17: gray
+  S19: plum
+  U19: darkturquoise
+  V19: red
+  V20: palegreen
+  Y17/8?: slateblue
+  Y13: violet
+  L30: midnightblue
+  T18: pink
+  V18: skyblue
+  V17: orchid
+  Z15: darkblue
+  R19: snow
+  L29: peachpuff
+  P28: darkblue
+  P27: oldlace
+  X13: darkorange
+  S22: lightgoldenrodyellow
+  K23: lightgray
+  AA24: white
+  R25: mediumslateblue
+  U24: darkgrey
+  D20: mediumblue
+  A30: mediumseagreen
+  X15: seashell
+  N16: mistyrose
+  N15: dimgray
+  G13: dodgerblue
+  U17: mediumblue
+  T21: tomato
+  U21: mediumspringgreen
+  N27: mediumorchid
+  K28: mediumblue
+  S27: navy
+  Q25: blueviolet
+  N26: red
+  U22: darkcyan
+  T27: peachpuff
+  G22: orange
+  K27: springgreen
+  L27: ivory
+  M25: lightslategray
+  X28: dimgray
+  U28: yellowgreen
+  Q19: mediumslateblue
+  U18: cornflowerblue
+  U20: blueviolet
+  S18: darkgreen
+  Q17: steelblue
+  S17: cornsilk
+  F28: thistle
+  H21: rosybrown
+  K20: mediumblue
+  L20: black
+  H19: rebeccapurple
+  I21: azure
+  L21: brown
+  B15: mediumspringgreen
+  B16: lightgreen
+  Q20: paleturquoise
+  L18: slategray
+  I19: lightsalmon
+  J21: oldlace
+  P23: teal
+  Q23: indigo
+  S20: darkmagenta
+  J20: honeydew
+  I18: snow
+  O22: palegoldenrod
+  O20: ivory
+  O21: steelblue
+  Y27: lightcoral
+  S16: lightcoral
+  S9: linen
+  V8: chartreuse
+  O17: orchid
+  R17: lightslategray
+  Y22: coral
+  V27: mistyrose
+  E16: salmon
+  A16: cornsilk
+  C29: mediumaquamarine
+  V26: darkgrey
+  R27: pink
+  Z22: wheat
+  Z24: pink
+  Y23: tan
+  U31: lightskyblue
+  X14: black
+  W24: bisque
+  Y12: deeppink
+  Y14: royalblue
+  F27: cadetblue
+  U13: orangered
+  E20: grey
+  Z21: lime
+  J15: yellow
+  W21: lightgoldenrodyellow
+  Q26: khaki
+  Q27: sandybrown
+  V21: mistyrose
+  z21: seashell
+  Y11: tan
+  T14: mistyrose
+  X9: bisque
+  '?12': springgreen
+  V11: violet
+  R12: darkmagenta
+  j28: orange
+  J27: pink
+  Y8: olivedrab
+  W7: green
+  U11: silver
+  V10: lightcoral
+  T9: coral
+  T10: lightsteelblue
+  V9: mintcream
+  K26: rebeccapurple
+  J26: springgreen
+  H27: gray
+  X12: lightpink
+  U7: mediumslateblue
+  Z14: orange
+  I27: magenta
+  W8: linen
+  v12: darkgoldenrod
+  U10: sienna
+  P16: moccasin
+  K13: chocolate
+  P18: floralwhite
+  Q15: black
+  R15: tomato
+  X11: darkslateblue
+  W10: lightyellow
+  U9: thistle
+  Q11: indianred
+  i28: tan
+  M28: forestgreen
+  I26: darkgreen
+  R4: lemonchiffon
+  C17: mediumvioletred
+  P13: olivedrab
+  P14: powderblue
+  N14: moccasin
+  '?': fuchsia
+  Q14: rebeccapurple
+  X8: black
+  B17: cornflowerblue
+  C18: mediumaquamarine
+  T7: darkslategrey
+  U8: indigo
+  X6: cornflowerblue
+  W11: chocolate
+  W6: paleturquoise
+  V5: indianred
+  T6: lavender
+  T8: azure
+  X5: mediumseagreen
+  u11: palegoldenrod
+  Q16: palegoldenrod
+  P15: crimson
+  I15: ghostwhite
+  I16: dimgray
+  Q13: palevioletred
+  L16: slateblue
+  R8: teal
+  S10: yellowgreen
+  J14: midnightblue
+  Q10: white
+  S8: brown
+  T5: aqua
+  S7: darksalmon
+  R8/R9: coral
+  R9: green
+  U5: mistyrose
+  U4: lavender
+  U2: salmon
+  H17: cornsilk
+  T4: azure
+  Q7: darkslategrey
+  P9: darkolivegreen
+  J19: palegoldenrod
+  K19: gray
+  Q18: sienna
+  L17: tan
+  I13: dodgerblue
+  K16: ivory
+  K15: lightgreen
+  J16: pink
+  J17: mediumaquamarine
+  I17: springgreen
+  K18: hotpink
+  K17: seagreen
+  U6: lightpink
+  Q9: darksalmon
+  P11: deeppink
+  R5: magenta
+  M12: papayawhip
+  C16: darkgoldenrod
+  R13: mediumslateblue
+  W4: blanchedalmond
+  W5: aliceblue
+  R10: whitesmoke
+  R11: tan
+  V7: lightyellow
+  W9: deeppink
+  Q12: magenta
+  N13: sandybrown
+  P12: palegreen
+  P17: azure
+  O15: lightseagreen
+  S5: blanchedalmond
+  S4: palegreen
+  O13: red
+  O7: mintcream
+  O12: indianred
+  O8: snow
+  X7: green
+  O14: mediumslateblue
+  Q8: gray
+  C?: aquamarine
+  G27: floralwhite
+  V25: oldlace
+  G25: firebrick
+  Z9: lime
+  V22: springgreen
+  AC20: darkblue
+  AC25: purple
+  Y26: mediumslateblue
+  AB30: chartreuse
+  AA28: blueviolet
+  AC30: lightseagreen
+  AB28: darksalmon
+  Z28: seashell
+  AC26: darkred
+  AB21: blanchedalmond
+  AB22: cornsilk
+  AA18: deeppink
+  AB19: cyan
+  AA19: crimson
+  F26: ivory
+  Z18: gainsboro
+  R31: darkcyan
+  AA22: darkolivegreen
+  M27: whitesmoke
+  D18: mediumaquamarine
+  N28: sandybrown
+  T26: wheat
+  T25: darkturquoise
+  Z30: lightgoldenrodyellow
+  C20: darksalmon
+  P22: wheat
+  AD26: khaki
+  M20: mediumseagreen
+  P25: royalblue
+  L13: floralwhite
+  N20: red
+  O27: dimgrey
+  AB26: darkviolet
+  N23: azure
+  AC24: skyblue
+  R29: indigo
+  Q29: fuchsia
+  Y24: dimgray
+  R7: royalblue
+  R6: skyblue
+  O16: orchid
+  S6: cornsilk
+  U3: lightskyblue
+  A21: coral
+  X1: darkgreen
+  Y17: blue
+  P7: cadetblue
+  P8: mintcream
+  P10: purple
+  Z27: dimgrey
+  O6: red
+  N9: plum
+  P2: silver
+  V28: aqua
+  U29: bisque
+  O10: steelblue
+  P4: darkblue
+  S2: khaki
+  S3: wheat
+  J9: sienna
+  I9: darkturquoise
+  M9: saddlebrown
+  M2: papayawhip
+  H9: grey
+  J3: lightgoldenrodyellow
+  K9: lightgreen
+  L3: steelblue
+  L9: crimson
+  M3: darkgrey
+  N4: darkslategray
+  F4: yellowgreen
+  M4: pink
+  g30?: palegreen
+  AA25: crimson
+  O25: floralwhite
+  AA26: slateblue
+  AB25: gray
+  XZ21: mediumturquoise
+  X29: dimgrey
+  X26: darkblue
+  '?25': azure
+  W23: bisque
+  D3: pink
+  C4: orangered
+  C3: lightseagreen
+  L1: maroon
+  I8: purple
+  H8: bisque
+  J7: lavender
+  G6: lightpink
+  K7: mistyrose
+  H10: lightblue
+  J1: darkorchid
+  L4: forestgreen
+  H6: darkolivegreen
+  F9: lightslategrey
+  K4: lawngreen
+  K8: lightyellow
+  K2: mediumaquamarine
+  L6: burlywood
+  L8: lightsteelblue
+  L7: palevioletred
+  M8: floralwhite
+  H7: magenta
+  M6: crimson
+  O9: dimgrey
+  K6: mediumspringgreen
+  F8: violet
+  M17: pink
+  N18: oldlace
+  N5: mintcream
+  H2: royalblue
+  J6: springgreen
+  M7: aqua
+  G9: mintcream
+  N2: royalblue
+  D6: darksalmon
+  B9: white
+  Q4: brown
+  J18: gainsboro
+  O26: deepskyblue
+  B7: rosybrown
+  G10: darkmagenta
+  G15: saddlebrown
+  Q3: ivory
+  E13: black
+  ZZ17: midnightblue
+  D15: wheat
+  D14: aqua
+  C14: mediumslateblue
+  A13: orange
+  D2: white
+  ZP28: blueviolet
+  R2: oldlace
+  M14: lightpink
+  X24: lightgray
+  E3: lemonchiffon
+  F7: dodgerblue
+  K5: darkslategrey
+  N7: seashell
+  N8: dimgray
+  I7: lightgreen
+  N6: lightgray
+  F5: navajowhite
+  L2: bisque
+  G7: oldlace
+  I6: grey
+  O5: darkkhaki
+  O24: plum
+  A8: powderblue
+  V2: firebrick
+  C6: silver
+  ZZ14: darkorange
+  M26: peru
+  N1: deepskyblue
+  O3: darkorchid
+  O2: lightgrey
+  O4: blue
+  M1: darkgoldenrod
+  F1: lightblue
+  T3: lightslategrey
+  M0: lightsteelblue
+  I1: cyan
+  M5: khaki
+  n2: antiquewhite
+  A9: palevioletred
+  R24: darkslategray
+  E14: indigo
+  D13: black
+  L28: greenyellow
+  Y31/23: tomato
+  P24: orangered
+  W22: silver
+  A14: orangered
+  S21: rebeccapurple
+  X31: coral
+  T20: wheat
+  F20: pink
+  JI27: dimgrey
+  M18: darkseagreen
+  V31/23: lightgrey
+  Q28: sandybrown
+  S25: hotpink
+  N25: darkgray
+  N22: blueviolet
+  F24: azure
+  m30: aquamarine
+  G14: steelblue
+  I10: palegoldenrod
+  J10: chartreuse
+  J11: orchid
+  E5: lemonchiffon
+  G12: magenta
+  Q2: lightgrey
+  R21: forestgreen
+  K10: burlywood
+  C9: navy
+  P6: black
+  S38: aqua
+  R26: darksalmon
+  R23: darkolivegreen
+  E9: khaki
+  f29: slategray
+  X25: orchid
+  H20: lightcoral
+  K14: skyblue
+  T22: lightgreen
+  F12: orchid
+  F14: dimgray
+  E11: orchid
+  L15: turquoise
+  F13: tomato
+  X23: burlywood
+  AJ6: saddlebrown
+  AF9: greenyellow
+  AC9: cornflowerblue
+  U23: olivedrab
+  O19: cyan
+  D8: purple
+  V24: gray
+  S23: indigo
+  AF7: gray
+  S24: mediumspringgreen
+  L5: cornflowerblue
+  B4: fuchsia
+  D4: olivedrab
+  L11: moccasin
+  AI6: midnightblue
+  AI4: plum
+  AJ7: black
+  L12: royalblue
+  AH6: firebrick
+  AN6: black
+  AP6: lightgray
+  ZT29: lightpink
+  AD10: turquoise
+  AD12: red
+  A12: greenyellow
+  ZS29: powderblue
+  AH8: gold
+  H15: lightgoldenrodyellow
+  J12: rosybrown
+  S28: peru
+  Q22: dodgerblue
+  C13: skyblue
+  E12: lightsteelblue
+  C15: indianred
+  M13: midnightblue
+  G26: palegoldenrod
+  G23: darkgoldenrod
+  ' -': wheat
+  P3: slategrey
+  n/a: lemonchiffon
+  T23: firebrick
+  T24: sandybrown
+  W26: honeydew
+  W25: indigo
+  W28: tan
+  P5: maroon
+  AG8: lawngreen
+  AI9: pink
+  AB14: bisque
+  AJ8: salmon
+  AK7: mediumaquamarine
+  ZP25: seagreen
+  ZP27: aquamarine
+  ZT28: blanchedalmond
+  ZP26: cyan
+  AD13: blueviolet
+  AK10: lavenderblush
+  AG5: lightpink
+  AG4: royalblue
+  AF4: lavender
+  AE4: lightslategrey
+  AA6: lightgoldenrodyellow
+  AC3: blueviolet
+  AA3: cornsilk
+  Z4: mediumaquamarine
+  AB7: darkkhaki
+  AB4: palegreen
+  AJ2: floralwhite
+  AD6: salmon
+  ZT30: slategray
+  ZR29: indianred
+  ZQ30: aquamarine
+  ZR30: salmon
+  AC4: magenta
+  RZ29: goldenrod
+  ZW10: mediumorchid
+  ZQ28: rebeccapurple
+  ZQ29: lightyellow
+  '?Q30': aqua
+  AQ6: magenta
+  AQ5: blanchedalmond
+  AO8: chartreuse
+  AP5: peru
+  AR7: lightskyblue
+  AO6: indigo
+  AQ3: dimgray
+  AP4: lime
+  ZZ15: lime
+  '?AI26': mediumturquoise
+  J22: navajowhite
+  AE11: red
+  AF10: ivory
+  L22: lavenderblush
+  AK9: slategrey
+  AF14: darkgrey
+  AD11: goldenrod
+  '?B1': gainsboro
+  AF6: midnightblue
+  AL11: darkturquoise
+  AE5: slategray
+  G24: brown
+  AG6: slategray
+  AO5: pink
+  AN5: mediumslateblue
+  AD14: gray
+  AL7: khaki
+  '?AI7': dimgrey
+  AI10: lime
+  K11: paleturquoise
+  AC14: whitesmoke
+  AF8: midnightblue
+  AN7: beige
+  AE10: mediumvioletred
+  K12: deepskyblue
+  AC8: slategrey
+  AM8: rebeccapurple
+  AE9: coral
+  AB9: darkgreen
+  AE12: lightgray
+  '?AJ5': lightseagreen
+  AJ9: cadetblue
+  ZR28: white
+  ZP30: darkmagenta
+  ZS30: moccasin
+  ZN27: cornflowerblue
+  AB10: darkslategrey
+  AB8: mediumturquoise
+  AA9: violet
+  AD7: lightslategray
+  '?Z5': darkgray
+  AF2: sienna
+  ZX29: midnightblue
+  VP25: gray
+  ZQ27: rebeccapurple
+  QZ27: crimson
+  ZQ24: lemonchiffon
+  ZR27: cornsilk
+  ZV28: mediumturquoise
+  ZX28: lightsalmon
+  ZT27: greenyellow
+  ZU27: seagreen
+  ZW15: lightcyan
+  ZW16: steelblue
+  ZW20: dimgray
+  ZW19: orangered
+  ZV14: limegreen
+  ZU28: cyan
+  ZW18: springgreen
+  ZP29: purple
+  ZU26: tan
+  ZU25: chartreuse
+  ZJ28: fuchsia
+  AJ08: darksalmon
+  AH06: salmon
+  AE04: red
+  AA06: gainsboro
+  AM05: navy
+  AH08: gray
+  AI08: navy
+  AE08: lime
+  AC12: mediumblue
+  AJ03: gainsboro
+  AF09: lightgray
+  AE09: lightgray
+  AJ10: crimson
+  AK06: aqua
+  AI7: royalblue
+  AH09: seagreen
+  AC03: skyblue
+  ZQ31: bisque
+  ZS28: deepskyblue
+  ZI: skyblue
+  ZS27: deeppink
+  ZT24: whitesmoke
+  ZV26: snow
+  CS6: navy
+  AH7: palegreen
+  AI8: gainsboro
+  AH5: darkturquoise
+  M11: palegoldenrod
+  AH10: lightcyan
+  A in section: salmon
+  AJ06: darkolivegreen
+  A4: slateblue
+  Z26: lawngreen
+  AR6: seagreen
+  AQ?: slategrey
+  AW?: chartreuse
+  AP7: seagreen
+  ZG29: rosybrown
+  QZ29: lightgoldenrodyellow
+  ZV25: dimgray
+  ZV27: mediumpurple
+  C06: oldlace
+  ZW21: greenyellow
+  SP28: indigo
+  VP28: lemonchiffon
+  ZX10: plum
+  ZW17: sienna
+  ZT31: dimgrey
+  WZ18: powderblue
+  ZV09: lightyellow
+  ZV15: lightcoral
+  ZW13: darkolivegreen
+  ZW12: aliceblue
+  WZ20: saddlebrown
+  ZV12: greenyellow
+  ZW11: turquoise
+  ZU09: whitesmoke
+  ZU13: snow
+  ZV13: sienna
+  ZU20: floralwhite
+  ZR31: salmon
+  ZV10: indianred
+  ZV11: lightgray
+  ZU11: slategrey
+  ZU14: darkorange
+  ZU15: steelblue
+  zu14: orchid
+  ZX7: beige
+  zw17: rosybrown
+  Z929: indianred
+  G17: palegreen
+  E/F31: darkturquoise
+  ZA7: ghostwhite
+  ZS24: gray
+  ZP17: darkkhaki
+  ZU16: greenyellow
+  ZS14: cornflowerblue
+  ZS13: darkgrey
+  ZQ17: springgreen
+  ZS16: indigo
+  ZV16: wheat
+  ZR17: black
+  ZS17: orchid
+  ZS15: turquoise
+  ZT15: deeppink
+  ZR16: paleturquoise
+  V3: mediumorchid
+  ZT16: limegreen
+  ZQ14: darkcyan
+  ZO16: dimgrey
+  Z016: mediumaquamarine
+  ZR15: whitesmoke
+  ZU10: orangered
+  ZS12: lightgoldenrodyellow
+  ZT14: lightgreen
+  ZR18: paleturquoise
+  zv14: powderblue
+  ZR14: plum
+  ZR13: darkmagenta
+  ZP16: skyblue
+  ZP15: darkturquoise
+  ZT13: seagreen
+  ZT12: cyan
+  ZU12: magenta
+  ZW14: darkslateblue
+  ZQ15: magenta
+c:
+  c: grey
+  d: white
+  pd: pink
+  p: blueviolet
+  m: darkmagenta
+  b: snow
+cat:
+  bl: hotpink
+  fr: mistyrose
+  fl: orchid
+  cpf?: violet
+  blt: lightgrey
+  ch: gainsboro
+  b: plum
+  sc: violet
+  cpf: darkviolet
+  co: lightgreen
+  nat: yellow
+  mb: darkturquoise
+  tr: midnightblue
+  st: purple
+  axfl?: mediumspringgreen
+  bs: orange
+  awl: mistyrose
+  b?: darkblue
+  mi: papayawhip
+  resp: wheat
+  deb: darkorchid
+  axe: lightyellow
+  axfl: palevioletred
+  nut: blanchedalmond
+  org: red
+  re: peru
+  bs?: khaki
+  co/hs: salmon
+  nat?: mediumblue
+  not in bag: darkgoldenrod
+  mi?: palegreen
+  dent: indigo
+  ochre: lightgrey
+  tr?: seashell
+  sc/b: mistyrose
+  hs: lightsalmon
+  mi-int: darkmagenta
+  cofr: cyan
+  charcoal: darkcyan
+  hs?: peru
+  co/b: lightseagreen
+  sc/kn: darkorchid
+  MI: seagreen
+  awl?: mediumblue
+  Mi-int: snow
+  B: gold
+  pot: sandybrown
+  claypipe: mintcream
+  gunflint: tomato
+  fr?: hotpink
+  empty bag: indigo
+  NOD: bisque
+  co/sc: mediumslateblue
+  cofr?: bisque
+  wd: silver
+  mi/awl: gainsboro
+  hsfr: ivory
+  co/b?: thistle
+  co/cofr: deepskyblue
+  shell foss: white
+  land drain: cornflowerblue
+  s-a-l: darkgoldenrod
+  char/burnt bone?: mintcream
+  pol axe fr: grey
+  cofr/b: lightgray
+  mb?: lemonchiffon
+  fossil: steelblue
+  ochre?: antiquewhite
+  George VI coronation mug: coral
+  co/cofr?: slateblue
+  dent/sc: mediumslateblue
+  sc/bor: cornflowerblue
+  mi/tr: deepskyblue
+  sc/tr: white
+  sc/wedge: darkcyan
+  missing: lightgrey
+  mi/bor: thistle
+  co/bfr?: aqua
+  qtz: lightgreen
+  mis-hit: mediumorchid
+  co/co tool?: lawngreen
+  sc fr/b?: lightgreen
+  co/sc/b: aqua
+  notch: thistle
+  quartz: mediumturquoise
+  ch/co: darkslategrey
+  shale: chartreuse
+  wedge: khaki
+  co/bor: lime
+  co/dent: cornsilk
+  dent/b: greenyellow
+  nod: paleturquoise
+  sc?: goldenrod
+  axe?: coral
+  hazel: seashell
+  chamfered: linen
+  co/dent/s-a-l: black
+  tanged thing: bisque
+  co/dent/b: linen
+  void: hotpink
+s_cat:
+  co tab: goldenrod
+  ab on br: white
+  double: magenta
+  plunging: blue
+  a2: darkorange
+  short: lightsteelblue
+  prx: powderblue
+  cr bl: white
+  obl: mistyrose
+  long: navajowhite
+  fr: oldlace
+  b3: springgreen
+  ab on tr: snow
+  pl: mediumturquoise
+  b1: cadetblue
+  ab on nat: fuchsia
+  m de f: darkgrey
+  scsp: cyan
+  b2: azure
+  prim: lavender
+  cresc/rod: rosybrown
+  obp: darkseagreen
+  A2: deeppink
+  axfl?: grey
+  sharpening: blueviolet
+  distal: darkseagreen
+  obp fr: lavender
+  double opp obl tr: pink
+  single distal oblique tr: plum
+  prox oblique tr: olive
+  2ndry: khaki
+  rounded pebble: ivory
+  c: mediumorchid
+  sh/round: papayawhip
+  obp?: navy
+  large sc tr?: mediumturquoise
+  sfr: navajowhite
+  manufact?: sandybrown
+  tang/sc tr: navajowhite
+  round: ghostwhite
+  d: coral
+  e: mistyrose
+  db: papayawhip
+  obl prox: plum
+  side: darkmagenta
+  trap: rosybrown
+  obl dist: honeydew
+  short/a b on br: burlywood
+  co or ax?: forestgreen
+  tr: purple
+  C: darkolivegreen
+  double ab: cyan
+  manufacturing error: darkcyan
+  irreg: darkseagreen
+  a1: midnightblue
+  oblique bitruncation: khaki
+  ab on obl tr: lightblue
+  primary: cornsilk
+  b on nat br?: plum
+  obl tr: darkorange
+  or axfr: mintcream
+  on cr bl: darkseagreen
+  prox: mistyrose
+  unfin mi: papayawhip
+  cr bl real: darkgrey
+  f de n: palegreen
+  raw mat?: burlywood
+  sh: olive
+  b?: lavender
+  transverse: floralwhite
+  nat?: sandybrown
+  fr obp: midnightblue
+  on tr?: seagreen
+  trap w tang: gainsboro
+  triple burin: floralwhite
+  isoc tr: seagreen
+  ab on plat: rosybrown
+  sc/b/chamfer: burlywood
+  on co b1: deeppink
+  double ab on tr: wheat
+  long fr: deeppink
+  trancet resharpening: sienna
+  worn: slategrey
+  triple ab on double tr: darksalmon
+  bs?: wheat
+  double ab on br: lemonchiffon
+  fden: beige
+  8 removals: lightpink
+  tranchet: indigo
+  stone: mistyrose
+  sc/tr: lavender
+  m de f fr: chartreuse
+  s?: lightsalmon
+  double b: wheat
+  db on prox: orchid
+  'double b, db and ab on br': mediumslateblue
+  flake?: snow
+  obp/trap: forestgreen
+  tr fr: darkorchid
+  'double b, db and an on tr': dodgerblue
+  double/round: moccasin
+  re?: lightgrey
+  sc tr large: palevioletred
+  part cr: snow
+  shaping: orchid
+  pd: darkorange
+  cpf: whitesmoke
+  'double burin, ab on tr and ab on br': greenyellow
+  E: lightgreen
+  ab on br on co tab: mediumseagreen
+  'triangle, though bit of a shoulder': darkslateblue
+  thumbnail: mistyrose
+  large sc tr: khaki
+  b on tr: whitesmoke
+  on br: chartreuse
+  axfl: orangered
+  on axe?: darkgray
+  on obl tr: chartreuse
+  oblique tr: lightgreen
+  tr?: steelblue
+  quad ab on breaks: darkslategrey
+  part bilat tr: papayawhip
+  borer: sandybrown
+  cr?: whitesmoke
+  short with proj like seamer: lightcyan
+  oblique: violet
+  on nat br: dodgerblue
+  on tr: lime
+  b on br?: slategrey
+  obp/tr: powderblue
+  obpfr?: deepskyblue
+  obp w basal mod: darkslategray
+  siret: chartreuse
+  slight obliqu: darkorange
+  cr fl: indianred
+  long fr w point: orangered
+  fl: turquoise
+  large flake: royalblue
+  ab on cr fl: lightcoral
+  on plat: sienna
+  re: darkseagreen
+  cr: lightyellow
+  obp dc: ivory
+  c multi plat: gray
+  large sc tr with concave tr ahr: darkgrey
+  d1 ridge: darkolivegreen
+  sh?: peachpuff
+  prox sl mishit: orange
+  slight tip re or ut: lightgray
+  double ab on tr and nat: midnightblue
+  double db: magenta
+  short on prox: lavenderblush
+  fr w point like seamer: saddlebrown
+  co/cr bl fr: darkblue
+  poss mb fr: slategray
+  or impact fracture or late mes MI: blue
+  trap/large sc tr: darkslategray
+  long on cr bl: lightgoldenrodyellow
+  janus: blanchedalmond
+  double - ab on nat surface and db: mediumaquamarine
+  'unfin m de f, convergent tr': darkkhaki
+  sc/ax sp?: cornsilk
+  siret?: lawngreen
+  cr bl?: black
+  double ab on tr and break: mediumspringgreen
+  obp dist unfin?: purple
+  '?': mistyrose
+  obp dist: seashell
+  B3: tan
+  poss distal end of awl made on prox: firebrick
+  co reut A2: rosybrown
+  double m de f: greenyellow
+  co tab?: azure
+  ends long and db: saddlebrown
+  double?: chocolate
+  '?unfin m de f': mediumvioletred
+  double db on nat: firebrick
+  A1: darkkhaki
+  poss axfl: slategray
+  bs?siret?: lawngreen
+  isoc with concave tr: darkgoldenrod
+  obp with bulb: saddlebrown
+  modern damage?: slateblue
+  large rhmonboid with bulb: rosybrown
+  on old core: blueviolet
+  unfinished m de f: dodgerblue
+  th: cyan
+  deepcar obp/rhomboid: mediumturquoise
+  double - db and ab on br: lemonchiffon
+  triple ab on tr: gainsboro
+  on co tab?: darkturquoise
+  tool spall??: darkgreen
+  ax fl production: palevioletred
+  unfin m de f?: navajowhite
+  m-dent: azure
+  flaw removal: olivedrab
+  tr but chipped: darkslateblue
+  ab on break?: palevioletred
+  db on chamfer: linen
+  sc?: yellow
+  obp small: moccasin
+  d either side of ridge: lightcyan
+  on tr?? Or tr: dodgerblue
+  large sc tr with concave tr: aliceblue
+  large: springgreen
+  cr and pl: slategrey
+  c multi: bisque
+  scsp/bs removal: darkslategrey
+  unfin? thick backing: cornflowerblue
+  double b - ab on tr and dih: beige
+  on co: springgreen
+  obp large: darkgray
+  B1: darkblue
+  'siret, poss burin': darkorange
+  unfin?: bisque
+  shouldered trap: lightslategrey
+  triple - ab on tr and double ab on br: lightslategrey
+  poss burin: cornflowerblue
+  axfl? Co tab?: linen
+  elong sc tr/creswell pt: blanchedalmond
+  prim? Accident?: mistyrose
+  prim re: olive
+  prim from new end: green
+  'obl tr, tip snapped': honeydew
+  on ch: gold
+  sc/b spall: plum
+  double ended: darkorange
+  on nat surface: lightsteelblue
+  on a2: limegreen
+  prm: darkgrey
+  m de f unfinished: midnightblue
+  sh fr: ghostwhite
+  long on pl fl prox re: beige
+  ab on tr plus notch: ivory
+  2ndry pl: turquoise
+  b/sc sp: whitesmoke
+  obp? Small: darkslategray
+  unfin obp: springgreen
+  'tranchet, triangle section': lightslategrey
+  preform: khaki
+  double ab on nat: lightgreen
+  tr/dent: midnightblue
+  bilateral re: greenyellow
+  unfin but ut: palegreen
+  straight distal: yellow
+  trap/sc tr: lightsteelblue
+  'convergent  partial bilat re, or unfin m de f': skyblue
+  small: darkorchid
+  triple burin  double b on br and ab on tr: linen
+  lanceolate/pkp: palevioletred
+  double ab on tr and inv tr: deepskyblue
+  double burin - db and ab on tr: gold
+  b on nat surface: burlywood
+  poss ab on nat surface: blue
+  2ndy: purple
+  poss awl?: lightblue
+  re sp?: sandybrown
+  axfl? Tr: lavender
+  trap (unfin?): deepskyblue
+  axfl? Sh: springgreen
+  poss worked quartz pebble: lightgoldenrodyellow
+  quadruple angle b on br and nat: honeydew
+  crested bl: black
+  prox rhn: mistyrose
+  obp rh: springgreen
+  obp lh: goldenrod
+  axfl???: rosybrown
+  isoc tr small: lightgoldenrodyellow
+  ax fl?: turquoise
+  double ab on br and db: mediumorchid
+  obp small v obl: turquoise
+  short fr: olive
+  double ab on br and transv b: darkmagenta
+  tr on fl: rosybrown
+  ab on inv tr: mediumvioletred
+  e disk co: limegreen
+  worked: lightblue
+  bs? Sc sp?: lightsteelblue
+  unfin tr: papayawhip
+  resp?: lightgrey
+  double burin - ab on tr and ab on br: cornsilk
+  obp on distal: chocolate
+  tr but subs chipping: darkgrey
+  double burin - ab on tr and ab on nat: lavenderblush
+  ab on sc re: oldlace
+  1 test: palegoldenrod
+  nat: palegoldenrod
+  crc bl: yellow
+  mi? m de f: whitesmoke
+  deepcar part edge obp or unfin m de f: mediumorchid
+  on cofr: beige
+  trap irreg: hotpink
+  b/chmfer sp?: plum
+  obp slight concave tr: rebeccapurple
+  ab on tr and ab on nat: lightgoldenrodyellow
+  poss reut as co: ivory
+  rhomboid: cornflowerblue
+  irreg fr: crimson
+  'long, nosed, re down edges also': darkgrey
+  scraper spall?: mediumaquamarine
+  tested: lightslategrey
+  short/round: lightsteelblue
+  shale: mintcream
+  double b - db and ab on br: snow
+  double b on tr: darkolivegreen
+  backed blt: indigo
+  fr - tr/trap: darksalmon
+  b on br: gray
+  ab on br and sort sc: peachpuff
+  fr of large double obl tr: aliceblue
+  on axe fr?: darkgray
+  'obl re then re/ut to form point, point missing': oldlace
+  afl?: darkorchid
+  slight obl: deeppink
+  double ab on break and on nat: darkgreen
+  sc: lightskyblue
+  lanceolate: peachpuff
+  sctr 2 sides r lat: thistle
+  sc tr with part re on base: deepskyblue
+  sc tr: violet
+  deepcarr/sep: lightsalmon
+  on co tab: thistle
+  partial bilat tr: snow
+  2 removals: darksalmon
+  1 removal: yellow
+  tested/pref: yellow
+  obp/ tr: darkred
+  irreg unfin: yellow
+  obp w bulb: palevioletred
+  obl tr or spontaneous?: aqua
+  truncated?: darkslategray
+  'long, db': mediumturquoise
+  dent/tr: sienna
+  near m de f or deepcar sepwrele: oldlace
+  assym trap: mediumslateblue
+  en coche: gainsboro
+  triple ab on nat: palevioletred
+  on fl: lightcyan
+  prim for 1 end 2ndry for other: limegreen
+  obp/tr with concave tr: mintcream
+  obp concave tr: darkslategrey
+  long double: darkblue
+  obp with poss basal modification: lightsteelblue
+  tr unfin?: chocolate
+  m de f prox 1/4 not re: palegreen
+  trap/tr/seg: lightgreen
+  co tab/ ax fl?: gainsboro
+  3rdry pl: aliceblue
+  sc/isoc: lightslategray
+  trap w concave tr: pink
+  '1 side full re, 1 part': indigo
+  tr isoc or large sc: deepskyblue
+  awl or unfin mi: darkkhaki
+  tested/gone wrong: lightslategray
+  m de f point on prox: darkseagreen
+  obl conc: lightyellow
+  bfr?: orchid
+  fr e: lightpink
+  isoc: mediumspringgreen
+  'prim on that end, pl db on other': oldlace
+  double ab on chamfered? tr and ab on br: skyblue
+  slight mishit: darkgrey
+  double b - ab on tr and ab on nat: sienna
+  obl on prox: snow
+re_ut:
+  ut?: mediumturquoise
+  ut: salmon
+  re: crimson
+  '?': darkorange
+  gl: midnightblue
+  ut and gl: darkorange
+  re/ut: darkmagenta
+  ut rubbed end: palegreen
+  re?: turquoise
+  'n': floralwhite
+  ut as b: mediumorchid
+  gl?: midnightblue
+  md: lightslategrey
+  re or trowel: forestgreen
+  sl: lightyellow
+  worn?: lemonchiffon
+  hafting gl?: midnightblue
+  ut and gloss: tomato
+  poss residue: royalblue
+  re/ut?: aquamarine
+  poss burin: dimgrey
+  re/ut and gl: teal
+  ut as wedge: paleturquoise
+  dent and ut: darkorange
+  n?: honeydew
+  ut/n: gold
+  ut and md: orange
+  ut both ends: mediumorchid
+  ut an gl: lightgreen
+  ut and gl?: slategray
+  dent: lightyellow
+  ut after burning?: mediumvioletred
+  ut as borer?: snow
+  chamfer?: tomato
+  mach: mediumblue
+  re/n: lightslategrey
+  ut and dent: dimgrey
+  ut and mach: black
+b:
+  b: dimgray
+  b?: lemonchiffon
+  B: limegreen
+  sl: blueviolet
+  b/ff: mistyrose
+cor:
+  c: orchid
+  dr: aquamarine
+  w: indigo
+  int: darkgreen
+  v: violet
+  sl: greenyellow
+source:
+  peb: lavender
+  '?': peachpuff
+  pep/dr: lightcyan
+  dr: chartreuse
+  peb/till: tan
+  dr?: slateblue
+  pb: coral
+  ped: lightslategray
+  nat: lightcyan
+  tl: darkgrey
+  br: darkslategrey
+  gr: beige
+  ch: olivedrab
+  w: red
+  prim: snow
+  recort: mediumaquamarine
+  w nat: cornsilk
+  peb or sol: tomato
+  cob: olivedrab
+  chrt: olivedrab
+p:
+  p: mediumpurple
+  sl: darkturquoise
+mat:
+  dr: navajowhite
+  w/dr: peru
+  dr?: peru
+  w: mediumspringgreen
+  w?: moccasin
+  ch/qzt: mediumturquoise
+  dr/ch: lightpink
+  cor: palevioletred
+  ch/qtz: floralwhite
+  ch: lavender
+  weird: olive
+  ch?: lawngreen
+  stone: fuchsia
+  dr l: darkorchid
+  w/rd: palegoldenrod
+  ch/dr: gainsboro
+  w/ch: teal
+  quartz: darkorange
+  dr lincs: slategrey
+  hornfels?: papayawhip
+  chert: papayawhip
+col:
+  br: aqua
+  gr: lawngreen
+  red: darkgreen
+  op wh: ivory
+  br st: seashell
+  or: khaki
+  b: azure
+  op w: lightslategrey
+  bl: khaki
+  red&gr: dimgrey
+  ' br/gr': mediumorchid
+  bl st: mediumspringgreen
+  red and gr: azure
+  opwh: lightpink
+  'y': darkcyan
+  dk br: rosybrown
+  wh: lightcyan
+  red and br: grey
+  gr and wh: magenta
+  wh and gr: mediumorchid
+  yell: yellow
+  pnk and br: darkgreen
+  br sp: deeppink
+  rgr: tan
+  pnk and gr: palegreen
+  yel: saddlebrown
+  hon: mediumseagreen
+  ' br and red': paleturquoise
+  r: lightskyblue
+  dr: indigo
+  bl/br: thistle
+  banded br: lime
+  gr and pnk: limegreen
+  fossily gr: darkmagenta
+for_residu:
+  'y': thistle
+  s block F15: indigo
+  s block: indianred
+  For residues (Bag not filled in) - in fridge: darkorchid
+  For residue - in fridge: darkviolet
+  box 452 For residue - in fridge: lightslategray
+  residue s block: maroon
+  For residue- in fridge: royalblue
+  wh&gr fl recorticated: olivedrab
+  with aimee: ghostwhite
+  For residue: rebeccapurple
+  serrated: black
+  this is wrong check sequence: crimson
+  refit w 96455: paleturquoise
+  refit w 96454: black
+  For residue - in fridge.: deepskyblue
+  for residue: deeppink
+  axe: lightgreen
+  KM fridge: lightsalmon
+  with shannon: lightgray
+  sc13 fridge 2: peru
+  fridge 2: thistle
+  res?: lightskyblue
+  for shannon: mediumblue
+for_usewea:
+  'yes': darkred
+  selected for aimee: khaki
+  for drawing: lightgray
+  aimee?: darkturquoise
+  prelim assess: seashell
+  for aimee: slategray
+  poss red residue on prox: darkseagreen
+  poss residue: deeppink
+  'selected for aimee, check if use or being in midden': orangered
+  selected for aimee ut as spokeshave: greenyellow
+  selected for aimee to look - good one: skyblue
+  selected for aimee -: purple
+  for drawing?: aqua
+  selcted for aimee: lightsteelblue
+  'y': powderblue
+  residue: purple
+  for shannon - resin?: steelblue
+  give this to aimee: darkcyan
+  shannon: darkgoldenrod
+  get aimee to check funny edge: cornflowerblue
+f25:
+  soft mineral: papayawhip
+  impact: darkmagenta
+  not used: indigo
+  hide moist: oldlace
+  wood: gainsboro
+  plant siliceous: navy
+  hide: thistle
+  hide dry: chartreuse
+  butchery: white
+  bone: tomato
+  fish: aqua
+  indet: lightgrey
+  plant: magenta
+  mineral: mintcream
+  bast: sienna
+  wood hard: olive
+  meat: darkslategray
+  animal: lightskyblue
+  mineral soft: chartreuse
+  bone dry: bisque
+  antler: darkorange
+  wood soft: brown
+  plant medium: maroon
+  mineral indet: coral
+  animal soft: mediumblue
+  siliceous plants: orchid
+  not: hotpink
+  animal various: blanchedalmond
+  siliceous plant: lemonchiffon
+microwear:
+  drill soft mineral: darkgreen
+  'Used. No identifiable MLITS but has bone, fresh hide and meat traces so may have been used as a projectile, although the tip is odd - looks like it has dry hide polish and may have had secondary function of piercing dry hide. No obvious hafting wear but': papayawhip
+  'Craft tool, probably hafted (macro edge damage), used mostly to scrape siliceous plants wth some cutting and contact with harder plant material, probably a soft wood. Some of the SIPL is very well developed along lateral edges.': linen
+  hideworking: olive
+  'Craft tool. Used to scrape and pierce dry hide and mineral (prob ochre). No obvious HA damage but use traces end abrubtly, suggesting location of a haft.': darkgreen
+  hafted: azure
+  selected for aimee: mediumslateblue
+  'bone, hafted': maroon
+  fish: mintcream
+  Used to chop wood for a short duration. Possible binding polish related to hafting at butt end but over all very minimal HA damage.: oldlace
+  fish processing: lightseagreen
+  or ax fr?: mediumturquoise
+  Multi-purpose plant craft tool. nearly every edge utilised. Mostly sipl (longit and trans) but also scraping of a medium hard wood (green wood?) with narrow distribution suggesting twig size - poss de-barking. The sipl is similar to fresh reed polish (fl: darkred
+  wood: mediumorchid
+  hafted - hard material with soft animal bindings? Used to scrape bone: pink
+  butchery: lime
+  'light, soft animal material, possibly hide': moccasin
+  'Hafted, intesively used wood-working tool. Used to scrape and groove wood.': fuchsia
+  Indet. Too much PDSM (mineral) to determine if used. PDSM across entire surface.: mediumturquoise
+  'Piercing, drilling mineral. Shale? Lot of crushing at tip. Traces are comparabe with a en experimentally used borer (Leiden Exp 1680) which was used to on slate. The meche and the borer have a similar polish distribution. However, the traces on the mech': floralwhite
+  'Mineral and possibly animal hide? piercing tool, similar traces to 94395': mediumorchid
+  'Cutting/scraping plants indet., also has metal PDSM': palegreen
+  plant: deepskyblue
+  'Mineral and possibly animal hide? piercing tool, similar traces to 94227': forestgreen
+  'de-bark bast, cut wood': crimson
+  'Unable to ID due to PDSM, which is everywhere. Though the macro damage on lateral edges of prox (03/11) suggests it was hafted with a hard material. Frequent/regular microchipping at distal edge suggests use but because PDSM everywhere, including edges,': peachpuff
+  Used to scrape wood (hard); traces not very well developed: aqua
+  'Hafted laterally and either used as projectile (barb) or knife: longit. meat traces but no impact damage.': limegreen
+  Used to groove bone or antler and also used to scrape bone/antler: royalblue
+  scraper bone for short period: aqua
+  butchery tool: orchid
+  dry hide: sienna
+  plant and wood working: chartreuse
+  'Hafted with hard contact material (bone/antler) and used to groove bone (more likely) or antler - polish very well developed, wth some oblique scraping of bone too.': aquamarine
+  probably not been used; very small chance it has fractured at during use at start of life cycle but this is doubtful: darkseagreen
+  for aimee: darkgrey
+  '2 functions: used as a projecile (very clear impact fracture and MLITS); also used for cutting SIPL. SIPL on bothe lateral edges, which is odd - doesn''t fit knife theory, but may have been hafted as knife then dehafted and rotated, which would mean min.': lightsteelblue
+  'Wood-working tool (scraping), possibly hafted in leather sheath (hide-like polish across prox surfaces)': darkkhaki
+  'scraper hide, piece and bore hide': pink
+  Short duration of use for butchery: ghostwhite
+  pierce and bore dry hide: pink
+  Used for short duration to scrape hide with mineral additive. Tip used to pierce hide.: white
+  Probably used to drill soft mineral (shale?).Tip broken so most of the traces have probably been removed. Breakage may have been the rreason for abandonment as no traces post-breakage. Small amound of residual soft mineral polish on 05 suggests it was pr: cyan
+  something shiny trapped in battering - could be sand but check pyrites: beige
+  'Used to drill soft mineral, possibly shale? Hafted with hard material.': darkmagenta
+  indetermined: darkgreen
+  veiny: linen
+  scrape hide with mineral: rebeccapurple
+  'Used to groove, scrape and cut dry bone; multipurpose craft tool?': maroon
+  'Muti function tool, probably re-used. Used to cut/scrape wood and/or antler (could not make distinction in polish type has moderately developed), but possibly used to scrape fresh bone and hide too.': palegoldenrod
+  projectile: mediumpurple
+  possibly used to scrape soft wood or plants for a short duration of time: lavender
+  'Used to scrape hide with mineral additive. Hide looks mostly dry but at distal end more moist. Traces on lateral edges are oblique and invasive, suggesting oblique scraping action at a low working angle. Edge damage on 03 and 11 suggests it was probably': darkmagenta
+  'Barb of projectile. hafted (minimal damage, use of adhesive likely). Longit. hide, meat and some bone polish.': darkred
+  'Hafted and used for butchery. Tip used to initiate cut, contact with bone. There is aslo fresh hide polish (scraping and cutting) with some contact with bone.': lightgoldenrodyellow
+  Used to scrape wood for short-medium duration of time: cornsilk
+  Used intensively to scrape dry bone. Prob craft related.: cornsilk
+  Used for short duration. Transverse polish (wood?) at tip - used to pierce wood or as a small wedge? possibly also used to scrape indet med material for short duration on 03.: lightgrey
+  not used: darkkhaki
+  h: purple
+  butchery tool. Traces less developed than 98987. Longitudinal (cutting) with some transverse meat polish.: coral
+  'sawing/cutting bone, lim duration': dodgerblue
+  odd polish: seagreen
+  'Indet. possibly transverse soft animal polish on one edge - if used, it was for very short duration': peru
+  'Butchery tool. Well-developed longit. traces on L & R margins. Polish indicates mostly soft animal (meat), some harder animal material (hide), causing removals, and occasional contact with bone': salmon
+  scraping bone: cadetblue
+  sawing bone: violet
+  cut and scrape bone?: navajowhite
+  scraping siliceous plants: rosybrown
+  Used to scrape wood and bast: royalblue
+  'Point of projectile. Hafted (some HA wear visible, slight macro damage, but likely use of adhesive as HA damage minimal) and utilised. possible impact fracture at tip (but no clear MLITS). Longitudinal bone, fresh hide and meat traces.': slategray
+  Not used: darkturquoise
+  'Short duration to chop wood, resharpening removed traces': ivory
+  projectile point with impact fracture: khaki
+  'Slightly burnt, making ID difficult. Used to groove bone (09) and possibly aslo on 05. A poorly developed indeterminate transverse polish visble along 03 and 04.': mediumpurple
+  Used as a strike-a-light: navajowhite
+  bone cutting: lightsteelblue
+  'cutting (mostly) and scraping of bone and antler; hafted, possibly with antler or bone': darkgrey
+  Possibly utilised; soft animal-like traces - but no clear distribution or directionality.: darkblue
+  'Utilised, possibly butchery. Longit. traces along one edge, rounding on opposite edge may relate to hafting. No impact damage or MLITS': green
+  Soft animal traces lacking clear directionality. Most developed at tip. No impact damage or MLITS.: dodgerblue
+  'grooving bone, scraping antler': dodgerblue
+  used to scrape and cut dry hide or wood: sienna
+  'bone/craft tool; used to cut, scrape, groove': salmon
+  'indet soft, poss hide; resin?': lightsteelblue
+  hafted point. Wood hafting polish. so has been utislised. Compares to EXP M116: gray
+  'Aimee hafted, used to cut hard animal material, prob antler. Veerle Hafted, sickle-like hafting mode, plant-working traces on edge. First used as composite sickle, then re-used as strike-a-light': lightcyan
+  none: darkgrey
+  Utilised. has fresh hide polish at tip but no impact damage. It is possible that this piece was used to pierce hide (maybe as part of a composite knife) rather than as a projectile.: paleturquoise
+  hafting traces but no impact: orangered
+  'multi use; tip used to pierce hide, also used to cut/scrape bone. May have had hide wrapping at butt': gold
+  cutting meat: silver
+  'hafted (bone or antler), used to drill bone': darkolivegreen
+  Broken at point of haft terminus. Antler haft. No wear traces.: blanchedalmond
+  'Scraping soft animal material, prob meat, with contact with harder material, tendons?': azure
+  burnt but some traces visible. prob used to scrape hard material: turquoise
+  'burnt, possibly used as a scraper prior to burning (trans polish, indet.)': darkslateblue
+  pine resin: darkgrey
+  'used for short duration, probably to scrape bone. PDSM (mineral) across surface.': olivedrab
+  resin: white
+  Cutting plant and siliceous plant. Traces limited to one edge. No definite HA traces but opposite edge v. rounded.: mediumaquamarine
+  'Utilised for plant-work (transverse), short duration and restricted distribution.': darksalmon
+  'used most intensively on one edge to scrape wood, possibly also used on another for same activity.': peru
+  used for short duration to scrape wood one one edge (confident) and possibly another: papayawhip
+  used for short duration to scrape wood one one edge: mediumaquamarine
+  bone: lightcoral
+  'Point of projectile. Hafted. Utilised; made target. Impact damage and longitudinal traces: bone, soft animal (fresh hide/meat).': snow
+  plant material: lightskyblue
+  scraper antler: olivedrab
+  'Butchery tool, medium-developed traces - cutting meat and fresh hide': mediumorchid
+  'Inderterminate. Tip broken but no MLITS. Some evidence of possible use - flat smooth areas could be bone, but more likely mineral polish as a result of PDSM. No other wear traces.': red
+  residue or burning?: olivedrab
+  burnt not analysable: palegreen
+  'scraping plants, transverse plant polish. Quite hard plant material - lots of removals. Polish is poorly developed. Polish obscured by plant residue which couldn''t be removed with ethanol': khaki
+  Indeterminate. May have been used (possible longit. soft animal traces) but aslo has PDSM across surface making identication difficult.: violet
+  'plant working, v well developed': darkmagenta
+  'Plant craft tool. Used to scrape siliceous plants, probably reeds, but for a short duration of time': darkorange
+notes:
+  concave inv tr: lavenderblush
+  siret: mistyrose
+  ax fl?: tan
+  some not meso?: thistle
+  nasty: darkblue
+  not meso?: lavender
+  on co tab: darkslategrey
+  burin?: skyblue
+  snapped: deepskyblue
+  nasty flaw in mat: thistle
+  tab abandoned: antiquewhite
+  rubbed end: lightslategrey
+  en eperon plat: mediumaquamarine
+  deepcar: darkblue
+  plunging: lightskyblue
+  fac: violet
+  stained and abraded?: hotpink
+  fr of large blade again abraded: aquamarine
+  st: mediumvioletred
+  abr: darkseagreen
+  'fac, abr': darkcyan
+  st and abr: honeydew
+  poss awl: darkblue
+  st not much reduced: blueviolet
+  poss burin fr: limegreen
+  stained: tan
+  tip snapped: indigo
+  not stained: springgreen
+  fr of prim fl: darkred
+  nat?: limegreen
+  on tab: dodgerblue
+  looks like seamer a bit: teal
+  ax fl -tilll quite shiny: darkmagenta
+  edge dam: darkturquoise
+  co tab?: olivedrab
+  sc: indigo
+  poss trap fr as distal re: forestgreen
+  sort of co tab: magenta
+  heavy ut: lemonchiffon
+  re lats: dodgerblue
+  dr gr: powderblue
+  both tips snapped: mediumslateblue
+  wear suggests used as awl: gold
+  trowelled: lavenderblush
+  large: burlywood
+  mi or tr fr - part distal obl tr: rosybrown
+  ut as co/b?: darkseagreen
+  abraded: darkcyan
+  burin fr?: lightgray
+  ab: burlywood
+  never seen this before: aquamarine
+  worn: darkorange
+  all till abraded: beige
+  'small, v neat, lb plat angles': salmon
+  plough damag: beige
+  m-d: slategrey
+  'strange e meso, ?deepcarish?': plum
+  ax fl? Co tab?: cornflowerblue
+  from side as cr bl: violet
+  nat backed: beige
+  to remove flaw: darkgrey
+  damaged by use: lightsalmon
+  sl pat from peat: royalblue
+  from co 81542: royalblue
+  snapped in bag: crimson
+  inc 2 deb: darkorange
+  in same bag: beige
+  tip damaged: springgreen
+  re edge: honeydew
+  on cr bl: darkslategray
+  'fac, op plat': whitesmoke
+  decort: darkkhaki
+  cross btwn axe and hammerstone - hafted: wheat
+  on large fl: orange
+  late mi fr???: darkkhaki
+  'sc type, tip snapped': ivory
+  sc type: seashell
+  ab on tr and other on flaked area: mediumspringgreen
+  haft gloss: aqua
+  looks like late?: seashell
+  bs?: darkslategrey
+  tip damage: lawngreen
+  ut as wedge: sandybrown
+  granite? Interesting flaked stone(large flake) - not seen before: lawngreen
+  faceted!!!!!!!: bisque
+  ref w 82513: plum
+  ref w 82510: mediumaquamarine
+  looks a bit LB: hotpink
+  conj w 82528: cadetblue
+  sent to karen: ghostwhite
+  only just started then snapped. Refits with 82558: mediumvioletred
+  ref w 82839: wheat
+  sent to karen dreier land: blueviolet
+  axfl?: wheat
+  cld be long blade: thistle
+  'cache sort of ref w 82586, 82839': yellow
+  cache: slategray
+  cache ref w 82586: darkolivegreen
+  str: dimgray
+  cache ref w 82652: seagreen
+  'caceh sort of refits with 82829, 82848': lime
+  shatter?: seashell
+  prim: darkolivegreen
+  straight prox: gold
+  found next to bone: antiquewhite
+  check is this for aimee use-wear: purple
+  or trap but very convincing: darkseagreen
+  double a b on tr and ab in br: lightgray
+  looks like crossed re but not: red
+  follows red stripe: darkgoldenrod
+  pr: lavenderblush
+  heavily used piece: grey
+  looks late mes black chert like flint: thistle
+  2 in bag: lavender
+  ver rolled could be old: mediumpurple
+  tip missing: sandybrown
+  bl chert like: azure
+  or quartz fl: darkmagenta
+  prob double ab but bs plunged and removed other end: navy
+  'lb? flat wolds, bi-direction and poss fac': cyan
+  on both laterals: silver
+  wear from axe use: sienna
+  new microburin: rebeccapurple
+  heavy abrasion: darkred
+  poss gunflint: lavenderblush
+  nat: silver
+  v larrge: slategray
+  used for boring boneantler??: teal
+  poss mb: azure
+  7removal: mediumblue
+  from reused axe? Or fabricator: mediumslateblue
+  'double oblique truncation scraper combo, very odd': violet
+  funny: yellowgreen
+  broken in bag: teal
+  axefl?: sandybrown
+  ab on tr and ab on nat surface opp ends of cr fl: blue
+  duplicate - point recorded in sc24 - is this the right number?: lightgoldenrodyellow
+  prop on ax fr: lightgreen
+  ut as burin?: papayawhip
+  hafted: thistle
+  scraping moist hide: mediumturquoise
+  'rolled, but looks lb??': orangered
+  d b and a b on br opp ends: mediumblue
+  or round: darkgrey
+  pretty cortical: seashell
+  a b on tr and snapped ab opposite: honeydew
+  not as re as m de f: lavender
+  opp lateral heavily re perhaps original intention to burinate there: skyblue
+  '1 ab on tr, 1 ab on nat surface': firebrick
+  anvil: darkturquoise
+  burin made on trancet axe fl: mediumorchid
+  ff fac: coral
+  conj w 86457: olive
+  conj w 86456: blueviolet
+  v sym: pink
+  maybe modern distal tr: darkviolet
+  dihedral and tr: lightskyblue
+  as wedge?: mediumvioletred
+  chalky cortex is this 86651?? Co-ordinates look right but check bone: lightyellow
+  v large: darkseagreen
+  v large long bladeish: linen
+  distal oblique tr: navy
+  b?: plum
+  almost rubbed: olive
+  re recent?: red
+  from double burin: darkturquoise
+  fac - UP?: dimgray
+  'looks like end of co frag, broken through anvil, also black chert, late meso?': wheat
+  UP?: bisque
+  large cld be anvil: linen
+  v large fl/bl: darkslategray
+  lm?: chartreuse
+  heavy re bl kn: turquoise
+  tw partially backed edges forming double oblique truncation: forestgreen
+  starch: cornflowerblue
+  co/cofr wedge: lightyellow
+  uw: peru
+  think this was in backfill: papayawhip
+  poss broken axe with attempt at rework: cyan
+  in peat but in area of tree throw: steelblue
+  recent re?: darkturquoise
+  patterned natural?: burlywood
+  dih plat: whitesmoke
+  ab on tr opp ab on br: steelblue
+  heavy wear: mistyrose
+  large like funny thing at seamer c: lightsalmon
+  nice: darksalmon
+  F3: blueviolet
+  G3: deeppink
+  G2: plum
+  F-3: springgreen
+  H-1: mediumseagreen
+  H1: olivedrab
+  J2: plum
+  H2: lightcyan
+  H3: mediumspringgreen
+  F-2: slateblue
+  F1: maroon
+  F2: palegoldenrod
+  G-1: antiquewhite
+  G1: cyan
+  P3: royalblue
+  awl: darkkhaki
+  later prehist l neo: lightpink
+  langdale?: slateblue
+  concave tr: wheat
+  duplicate number: lightcoral
+  proper poss early: goldenrod
+  uw large opp plat: navajowhite
+  on heavily bashed thing s-a-l: darksalmon
+  faceted on l bl material: blanchedalmond
+  all J3 - presume this is really 149: honeydew
+  a bit deepcaresque: mediumblue
+  uw ext abraded but - lb??: darkkhaki
+  a bit deepcar?: olivedrab
+  very small: rebeccapurple
+  uw?: darkkhaki
+  broken: cornsilk
+  uw***poss mastic thou maybe just iron staining. Impact fracture: red
+  uw poss hafted: orange
+  usewear: seashell
+  rolled: darkorange
+  bag dup both H3: ivory
+  duplicate no both K7: navajowhite
+  bulb present: palegoldenrod
+  on anvil? Unusual?: dimgray
+  poss mis-hit fr or sim mi manufacting deb: indigo
+  butchery: honeydew
+  'hide, bone meat': whitesmoke
+  aimee looks sees use-wear: floralwhite
+  poss in situ: greenyellow
+  br: blue
+  co tab used as burin: grey
+  for residu: violet
+  residue: royalblue
+  residu: darkslategray
+  reside: firebrick
+  for residue: silver
+  axfl: mediumvioletred
+  wiped peat off but would be good for residu if can still be done: deepskyblue
+  for residue?: brown
+  poss brokn hs: fuchsia
+  faceted: ivory
+  for res under bracket fungu: darkorange
+  check contexts 245: springgreen
+  Bag not filled in: lightskyblue
+  distinctive raw mat: indigo
+  poss goes with house: darkslategrey
+  impact: darkgoldenrod
+  on cpf: darkseagreen
+  v large poss e axfl: plum
+  interesting raw mat: navy
+  impact fracture: darkslategrey
+  a bit worn: cornsilk
+  intentionally segmented?: mintcream
+  partly obscured by trowel damage: rebeccapurple
+  re - modern damage?: darksalmon
+  nat backed kn: darkgrey
+  could be slightly funny prim bs with retouch to guide - retouch looks a but thick so could be l mes mi or impact fr: lavenderblush
+  for wood??: gold
+  'sort of cr bl, but rubbed not cr': lightgreen
+  pos delib segment: chocolate
+  modern damage?: lightsteelblue
+  no obvious use wear but nice blade - worth a look as a test?: tan
+  ' tip damage': coral
+  'interesting  heavy wear on ventral, burin end': rosybrown
+  ut as scraper?: lightseagreen
+  1 end could be spontaneous: slategrey
+  sim mat to previous: black
+  odd: blanchedalmond
+  refits with somethin seen yesterday: blueviolet
+  proper chert - banded - north welsh stuff?: aliceblue
+  check for refir with axe sequence: darkslategrey
+  much ut: rebeccapurple
+  Same number as bone: tan
+  modern tip damage: saddlebrown
+  translucent: darkviolet
+  Seamer spur: green
+  unfin: lightgray
+  not in bag: firebrick
+  poor plat angle removal: navy
+  poss through the mill a bit mdden type: hotpink
+  poss refit with grey house group check: paleturquoise
+  lincs fl: silver
+  hafted?: forestgreen
+  interesting to see how extra large microlith is used: palevioletred
+  Axe: moccasin
+  delib fract blade: white
+  sf and lots of incipient cones: blue
+  flake from sal?: gold
+  2 pieces in bag: black
+  Found while shovel scraping: teal
+  from same co as 95226: floralwhite
+  modern dam?: deeppink
+  all 3 95252 in same bag: darkcyan
+  'two exhaustec cos, check cache potential': rosybrown
+  in co cache?: maroon
+  pinged off from a used stone: dimgray
+  we like: darkgrey
+  poss axfl: whitesmoke
+  in V18 there are a collection of very large flkes from different cores: firebrick
+  there may be a decortication assemblage round here like barry's island: orangered
+  heavily reduced: lightpink
+  possible refit group with sc1: seashell
+  pos burin: bisque
+  serrated: lightseagreen
+  remnant of bit snapped in haft?: maroon
+  nat shape but worth a look: mediumblue
+  min reduced: yellowgreen
+  turning sc into burin or refreshing sc edge?: mediumpurple
+  v small latish?? But right lat: olive
+  check - could reft w house group: rebeccapurple
+  in backfill?: dimgrey
+  poss unfin mi?: aquamarine
+  used as piercer: linen
+  large cortical: sandybrown
+  use-wear poss as notch looks like may have prodution mark: darkorange
+  interestin rotational tip snap: springgreen
+  '**check with refitted axe': mediumorchid
+  tail trowelled slightly so length estimated: turquoise
+  spur like Seamer: firebrick
+  left lat: fuchsia
+  crinoid holes: midnightblue
+  co tab: hotpink
+  poss axe or recycled: turquoise
+  check with big grey refit group: crimson
+  poss reuse as patina with signs of flaking: darkslategrey
+  from s-a-l: mediumaquamarine
+  use of delib break?: lightblue
+  check for match with large grey refit group: darkorchid
+  'tip missing, modern damage': darkred
+  crackly frost damage: floralwhite
+  check refit: darkorange
+  on prox: steelblue
+  tiny - l mes?: seagreen
+  poss to rejuvenate s-a-l: darkgreen
+  poss ut as awl?: ghostwhite
+  'poss from transverse burin, bit odd': rosybrown
+  'from double burin prev t on 1 end, this 1st removal from new burin end': steelblue
+  'poss  reut pat co, poss later': olivedrab
+  poorly made: floralwhite
+  poss from 96318: yellow
+  poss refit with house grp: papayawhip
+  unfin?: darkslategray
+  interestng grouping- check distribution poss cache: springgreen
+  v similar to 96471: lightsalmon
+  like others in the midden this doesn't look like to make brin but abouth cores on flakes and coe maintainance: aqua
+  notch? mi-int?: darkorange
+  re or recent damage?: black
+  distal use- repeat pattern seen elsewer: lightseagreen
+  prob made on tabular wolds: navajowhite
+  crackly surface: tan
+  bs? Siret?: peru
+  from tr b: darkmagenta
+  for aimee: cadetblue
+  wolds prim fl: seashell
+  poss lb flat and opp  pl: beige
+  delib break: pink
+  check for refits: blue
+  seamer style spike: mediumaquamarine
+  ff crackly: antiquewhite
+  'tip missing, bit of lateral damage, opp re on long side': linen
+  pair with 97078?: floralwhite
+  multiple sf - children?: mediumspringgreen
+  red and gr: slateblue
+  techno or use?: brown
+  on fl: mediumorchid
+  elegant: mediumvioletred
+  check with refit sequence: lavender
+  use of fl/b cores to make blades: papayawhip
+  leading edge re looks recent: azure
+  looks a bit later- poss like the stuff at fshf - like pkp but thinner: snow
+  what are notches for - not many in v of p compared w s england: seashell
+  seamer spur: lightseagreen
+  poss lb - opp pl and dihedral plat: linen
+  ref w 97706: pink
+  ref w 97704: navy
+  nasty big notch: springgreen
+  on fl/b co?: lightcyan
+  same tab black mat as used at seamer: lavenderblush
+  poss axe reut as co: bisque
+  veiny have seen before: moccasin
+  delib br?: lavenderblush
+  refits: palevioletred
+  this is quite a chalky cortex  coud things like this be brought in?: darkred
+  are break burins tools or bi-product of use?: darkgoldenrod
+  has v sim poss unfin twist to another example  check: papayawhip
+  slight tang: chartreuse
+  check refit potential with sc23: lightskyblue
+  Blade: steelblue
+  delib seg?: honeydew
+  small: yellow
+  check tr34 big refit grp: red
+  on prox seamer spur: lightcoral
+  tip damage modern?: darkgray
+  ref w 98288: darkslategray
+  from same nod as 98279: deepskyblue
+  refits w 98276: floralwhite
+  with spur or broken?: darkorange
+  is ut as b?: mediumorchid
+  odd poss residue: lavender
+  or poss blt co - sim to sort of burins in this area: red
+  deepcar angle: mediumblue
+  poss ut as sc: slateblue
+  conj w 98249: maroon
+  is this used as mi quite thick: chartreuse
+  goes with other deb in t12/13: peachpuff
+  conj w 98229: gold
+  poss tech bs rather than real: teal
+  from ax deb?: tan
+  From 'Lithic cache': darkturquoise
+  From 'Lithic cache' ref with natural bts: darkcyan
+  From 'Lithic cache' v similar to other nat - refits: honeydew
+  'From ''Lithic cache'' refits w 98972, reworked after breakage': lavenderblush
+  From 'Lithic cache' more reduced: ghostwhite
+  Potentially part of 'lithic cache': burlywood
+  crackly surface got as surface tab?: honeydew
+  poss unfin: mediumvioletred
+  teeny tiny baby axe: mediumaquamarine
+  is used? Too small to be much use as co: darkorchid
+  Tranchet axe: olive
+  below plat: sienna
+  check whether rel to cache: yellowgreen
+  reasonably large: mediumspringgreen
+  check long d refit: rebeccapurple
+  crackl surface: dimgray
+  below timber?: springgreen
+  seamer spur on prox: darkgreen
+  Associated with <99846>: azure
+  exhausted: darkcyan
+  on v large wolds fl: darkkhaki
+  ut as mi?: yellowgreen
+  poss late meso mi of some kind: cornsilk
+  'tip broken, poss recent': seagreen
+  Found in association with <103392>: saddlebrown
+  Found in association with <103390>: indigo
+  detrital wood: gray
+  composite no 3: magenta
+  or burin: ivory
+  with bulb: wheat
+  gone wrong: gold
+  from same sequence as 107626: steelblue
+  from same sequence as 107611: midnightblue
+  use of fl co?: mediumaquamarine
+  conj w 107717: darkgrey
+  conj w 107715: skyblue
+  is this taphonomic?: beige
+  med: steelblue
+  dup this is correct check other nos: seashell
+  dup: forestgreen
+  ff or burnt all go together to make something bigger: mediumturquoise
+  also troweldam: pink
+  nasty poss broken and failed repair: darkturquoise
+  b or ff: mediumseagreen
+  gone wrong definite prof wolds is also being obtained as beach pebbles: aqua
+  seamer spur on co tab: rosybrown
+  poss recent - or mi w bulb: darkgreen
+  has m-d on edge: darkkhaki
+  refits with 108799: orange
+  refits w 108737: lightsalmon
+  'poss unfin m de f, poss lg': darkgrey
+  poss mi w bulb: mistyrose
+  burin made on broken scraper: lightskyblue
+  tail damage: seashell
+  'not so large, impct fr': beige
+  tip dam: mediumturquoise
+  check - the other one is real: plum
+  relook when shannon finished - too dirty: mediumorchid
+  poss sc on other end - check when shannon finished: mediumpurple
+  core shattered - attempt to recover: mediumseagreen
+  4 in bag. Major crime: mistyrose
+  thoroughly reduced: olive
+  check this one: springgreen
+  from compoite: darkolivegreen
+  'tip missing, poss refit with house stuff': lightcoral
+  pine: green
+  'poss burin, but missing tip': cornflowerblue
+  abandoned early due to flaws: indianred
+  cache min ut: gold
+  ref w 113159: cornsilk
+  looks like deepcar mi sep w re on le: darkgoldenrod
+  'attempt to make plat, wrong angle': cyan
+  ufin/impact: teal
+  gone wrong?: sandybrown
+  same refit group as grey sc23: mediumslateblue
+  conj w 113574: lightskyblue
+  conj w 113575: blue
+  'unfin m de f? obl tr on prox (with mb technique?), then some re down the edges but snapped': darksalmon
+  from axe reut as co: navajowhite
+  odd edges though possibility of burinign: slategray
+  borer or mi?: midnightblue
+  on cr bl prox: darkturquoise
+  chal: ghostwhite
+  check sc23 reit: goldenrod
+  damage or b: blue
+  check sc23 refit: yellow
+  d: forestgreen
+  'im[act fr': lightskyblue
+  funny edge: lightcoral
+  'could this be an unfin m de f, not sure what otherwise. Sim pattern to smaller one see above': dimgrey
+  crackly: darkorange
+  poss reut axe: darkorange
+  check in this refits w117082: fuchsia
+  heavy impact fr: navajowhite
+  or res: saddlebrown
+  funny edges: gold
+  leading edge re is trowel damage?: snow
+  odd edge: royalblue
+  blackened - burnt or res: royalblue
+  more dc: lightslategray
+  is this like clarks refit?: blue
+  check refit with sc23 cherty sequences: saddlebrown
+  pat like K federmesser stuff: chartreuse
+  'lame machuree, sim condition to seamer k fed': darkseagreen
+  internal fossil: seagreen
+  Yorkshire dales/northumberland: violet
+  super gl: seashell
+  this is possibly from an ae which is being reworked to make a core: mediumblue
+  grrn cortex: lightcoral
+  shiny residue: sandybrown
+  weird residue / gl: wheat
+  super gloss: darkgreen
+  reamer: ivory
+  cortex stained green: lightcoral
+  from something re?: mediumpurple
+  v glossy facted: darkgray
+  cache?: lightslategrey
+  pl: goldenrod
+  gl: coral
+  hyper gl: deeppink
+  stained green: wheat
+  sl gl: mediumturquoise
+  clark refit?: darkblue
+  removed most of burin: olive
+  like seamer: blue
+  'looks v like some of the seamer lb 3 cre sequences, v': floralwhite
+  'lines on cortext, but this is soft - check poss post-dep issues': turquoise
+scatter:
+  SC22 scatter: mistyrose
+  clark brushwood: darkviolet
+  W platform: slategray
+  VP85 plat: mediumspringgreen
+  ax fac: khaki
+  sand lens: cadetblue
+  sans lens: lightgray
+  marl: cyan
+  Clark Brushwood: darkseagreen
+  sand lens scatter: ivory
+  detrital wood: tomato
+  c plat: darksalmon
+  E water: darkseagreen
+  bead: sandybrown
+  sub platform brushwood: midnightblue
+  Caches: gray
+  caches: chocolate
+  E platform: orchid
+  west water: olivedrab
+  Bead: gray
+  bone bed: dimgray
+  open water: orange
+f31:
+  refits with 84657 in sc6: aliceblue
+  conj w 98978: gray
+  conj w 98977: cornsilk

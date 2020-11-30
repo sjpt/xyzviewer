@@ -29,13 +29,14 @@ COLS.reader = function(data, fid) {
         }
     }
     Object.assign(COLS, coldata);
+    dataToMarkersGui();
 }
 
 /** generate code for colour for field */
-COLS.gencol = function(field, xyz) {
+COLS.gencol = function(xyz, field) {
     COLS.show(xyz, field);
     if (field === 'random') return 'COLS.random()';             // random colours
-    if (field === 'fixed') field = colourpick.value;
+    if (field === 'fixed') field = E.colourpick.value;          // fixed colour
     if (COLS[field]) return `COLS["${field}"][${field}]`;       // field with defined colours
     if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `X.stdcol(xyz.enumI("${field}", i))`; // mainly character field, no defined colours
 
@@ -48,6 +49,13 @@ COLS.gencol = function(field, xyz) {
     }
     const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
     return `COLS.forrange(xyz.namecols["${field}"][i], ${low}, ${range})`;      // mainly number field
+}
+
+/** (inefficient) get colour for single value, mainly for debug */
+COLS.colfor = function(xyz, field, i) {
+    const sf = COLS.gencol(xyz, field);
+    const f = new Function('xyz', 'i', 'return ' + sf);
+    return f(xyz, i);
 }
 
 /** random colours */

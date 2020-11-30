@@ -1,21 +1,22 @@
 'use strict';
 var posturiasync, handlerForFid, refit, lastModified, addToFilelist;
-lastModified.archstart = `Last modified: 2020/11/27 19:07:11
+lastModified.archstart = `Last modified: 2020/11/30 10:13:26
 `
 var filelist = `
-contours.geojson
-feature.geojson
-fishseived.geojson
-SC13-15_wood_data.csv
-starcarrsurf.geojson
-StarCarr_BirchBarkRolls.csv
-StarCarr_Faunal.csv
-StarCarr_FishHandCollected.csv
 StarCarr_Flint.csv
 StarCarr_Fungi.csv
 StarCarr_Stones.csv
+SC13-15_wood_data.csv
+StarCarr_BirchBarkRolls.csv
+StarCarr_Faunal.csv
+StarCarr_FishHandCollected.csv
+contours.geojson
+feature.geojson
+fishseived.geojson
+starcarrsurf.geojson
 trenches.geojson
 woodplanned.geojson
+sample.cols
 vp10_dr004.dxf`.trim().split('\n');
 filelist.forEach(n => addToFilelist(n, 'StarCarr/'+n));
 
