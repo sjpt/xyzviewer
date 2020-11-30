@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/28 13:27:32
+window.lastModified.graphicsboiler = `Last modified: 2020/11/30 09:23:43
 `
 
 
@@ -30,8 +30,8 @@ let i; // very odd, to check
 function init() {
     // make sure all spotsize elements ready for appropriate events
     document.getElementsByName('spotsize').forEach(e => {
-        e.onmouseenter = X.spotin; 
-        e.onmouseleave = X.spotout;
+        e.onmouseenter = (e) => X.spotsizeset(e, 'in'); 
+        e.onmouseleave = (e) => X.spotsizeset(e, 'out'); 
         e.onclick = X.spotsizeset;
     });
 
@@ -83,8 +83,6 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.xr.enabled = true;   // will NOT??? be overwritten frame by frame
     renderer.autoClear = autoClear;
-    // 28/11/2020 next line related to https://github.com/mrdoob/three.js/issues/20715 ... may become unnecessary in future
-    renderer.getContext().makeXRCompatible().then(x => log('XR compatibility set', x));
     canvas = renderer.domElement;
     container.appendChild(canvas);
     canvas.id = 'canvas';
@@ -254,7 +252,6 @@ function select(fid) {
         const guiset = xyz.guiset;
         if (guiset) {
             E.colourby.value = guiset.colourby;
-            E.colourbox.value = guiset.colourbox;
             E.filterbox.value = guiset.filterbox;
             E.colourpick.value = guiset.colourpick;
             xyz.spotsizeset(guiset.spotsize)

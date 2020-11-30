@@ -57,9 +57,15 @@ class VRButton {
 
 			};
 
-			button.onclick = function () {
+			button.onclick = async function () {
 
 				if ( currentSession === null ) {
+					const gl = renderer.getContext();
+					// 28/11/2020 next lines related to https://github.com/mrdoob/three.js/issues/20715 ... may become unnecessary in future
+					var attributes = gl.getContextAttributes();
+					if (attributes.xrCompatible !== true)
+						await gl.makeXRCompatible().then(x => console.log('XR compatibility set', x));
+	
 
 					// WebXR's requestReferenceSpace only works if the corresponding feature
 					// was requested at session creation time. For simplicity, just ask for

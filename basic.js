@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles, addToFilelist};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/27 19:50:28
+X.lastModified.basic = `Last modified: 2020/11/29 15:30:32
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -222,6 +222,7 @@ function writeFile(fid, text, append=false) {
 /** document drop, if ctrl key keep dragDropDispobj which may be used by loader
 dragOverDispobj will be destroyed too soon because of asynchronous loader */
 function docdroppaste(evt) {
+    if (evt.srcElement instanceof HTMLTextAreaElement) return;
     var dt = evt.dataTransfer || evt.clipboardData;
     if (!dt) { console.error("unexpected dragdrop"); return killev(evt); }
     dt.dropEffect = 'copy';

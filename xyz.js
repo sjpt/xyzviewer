@@ -8,7 +8,7 @@ window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
 
 export {
     centrerange, // for draw centre consistency
-    spotsizeset, spotin, spotout,
+    spotsizeset,
     dataToMarkersGui,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
@@ -36,15 +36,13 @@ const stdcols = [
 const stdcol = X.stdcol = n => stdcols[n%8];
 
 // ??? to engineer below more cleanly
-const spotsizeset = a => { if (X.currentXyz) X.currentXyz.spotsizeset(a); }
-const spotin = a => { if (X.currentXyz) X.currentXyz.spotin(a); }
-const spotout = a => { if (X.currentXyz) X.currentXyz.spotout(a); }
+const spotsizeset = (a, b) => { if (X.currentXyz) X.currentXyz.spotsizeset(a, b); }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
 const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
 const centrerange = X.centrerange = new THREE.Vector3('unset');  // ranges for external use
 
 /***/
-X.spotsizeset = spotsizeset; X.spotin = spotin; X.spotout = spotout;
+X.spotsizeset = spotsizeset;
 X.dataToMarkersGui = dataToMarkersGui;
 X.filtergui = filtergui;
 X.csvReader = csvReader;
@@ -74,8 +72,8 @@ constructor(data, fid) {
     this.fid = fid;
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
-    // colourby is dropdown, colourpick is colour picker, colourbox is forumula
-    this.guiset = {spotsize: 0.2, colourby: '', colourbox: '', colourpick: '#ffffff', filterbox: ''};
+    // colourby is dropdown, colourpick is colour picker
+    this.guiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
     X.select(fid);
 }
 
@@ -83,23 +81,21 @@ constructor(data, fid) {
 dataToMarkersGui(type) {
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
-        Object.assign(this.guiset, {colourby: E.colourby.value, colourbox: E.colourbox.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
+        Object.assign(this.guiset, {colourby: E.colourby.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
         if (this.makechainlines)
             this.makechainlines(E.filterbox.value, E.colourby.value);
         return this.dataToMarkers(E.filterbox.value, E.colourby.value)
     } else if (X.currentThreeObj.material ) {
-        E.colourbox.value = E.colourpick.value;
-        X.currentThreeObj.material.color.set(E.colourbox.value);
+        X.currentThreeObj.material.color.set(E.colourpick.value);
     }
 }
 
 /** load the data with given filter and colour functions if required, and display as markers */
-async dataToMarkers(pfilterfun, pcolourfun) {
+async dataToMarkers(pfilterfun) {
     if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const l = xc.length;
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox);
-    const colourfun = await this.makecolourfun(pcolourfun, E.colourbox);
     let vert = new Float32Array(l*3);
     let col = new Float32Array(l*3);
     const geometry = this.geometry = new THREE.BufferGeometry();
@@ -112,22 +108,22 @@ async dataToMarkers(pfilterfun, pcolourfun) {
             if (!df) continue;
             if (typeof df === 'object') du = df;
         }
-        if (!du) du = {x: xc[i], y: yc[i], z: zc[i]};
+        if (!du) du = {_x: xc[i], _y: yc[i], _z: zc[i]};
         const r = Math.random;
-        let c = colourfun ? colourfun(this, i) : col3(r(), r(), r());
+        let c = du._col || col3(r(), r(), r());
         if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
-        let x = 'x' in du ? du.x : xc[i];
-        let y = 'y' in du ? du.y : yc[i];
-        let z = 'z' in du ? du.z : zc[i];
-        if (x === undefined || y === undefined || z === undefined) {
+        let _x = du._x !== undefined ? du._x : xc[i];
+        let _y = du._y !== undefined ? du._y : yc[i];
+        let _z = du._z !== undefined ? du._z : zc[i];
+        if (_x === undefined || _y === undefined || _z === undefined) {
             noxyz++;
         } else {            
-            vert[ii] = x;
-            col[ii++] = 'r' in du ? du.r : c.r;
-            vert[ii] = y;
-            col[ii++] = 'g' in du ? du.g : c.g;
-            vert[ii] = z;
-            col[ii++] = 'b' in du ? du.b : c.b;
+            vert[ii] = _x;
+            col[ii++] = c.r;
+            vert[ii] = _y;
+            col[ii++] = c.g;
+            vert[ii] = _z;
+            col[ii++] = c.b;
         }
     }
     const ll = ii/3;
@@ -173,14 +169,13 @@ val(name, i) {
 async makecolourfun(fn, box) {
     if (typeof fn === 'function') return fn;
     if (fn === undefined || fn === '' || fn === 'random') return ()=>col3(Math.random(),Math.random(),Math.random());
-    if (fn === 'choose') {
+    if (fn === 'fixed') {
         const cc = new THREE.Color().setStyle(E.colourpick.value);
-        E.colourbox.value = E.colourpick.value;
         return ()=>cc;
     }
     if (fn === 'custom')
         try {
-            const c = E.colourbox.value;
+            const c = E.colourpick.value;
             if (c[0] === '#') {
                 const cc = new THREE.Color().setStyle(c);
                 E.colourpick.value = '#' + cc.getHexString();
@@ -251,23 +246,35 @@ async makefilterfun(filtin, box, applied=false) {
     if (typeof filt === 'function')
         filtfun = filt;
     else if (typeof filt === 'string') {
-        const used = [];
-        for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
-            if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
-                used.push(fn);
-                await this.lazyLoadCol(fn);
-            }
-
-        // generate filter
-        if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
-        // todo: make special case filters for pure number/pure alpha columns???
-        const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
-        filt = `
-            var x = 0, y = 0, z = 0, r = 1, g = 1, b = 1;
-            ${uu}\n
-        ` + filt;
-        this.lastCodeGenerated = filt;
         try {
+            const used = [];
+            for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
+                if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
+                    used.push(fn);
+                    await this.lazyLoadCol(fn);
+                }
+
+            filt = filt.split('\n').map(l => {
+                if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
+                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_col = ' + X.COLS.gencol(ll, this)}
+                else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
+                else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
+                else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;
+                return l;
+            }).join('\n');
+
+
+            // generate filter
+            // if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
+            filt += '\nreturn {_x, _y, _z, _col};'
+            // todo: make special case filters for pure number/pure alpha columns???
+            const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
+            filt = `
+                var _x, _y, _z, _col;
+                ${uu}\n
+            ` + filt;
+            this.lastCodeGenerated = filt;
+
             filtfun = new Function('xyz', 'i', filt);
             this.lastFunction = filtfun;
         } catch (e) {
@@ -531,6 +538,8 @@ finalize(fid, partial = false) {
     const me = this;
     const {header, cols, namecols, vset, namevset, vsetlen, namevsetlen} = this;
 
+    this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
+
     // now we have collected the data trim the columns and prepare helper derived data
     for (let i = 0; i < header.length; i++) {
         cols[i] = cols[i].slice(0, this.n);
@@ -538,6 +547,10 @@ finalize(fid, partial = false) {
         namevset[header[i]] = vset[i];
         namevsetlen[header[i]] = vsetlen[i];
         this.namevseti[header[i]] = Object.keys(vset[i]);
+
+        this.namecolnstrs[header[i]] = this.colnstrs[i];
+        this.namecolnnum[header[i]] = this.colnnum[i];
+        this.namecolnnull[header[i]] = this.colnnull[i];
     }
 
     // delete some number based fields; they have done their work during preparation, no longer needed
@@ -592,8 +605,6 @@ sForEach(fun) {
 }
 
 // code below enables hover to perform temporary spotsize change
-spotin(event) { this.spotsizeset(event, 'in'); }
-spotout(event) { this.spotsizeset(event, 'out'); }
 
 /** set/get the spotsize. input may be size or may be event from spotsize gui
 TODO, allow for number of pixels so value has similar effect on different devices */
@@ -636,7 +647,7 @@ async filtergui(evt = {}) {
 
 /** generate colourby */
 gencolby() {
-    E.colourby.innerHTML = `<option value="choose">choose</option>`;
+    E.colourby.innerHTML = `<option value="fixed">fixed</option>`;
     E.colourby.innerHTML += `<option value="random">random</option>`;
     E.colourby.innerHTML += `<option value="custom">custom</option>`;
     for (const name of this.header)
@@ -751,19 +762,17 @@ async savefiles() {
     log('saves done');
 }  // savefiles
 
+enumI(f,i) {
+    return NaN2i(this.namecols[f][i]);
+}
+enumF(f,i) {
+    return NaN2i(this.namecols[f][i]) / this.namevsetlen[f];
+}
+// X.en umI = en umI; X.en umF = en umF; 
+
 } // end class XYZ
 
 // helpers, global
-function enumI(d,f) {
-    if (f.substring(0,2) === 'd.') f=f.substring(2); 
-    return X.currentXyz.namevset[f][d];
-}
-function enumF(d,f) {
-    if (f.substring(0,2) === 'd.') f=f.substring(2); 
-    return X.currentXyz.namevset[f][d] / X.currentXyz.namevsetlen[f];
-}
-X.enumI = enumI; X.enumF = enumF; 
-
 function plan() {
     window.maingroup.rotation.set(0,0,0);
     home();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/27 21:00:37
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/30 09:34:57
 `</script>
 <html lang="en">
 	<head>
@@ -32,7 +32,6 @@
             #ack {
                 z-index: 100;
             }
-            #colourbox { width: 20%; }
             input[type='checkbox'] { margin-left: -0.5em; }
 
             .help, .helpabove {
@@ -119,8 +118,26 @@
                 </span>
                 <span class="help" id="speechhelp">check for speech input</span>
                 <br>
-                <b>visible: </b>
+                <b>loaded files: </b>
                 <span id='visibles'></span>
+
+                <span><span><br><b>available files: </b><select onchange="loaddrop(event);" id="filedropbox"></select></span>
+                    <span class="help">Load additional datasets from those available at our host.
+                    <br>
+                    The dropdown has a list of all such available datasets.
+                    <br>
+                    <br>
+                    You can also load additional datasets from your local filesystem
+                    <br>
+                    by drag/drop from explorer or similar onto the canvas.
+                    <br>
+                    <br>
+                    For some odd reason copy/paste works for text (including URLs), but does NOT work for files.
+                    <br>
+                    <br>
+                    In future we also hope to be able to drag/drop or copy/paste URLs from the Star Carr archive.
+                </span></span>
+
                 <!-- <span class="help">toggle visibility of loaded dataset</span> separate help generated for each item -->
                 <!-- <br>
                 <b>VR resolution, enter VR at chosen resolution (exit VR, or on Chrome restart page, to change res:</b>
@@ -145,7 +162,7 @@
                 <br>
                 <span>
                     <b>Colour by:</b>
-                    <select onchange="dataToMarkersGui();" id="colourby">
+                    <select onchange="COLS.set(event.srcElement.value)" id="colourby">
                         <!-- will be filled in dynamically -->
                     </select>
                 </span>
@@ -153,9 +170,8 @@
                     'custom' will use the fixed colour or custom javascript code in the box to the right.</span>
                 <!-- can't find reliable single event or even events for when OK clicked with no change  -->
                 <input type="color" id="colourpick" value="#c0c0c0"
-                    oninput="dataToMarkersGui('choose');"/>
+                    oninput="COLS.set(event.srcElement.value, true)"/>
                 <span class="help">Select a fixed colour for this dataset.</span>
-                <input type="text" id="colourbox" onkeyup="dataToMarkersGui('custom');"/>
                 <span class="help">Write custom colour code here.</span>
                 <br>
                 <span>
@@ -203,24 +219,8 @@
                 <p id="filterr"></p>
                 <br>
                 <p id="msgbox"></p>
+                <p id="colkey"></p>
                 <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
-
-                <span><span><br><b>File choice:</b><select onchange="loaddrop(event);" id="filedropbox"></select></span>
-                    <span class="help">Load additional datasets from those available at our host.
-                    <br>
-                    The dropdown has a list of all such available datasets.
-                    <br>
-                    <br>
-                    You can also load additional datasets from your local filesystem
-                    <br>
-                    by drag/drop from explorer or similar onto the canvas.
-                    <br>
-                    <br>
-                    For some odd reason copy/paste works for text (including URLs), but does NOT work for files.
-                    <br>
-                    <br>
-                    In future we also hope to be able to drag/drop or copy/paste URLs from the Star Carr archive.
-                </span></span>
 
             </div>
         </div>
@@ -251,6 +251,7 @@
 <script type="module" src="plyreader.js"></script>
 <script type="module" src="dxfreader.js"></script>
 <script type="module" src="grid.js"></script>
+<script type="module" src="cols.js"></script>
 <script src="gldebug.js"></script>
 <script>console.log('last module read, window=', window)</script>
 

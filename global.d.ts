@@ -14,7 +14,7 @@ var W = window as Window;
 var E = window as MyElements;
 var X = window as MyExternals;
 interface MyElements {
-    gui, canvas, filterbox, msgbox, visibles, photoscheck, info, colourbox, colourby, filterr, fileChooser,
+    gui, canvas, filterbox, msgbox, visibles, photoscheck, info, colourby, filterr, fileChooser,
     colourpick
 
 }
