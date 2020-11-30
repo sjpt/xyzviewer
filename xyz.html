@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/30 10:55:09
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/30 18:23:46
 `</script>
 <html lang="en">
 	<head>
@@ -14,25 +14,20 @@
 				margin: 0px;
 				overflow: hidden;
 			}
-			a {
-				color: #f00;
-			}
+			a {	color: #f00; }
             #gui {
                 position: relative;
                 top: 10px;
                 z-index: 100;
                 pointer-events: none;
             }
-            #gui * {
-                pointer-events: all;
-            }
-            #msgbox {
-                pointer-events: none;
-            }
-            #ack {
-                z-index: 100;
-            }
+            #gui * { pointer-events: all; background: #2226 }
+            #msgbox { pointer-events: none; }
+            #narrow { width: 25em }
+            #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
+            #ack { z-index: 100; }
             input[type='checkbox'] { margin-left: -0.5em; }
+            select, button {color: white}
 
             .help, .helpabove {
                 display: none;  /* overridden on :hover on previous element */
@@ -166,13 +161,11 @@
                         <!-- will be filled in dynamically -->
                     </select>
                 </span>
-                <span class="help">Select a colouring strategy for this dataset from the dropdown.<br>
-                    'custom' will use the fixed colour or custom javascript code in the box to the right.</span>
+                <span class="help">Select a colouring strategy for this dataset from the dropdown.</span>
                 <!-- can't find reliable single event or even events for when OK clicked with no change  -->
                 <input type="color" id="colourpick" value="#c0c0c0"
                     oninput="COLS.set(event.srcElement.value, true)"/>
                 <span class="help">Select a fixed colour for this dataset.</span>
-                <span class="help">Write custom colour code here.</span>
                 <br>
                 <span>
                 <b>Spot size:</b>
@@ -200,32 +193,34 @@
                     These can be loaded by drag-drop from Explorer or equivalent.
                 </span>
                 <br>
-                <p id="filtcount"></p>
-                <span>
-                    <b>Control:</b>
-                    <textarea id="filterbox" rows="1" cols="40" onkeyup="filtergui(event);"></textarea>
-                </span>
-                <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
-                    <ul style="margin:0">
-                        <li>ctrl-enter to apply.</li>
-                        <li>green background indicates correct javascript but is pending application.</li>
-                        <li>white background indicates javascript has been applied.</li>
-                        <li>pink background indicates incorrect javascript.</li>
-                        <li>blusih background indicates javascript inappropriate for this context.</li>
-                        <li></li>
-                        <li>The control box may have 'special format lines based on a prefix:</li>
-                        <li><b>'?'</b>: filter the data set according to the filter in the rest of the line</li>
-                        <li><b>'COL:'</b>: choose a column or three.js (css) colour value for colouring the data set</li>
-                        <li><b>'X:', 'Y:', 'Z:'</b>: choose an expression to override the default x,y,z columns for position</li>
-                    </ul>
-                </span>
+                <div id="narrow">
+                    <p id="filtcount"></p>
+                    <span>
+                        <b>Control:</b><br>
+                        <textarea id="filterbox" rows="1" cols="40" onkeyup="filtergui(event);"></textarea>
+                    </span>
+                    <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
+                        <ul style="margin:0">
+                            <li>ctrl-enter to apply.</li>
+                            <li>green background indicates correct javascript but is pending application.</li>
+                            <li>white background indicates javascript has been applied.</li>
+                            <li>pink background indicates incorrect javascript.</li>
+                            <li>blusih background indicates javascript inappropriate for this context.</li>
+                            <li></li>
+                            <li>The control box may have 'special format lines based on a prefix:</li>
+                            <li><b>'?'</b>: filter the data set according to the filter in the rest of the line</li>
+                            <li><b>'COL:'</b>: choose a column or three.js (css) colour value for colouring the data set</li>
+                            <li><b>'X:', 'Y:', 'Z:'</b>: choose an expression to override the default x,y,z columns for position</li>
+                        </ul>
+                    </span>
 
-                <br>
-                <p id="filterr"></p>
-                <br>
-                <p id="msgbox"></p>
+                    <br>
+                    <p id="filterr"></p>
+                    <br>
+                    <p id="msgbox"></p>
+                    <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
+                </div>
                 <p id="colkey"></p>
-                <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
 
             </div>
         </div>
@@ -233,6 +228,7 @@
 		<script src="jsdeps/stats.min.js"></script>
         <script src="jsdeps/OrbitControls.js"></script>
         <script src="jsdeps/js-yaml.js"></script>
+        <script src="jsdeps/colorHelpers.js"></script>
 
         <!-- <script src="jsdeps/WebVR109.js"></script>         -->
         <!-- <script src="JSdeps/WebVR106SJPT.js"></script> -->

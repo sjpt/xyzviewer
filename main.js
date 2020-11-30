@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2020/11/28 14:49:38
+window.lastModified.main = `Last modified: 2020/11/30 17:52:47
 `
 var fileTypeHandlers; //  = {};
 // eslint-disable-next-line no-unused-vars
@@ -10,6 +10,7 @@ function addFileTypeHandler(ftype, fun) {
 
 // eslint-disable-next-line no-unused-vars
 var W,E,X, THREE;
+// eslint-disable-next-line no-unused-vars
 W = E = X = window;
 console.log('main.js execute, window W set', W);
 
@@ -66,6 +67,7 @@ function addscript(src) {
 /** code for encoding integers with NaNs, first 16 reserved */
 var _kkk = new Float32Array([NaN]);
 var _iii = new Uint32Array(_kkk.buffer);
+// eslint-disable-next-line no-unused-vars
 var _bbb = new Uint8Array(_kkk.buffer)
 var iNaN = _iii[0];
 function i2NaN(i) {
@@ -73,9 +75,11 @@ function i2NaN(i) {
     _iii[0] += i+16;
     return _kkk[0];
 }
+// eslint-disable-next-line no-unused-vars
 function NaN2i(f) {
     _kkk[0] = f;
     return _iii[0] - iNaN - 16;
 }
 
+// eslint-disable-next-line no-unused-vars
 var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null

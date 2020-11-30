@@ -70,8 +70,7 @@ function pdbReader(data, fid) {
 
 /** set up to show virus */
 function virusshow() {
-    E.colourbox.value = 'icol(chainn%7)';
-    E.colourby.value = 'custom';
+    E.colourby.value = 'fixed';
     if (usePhotoShader) {  // quick demo for Steve
         myxyz.spotsizeset(2);
         E.colourby.value = 'random';
@@ -140,11 +139,11 @@ function makechains(l = 5, cols = myxyz.namecols) {
 }
 
 /** make graphics for chain as lines */
-async function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.colourby.value) {
+async function makechainlines(pfilterfun = E.filterbox.value) {
     if (chainlines && chainlines.visible === false) return;
     if (!myxyz.namecols) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
-    const colourfun = await myxyz.makecolourfun(pcolourfun, E.colourby);
+    // const colourfun = await myxyz.makecolourfun(pcolourfun, E.colourby);
     if (chains.length === 0) makechains();
     var geom = new THREE.Geometry;
 
@@ -158,12 +157,13 @@ async function makechainlines(pfilterfun = E.filterbox.value, pcolourfun = E.col
     const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'];
     chains.forEach(chain => {
         if (filterfun && !filterfun(myxyz, chain.start)) return;
+        const defcol = new THREE.Color('white');
 
         for (let i = chain.start; i < chain.end; i++) {
             geom.vertices.push(new THREE.Vector3(xc[i], yc[i], zc[i]));
             geom.vertices.push(new THREE.Vector3(xc[i+1], yc[i+1], zc[i+1]));
-            geom.colors.push(colourfun(myxyz, i));
-            geom.colors.push(colourfun(myxyz, i+1));
+            geom.colors.push((filterfun && filterfun(myxyz, i)._col) || defcol);
+            geom.colors.push((filterfun && filterfun(myxyz, i+1)._col) || defcol);
         }
     });
     chainlines.geometry = geom;

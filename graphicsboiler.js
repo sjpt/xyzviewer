@@ -1,7 +1,7 @@
 'use strict';
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/30 09:23:43
+window.lastModified.graphicsboiler = `Last modified: 2020/11/30 18:47:18
 `
 
 
@@ -240,13 +240,14 @@ function addvis(obj, bname, xyz) {
 }
 
 /** select given object, w.i.p */
-function select(fid) {
+function select(fid, xyz) {
     for (const f in addvisList)
         E[f+'_k'].style.color = f === fid ? 'lightgreen' : 'white';
     const avl = addvisList[fid];
+    // if (!avl) return;      // try to select before ready ???
     log('sselect', fid, avl);
-    X.currentThreeObj = avl.obj;
-    const xyz = avl.xyz;
+    if (avl) X.currentThreeObj = avl.obj;
+    xyz = xyz || avl.xyz;
     if (xyz) {
         X.currentXyz = xyz;  // this logic need thought
         const guiset = xyz.guiset;
@@ -254,7 +255,7 @@ function select(fid) {
             E.colourby.value = guiset.colourby;
             E.filterbox.value = guiset.filterbox;
             E.colourpick.value = guiset.colourpick;
-            xyz.spotsizeset(guiset.spotsize)
+            if (xyz.material) xyz.spotsizeset(guiset.spotsize)
             // E['spot'+guiset.spotsize].checked = true;
         }
     }

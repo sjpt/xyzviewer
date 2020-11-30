@@ -7,6 +7,7 @@ var {addFileTypeHandler, jsyaml, THREE, X, E, dataToMarkersGui} = window;
 X.lastModified.basic = `Last modified: 2020/11/27 19:50:28
 `
 var COLS = X.COLS = {};
+COLS.eq = X.makeColeq();    // save a set of perceptually equal hues
 
 /** for now key is probably just a field name:
  * we may consider more structured keys with colour scheme names etc., maybe related to fid
@@ -32,13 +33,30 @@ COLS.reader = function(data, fid) {
     dataToMarkersGui();
 }
 
+/** make colours from equal hues */
+COLS.autocol = function(xyz, field) {
+    const nv = xyz.namevseti[field];
+    const nn = nv.length;
+    const r = COLS[field] = {};
+    const eql = COLS.eq.length;
+    for (let i = 0; i < nn; i++) {
+        const v = nv[i];
+        r[v] = COLS.eq[Math.floor( i * eql /nn)]
+    }
+    COLS.show(xyz, field);
+}
+
 /** generate code for colour for field */
 COLS.gencol = function(xyz, field) {
     COLS.show(xyz, field);
     if (field === 'random') return 'COLS.random()';             // random colours
     if (field === 'fixed') field = E.colourpick.value;          // fixed colour
+
+    if (xyz.namecolnstrs[field] > xyz.namecolnnum[field] && !COLS[field]) COLS.autocol(xyz, field);
+
     if (COLS[field]) return `COLS["${field}"][${field}]`;       // field with defined colours
     if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `X.stdcol(xyz.enumI("${field}", i))`; // mainly character field, no defined colours
+
 
     const r = xyz.ranges[field];
     if (r === undefined) {
@@ -89,6 +107,10 @@ COLS.writer = async function(fid = 'test') {
 }
 
 COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
+    if (xyz.namecolnstrs[field] < xyz.namecolnnum[field]) {
+        E.colkey.innerHTML = '';
+        return;
+    }
     let f = COLS[field];
     if (!f) {
         f = {};
@@ -98,11 +120,13 @@ COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
         }
     }
     let s = [];
+    let i = 0;
     for (const k in f) {
         const c = f[k], rgb = `rgb(${c.r*255}, ${c.g*255}, ${c.b*255})`;
-        s.push(`<tr><td>${k}</td><td style=" background-color: ${rgb}"></td>`);
+        s.push(`<tr><td>${k}</td><td style=" background-color: ${rgb}">&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>`);
+        if (i++ > 20) break;
     }
-    E.colkey.innerHTML = `<table><colgroup><col><col style="width: 2em"></colgroup>${s.join('')}</table>`;
+    E.colkey.innerHTML = `<table><tbody><colgroup><col style="max-width: 4em"><col style="width: 2em"></colgroup>${s.join('')}</tbody></table>`;
 }
 
 /** set a colour value */

@@ -1,7 +1,7 @@
 'use strict';
 import {addToMain} from './graphicsboiler.js';
 import {pdbReader} from './pdbreader.js';
-import {fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles} from './basic.js';
+import {fileReader, lineSplitter, saveData, sleep, readyFiles} from './basic.js';
 //let E = window, X = window;
 window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
 `
@@ -19,7 +19,7 @@ export {
 // let filtergui;
 
 
-const {THREE, addFileTypeHandler, col3, E, X, addscript, currentThreeObj, csv, NaN4null, i2NaN, NaN2i} = window;
+const {THREE, addFileTypeHandler, col3, E, X, addscript, csv, NaN4null, i2NaN, NaN2i} = window;
 // let E = window, X = window;
 X.xyzs = {};
 const {log} = window;
@@ -74,13 +74,14 @@ constructor(data, fid) {
     this.csvReader(data, fid);
     // colourby is dropdown, colourpick is colour picker
     this.guiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
-    X.select(fid);
+    X.select(fid, this);
 }
 
 /** load data based on gui values */
 dataToMarkersGui(type) {
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
+        if (!this.guiset) this.guiset={};   // in case of pdbreader ... todo proper subclass
         Object.assign(this.guiset, {colourby: E.colourby.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
         if (this.makechainlines)
             this.makechainlines(E.filterbox.value, E.colourby.value);
@@ -109,8 +110,7 @@ async dataToMarkers(pfilterfun) {
             if (typeof df === 'object') du = df;
         }
         if (!du) du = {_x: xc[i], _y: yc[i], _z: zc[i]};
-        const r = Math.random;
-        let c = du._col || col3(r(), r(), r());
+        let c = du._col || col3(0.3, 0.3, 0.3);
         if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
         let _x = du._x !== undefined ? du._x : xc[i];
         let _y = du._y !== undefined ? du._y : yc[i];
@@ -165,54 +165,56 @@ val(name, i) {
  * or a structure with field fn (field name) and optional low and high values
  * If low and high are not given they are used as 1.5 standard deviations from the mean.
  * We may later add low and high colour values for greater flexibility.
+ * 
  */
-async makecolourfun(fn, box) {
-    if (typeof fn === 'function') return fn;
-    if (fn === undefined || fn === '' || fn === 'random') return ()=>col3(Math.random(),Math.random(),Math.random());
-    if (fn === 'fixed') {
-        const cc = new THREE.Color().setStyle(E.colourpick.value);
-        return ()=>cc;
-    }
-    if (fn === 'custom')
-        try {
-            const c = E.colourpick.value;
-            if (c[0] === '#') {
-                const cc = new THREE.Color().setStyle(c);
-                E.colourpick.value = '#' + cc.getHexString();
-                return ()=>cc;
-            }
-            const f = await this.makefilterfun(c, box);
-            //const col = f(da tas[0]);  // test
-            return f;
-        } catch(e) {
-            return undefined;
-        }
-    if (typeof fn === 'string' && typeof (window[fn]) === 'function') return window[fn];  // need better formalization
-    if (typeof fn === 'string') fn = { fn }
-    const r = this.ranges[fn.fn];               // range
-    const name = fn.fn;
-    let col = await this.lazyLoadCol(name);
-    if (isNaN(r.sd)) {
-        const cf = function colourbyEnum(xyz, i) {    // colorby enumerated column
-            const v = col[i];    // raw value
-            const ii = NaN2i(v);                // just use the  valueset index
-            return stdcol(ii);
-        }
-        return cf;
-    } else {                            // colorby value column
-        if (fn.low === undefined) fn.low = r.mean - 1.5 * r.sd;
-        if (fn.high === undefined) fn.high = r.mean + 1.5 * r.sd;
-        const low = fn.low;
-        const range = fn.high - fn.low;
+// replaced by COL: in control box filterbox
+// async makecolourfun(fn, box) {
+//     if (typeof fn === 'function') return fn;
+//     if (fn === undefined || fn === '' || fn === 'random') return ()=>col3(Math.random(),Math.random(),Math.random());
+//     if (fn === 'fixed') {
+//         const cc = new THREE.Color().setStyle(E.colourpick.value);
+//         return ()=>cc;
+//     }
+//     if (fn === 'custom')
+//         try {
+//             const c = E.colourpick.value;
+//             if (c[0] === '#') {
+//                 const cc = new THREE.Color().setStyle(c);
+//                 E.colourpick.value = '#' + cc.getHexString();
+//                 return ()=>cc;
+//             }
+//             const f = await this.makefilterfun(c, box);
+//             //const col = f(da tas[0]);  // test
+//             return f;
+//         } catch(e) {
+//             return undefined;
+//         }
+//     if (typeof fn === 'string' && typeof (window[fn]) === 'function') return window[fn];  // need better formalization
+//     if (typeof fn === 'string') fn = { fn }
+//     const r = this.ranges[fn.fn];               // range
+//     const name = fn.fn;
+//     let col = await this.lazyLoadCol(name);
+//     if (isNaN(r.sd)) {
+//         const cf = function colourbyEnum(xyz, i) {    // colorby enumerated column
+//             const v = col[i];    // raw value
+//             const ii = NaN2i(v);                // just use the  valueset index
+//             return stdcol(ii);
+//         }
+//         return cf;
+//     } else {                            // colorby value column
+//         if (fn.low === undefined) fn.low = r.mean - 1.5 * r.sd;
+//         if (fn.high === undefined) fn.high = r.mean + 1.5 * r.sd;
+//         const low = fn.low;
+//         const range = fn.high - fn.low;
 
-        const cf = function colourbyVal(xyz, i) {
-            const v = col[i];    // raw value
-            const nv = ( v - low) / range;      // normalized value
-            return col3(nv, 1-nv, 1-nv);        // colour
-        }
-        return cf;
-    }
-}
+//         const cf = function colourbyVal(xyz, i) {
+//             const v = col[i];    // raw value
+//             const nv = ( v - low) / range;      // normalized value
+//             return col3(nv, 1-nv, 1-nv);        // colour
+//         }
+//         return cf;
+//     }
+// }
 
 /** make a function for a filter
  * If the value is a string it is converted to a function, using d as the input data row.
@@ -342,16 +344,25 @@ async yamlReader(raw, fid) {
     Object.assign(this, X.jsyaml.safeLoad(yaml));
 
     // and synthesize some more
-    const {namevset, namevseti} = this;
+    const {namevset, namevseti, header} = this;
     this.namecols = {};
     for (const n in namevset)
         namevseti[n] = Object.keys(namevset[n]);
-    this.gencolby();   
+    this.gencolby();  
+    
+    // maybe these could be saved as is --- more or less duplicate code with finalize()
+    this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
+    for (let i = 0; i < header.length; i++) {
+        this.namecolnstrs[header[i]] = this.colnstrs[i];
+        this.namecolnnum[header[i]] = this.colnnum[i];
+        this.namecolnnull[header[i]] = this.colnnull[i];
+    }
 
     this.bfid = fid.substring(0, fid.length - 5);
     await this.lazyLoadCol('x');
     await this.lazyLoadCol('y');
     await this.lazyLoadCol('z');
+    // this.finalize(fid);
 
     dataToMarkersGui();
 }
@@ -582,7 +593,7 @@ finalize(fid, partial = false) {
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
     this.filtergui({keyCode: 13});    // display as markers
-    X.select(fid);
+    X.select(fid, this);
 }
 
 /** rebase a field based on centrerange, set o_ values */
@@ -649,7 +660,6 @@ async filtergui(evt = {}) {
 gencolby() {
     E.colourby.innerHTML = `<option value="fixed">fixed</option>`;
     E.colourby.innerHTML += `<option value="random">random</option>`;
-    E.colourby.innerHTML += `<option value="custom">custom</option>`;
     for (const name of this.header)
         E.colourby.innerHTML += `<option value="${name}">${name}</option>`;
 }
