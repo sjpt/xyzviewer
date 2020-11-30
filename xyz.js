@@ -93,7 +93,7 @@ dataToMarkersGui(type) {
 
 /** load the data with given filter and colour functions if required, and display as markers */
 async dataToMarkers(pfilterfun) {
-    if (!this.particles) this.setup('dataToMarkers');  // for call from pdbReader
+    if (!this.particles) this.setup(this.fid);  // for call from pdbReader
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const l = xc.length;
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox);
@@ -350,7 +350,7 @@ async yamlReader(raw, fid) {
         namevseti[n] = Object.keys(namevset[n]);
     this.gencolby();  
     
-    // maybe these could be saved as is --- more or less duplicate code with finalize()
+    // maybe these could be saved as is in the yaml file --- more or less duplicate code with finalize()
     this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
     for (let i = 0; i < header.length; i++) {
         this.namecolnstrs[header[i]] = this.colnstrs[i];
@@ -362,9 +362,9 @@ async yamlReader(raw, fid) {
     await this.lazyLoadCol('x');
     await this.lazyLoadCol('y');
     await this.lazyLoadCol('z');
-    // this.finalize(fid);
 
     dataToMarkersGui();
+    X.select(this.bfid, this);
 }
 
 /** load the data as an array of arrays, and separate out header 

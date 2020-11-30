@@ -66,7 +66,7 @@ COLS.gencol = function(xyz, field) {
         throw new Error(`Field "${field}" not present.`)        // field not valid
     }
     const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
-    return `COLS.forrange(xyz.namecols["${field}"][i], ${low}, ${range})`;      // mainly number field
+    return `COLS.forrange(${field}, ${low}, ${range})`;      // mainly number field
 }
 
 /** (inefficient) get colour for single value, mainly for debug */
@@ -76,15 +76,17 @@ COLS.colfor = function(xyz, field, i) {
     return f(xyz, i);
 }
 
-/** random colours */
+/** random colours, result should be consumed at once, reuse of object */
 COLS.random = function() {
     const r = Math.random;
-    return {r: r(), g: r(), b: r()};
+    return COLS._colobj.setRGB(r(), r(), r());
 }
 
+COLS._colobj = new THREE.Color('white');
+/** colour from given range, result should be consumed at once, reuse of object */
 COLS.forrange = function(v, low, range) {
     const vv = (v - low)/range;
-    return X.col3(vv, 1-vv, 1-vv);
+    return COLS._colobj.setRGB(vv, 1-vv, 1-vv);
 }
 
 /** write arbitrary cols file */
