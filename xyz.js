@@ -96,7 +96,7 @@ async dataToMarkers(pfilterfun) {
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const l = xc.length;
-    const filterfun = await this.makefilterfun(pfilterfun, E.filterbox);
+    const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
     let vert = new Float32Array(l*3);
     let col = new Float32Array(l*3);
     const geometry = this.geometry = new THREE.BufferGeometry();
@@ -142,7 +142,7 @@ async dataToMarkers(pfilterfun) {
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}`;
     else 
         E.filtcount.innerHTML = 'no filter applied: #points=' + l;
-    await this.makefilterfun(pfilterfun, E.filterbox, true);                 // get gui display right
+    await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
 
     return [ll,l];
 }
@@ -216,22 +216,23 @@ val(name, i) {
 //     }
 // }
 
-/** make a function for a filter
- * If the value is a string it is converted to a function, using d as the input data row.
- * so a valid string could be 'd.x > 17'.
- * Also allows just x > 17
+/** make a function for a filter (also colouring etc)
+ * If the value is a string it is converted to a function
  * Flags any failure in E.filterr.innerHTML and returns undefined
- * If applied === true the filter has been applied, record the fact
+ * mode may be 'force' to force recompilation (eg after new colour file loaded), 
+ * or 'confirm' to confirm this filter has been applied
  */
-async makefilterfun(filtin, box, applied=false) {
+async makefilterfun(filtin, box, mode=false) {
     let filt = filtin;
     const msg = (m, col) => {
         E.filterr.innerHTML = `${m} <br><code> ${filt.split('\n').join('<br>')}<code>`;
         if (box) box.style.background = col;
         E.filterr.style.color = col;
     }
+    if (mode === 'force') this.lastInputApplied = undefined;    // invalidate so force recompilation
 
-    if (applied) { // remove optimization  || filtin === this.lastInputApplied) {
+    const applied = mode === 'confirm';                         // have just applied so must be OK
+    if (applied || filtin === this.lastInputApplied) {
         if (applied) this.lastCodeApplied = this.lastCodeGenerated;
         this.lastInputApplied = filtin;
         filt = this.lastCodeApplied || '';   // so msg comes right
@@ -271,7 +272,7 @@ async makefilterfun(filtin, box, applied=false) {
             filt += '\nreturn {_x, _y, _z, _col};'
             // todo: make special case filters for pure number/pure alpha columns???
             const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
-            filt = `
+            filt = `"use strict";
                 var _x, _y, _z, _col;
                 ${uu}\n
             ` + filt;
