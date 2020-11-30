@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/30 09:34:57
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/30 10:55:09
 `</script>
 <html lang="en">
 	<head>
@@ -202,7 +202,7 @@
                 <br>
                 <p id="filtcount"></p>
                 <span>
-                    <b>Filter:</b>
+                    <b>Control:</b>
                     <textarea id="filterbox" rows="1" cols="40" onkeyup="filtergui(event);"></textarea>
                 </span>
                 <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
@@ -212,6 +212,11 @@
                         <li>white background indicates javascript has been applied.</li>
                         <li>pink background indicates incorrect javascript.</li>
                         <li>blusih background indicates javascript inappropriate for this context.</li>
+                        <li></li>
+                        <li>The control box may have 'special format lines based on a prefix:</li>
+                        <li><b>'?'</b>: filter the data set according to the filter in the rest of the line</li>
+                        <li><b>'COL:'</b>: choose a column or three.js (css) colour value for colouring the data set</li>
+                        <li><b>'X:', 'Y:', 'Z:'</b>: choose an expression to override the default x,y,z columns for position</li>
                     </ul>
                 </span>
 
