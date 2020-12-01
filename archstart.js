@@ -1,15 +1,15 @@
 'use strict';
 var posturiasync, handlerForFid, refit, lastModified, addToFilelist;
-lastModified.archstart = `Last modified: 2020/12/01 14:20:01
+lastModified.archstart = `Last modified: 2020/12/01 14:38:36
 `
 var filelist = `
-StarCarr_Flint.csv
-StarCarr_Fungi.csv
-StarCarr_Stones.csv
+Flint.csv
+Fungi.csv
+Stones.csv
 SC13-15_wood_data.csv
-StarCarr_BirchBarkRolls.csv
-StarCarr_Faunal.csv
-StarCarr_FishHandCollected.csv
+BirchBarkRolls.csv
+Faunal.csv
+FishHandCollected.csv
 contours.geojson
 feature.geojson
 fishseived.geojson
@@ -21,7 +21,7 @@ vp10_dr004.dxf`.trim().split('\n');
 filelist.forEach(n => addToFilelist('StarCarr/'+n, 'StarCarr/'+n, n));
 
 document.title = 'Star Carr: xyzviewer';
-const starturi = 'StarCarr/StarCarr_Flint.csv';
+const starturi = 'StarCarr/Flint.csv';
 posturiasync(starturi, function(data, puri) {
     handlerForFid(starturi)(data, puri);
     refit();

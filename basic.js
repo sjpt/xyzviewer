@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles, addToFilelist};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/12/01 14:19:53
+X.lastModified.basic = `Last modified: 2020/12/01 14:36:37
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -289,7 +289,7 @@ function streamReader(url, chunkProcess, endProcess) {
         reader.read().then(processText);
     })
 }
-// e.g. streamReader("StarCarr/StarCarr_Flint.csv", (x,n,len) => log('... ', x.length, n, len, x.substring(0,20)), () => log('END'))
+// e.g. streamReader("StarCarr/Flint.csv", (x,n,len) => log('... ', x.length, n, len, x.substring(0,20)), () => log('END'))
 
 /** read file in chunks and submit chunks to chunkProcess(chunk, bytesSoFar, length) */
 async function fileReader(file, chunkProcess = log, endProcess = () => log('end'), chunksize = 2**17) {
