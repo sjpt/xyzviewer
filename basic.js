@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles, addToFilelist};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/11/29 15:30:32
+X.lastModified.basic = `Last modified: 2020/12/01 14:19:53
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -111,29 +111,30 @@ function openfile(file, item) {
     // const getAsEntry = window.getAsEntry || window.webkitGetAsEntry;
     if (item) {
         const entry = item.webkitGetAsEntry();
+        file.fullPath = entry.fullPath;
         if (entry.isDirectory) return openDirectory(entry);
     }
-    readyFiles[file.name] = file;
+    readyFiles[file.fullPath] = file;
 
-    console.time('load file: ' + file.name)
-    const handler = handlerForFid(file.name);
+    console.time('load file: ' + file.fullPath)
+    const handler = handlerForFid(file.fullPath);
 
     if (handler && handler.rawhandler) {
-        handler(file, file.name);
+        handler(file, file.fullPath);
     } else if (handler) {
         var reader = new FileReader();
         // ??? reader.fff = f;
         // Closure to capture the file information.
         reader.onload = function(e) {
             var data = e.target.result;
-            console.timeEnd('load file: ' + file.name)
+            console.timeEnd('load file: ' + file.fullPath)
             log('load', file.name, data.length);
-            handler(data, file.name);
+            handler(data, file.fullPath);
         };
         reader.onerror = function(e) {
-            console.error('failure reading', file.name, e)
+            console.error('failure reading', file.fullPath, e)
         }
-        const ext = getFileExtension(file.name);
+        const ext = getFileExtension(file.fullPath);
         if (ext === '.tif' || ext === '.ply')   // TODO need to arrange this differently
             reader.readAsArrayBuffer(file);        // start read in the data file
         else if (ext === '.xlsx')   // TODO need to arrange this differently
@@ -141,7 +142,7 @@ function openfile(file, item) {
         else
             reader.readAsText(file);        // start read in the data file
     } else {
-        console.error("attempt to open file of wrong filetype " + file.name);
+        console.error("attempt to open file of wrong filetype " + file.fullPath);
     }
 }
 
@@ -149,7 +150,7 @@ function openfile(file, item) {
 returns full list but does not process
 N.b. it seems that you can drop mixed files/directories, but CANNOT open them (ctrl-o)
 */
-async function _scanFiles(item, fileEntries = {}, directoryEntries = {}) {
+async function _scanFiles(item, availableFileList = {}, directoryEntries = {}) {
     return new Promise( (resolve) => {
         // log('entry item', item)
         if (item.isDirectory) {
@@ -163,7 +164,7 @@ async function _scanFiles(item, fileEntries = {}, directoryEntries = {}) {
                         return;
                     }
                     for(const entry of entries) {
-                        await _scanFiles(entry, fileEntries, directoryEntries);
+                        await _scanFiles(entry, availableFileList, directoryEntries);
                     }
                     getEntries();
                 });
@@ -171,41 +172,47 @@ async function _scanFiles(item, fileEntries = {}, directoryEntries = {}) {
             getEntries();
         } else if (item.isFile) {
             // log('file found', item);
-            fileEntries[item.fullPath] = item;
-            readyFiles[item.fullPath] = item;
+            availableFileList[item.fullPath] = item;
+            // readyFiles[item.fullPath] = item; // no, it is a fileEntry
             resolve();
         }
     });
 }
 
 async function openDirectory(entry) {
-    let fileEntries = {}, directoryEntries= {};
-    await _scanFiles(entry, fileEntries, directoryEntries);  // <<<< this kills dt.files
-    window.fileEntries = fileEntries;
+    let availableFileList = {}, directoryEntries= {};
+    await _scanFiles(entry, availableFileList, directoryEntries);  // <<<< this kills dt.files
+    window.availableFileList = availableFileList;
 
     // await Promise.all(promises);
-    log('found files:', Object.keys(fileEntries), Object.keys(directoryEntries));
-    for (const fe in fileEntries) {
-        if (handlerForFid(fe))
-            addToFilelist(fe, fileEntries[fe]);
+    log('found files:', Object.keys(availableFileList), Object.keys(directoryEntries));
+    for (const fullPath in availableFileList) {
+        if (handlerForFid(fullPath) && !handlerForFid(fullPath).hidden)
+            addToFilelist(fullPath, availableFileList[fullPath]);
     }
 }
 
-/** add an item to filelist */
-var filelist = {};
-function addToFilelist(x, fid=x) {
-    E.filedropbox.innerHTML += `<option value="${x}">${x}</option>`;
-    filelist[x] = fid;
+/** add an item to selectableFileList 
+ * for start url is fullPath (key), url string (usually relative)
+ * for directory is fullPath (key), fileEntry
+*/
+var selectableFileList = {};
+function addToFilelist(fullPath, fileEntry, displayName) {
+    E.filedropbox.innerHTML = E.filedropbox.innerHTML.replace('none available', 'none selected');
+    displayName = displayName || (typeof fileEntry === 'string' ? fileEntry : fileEntry.name);
+    E.filedropbox.innerHTML += `<option value="${fullPath}" title="${fullPath}">${displayName}</option>`;
+    selectableFileList[fullPath] = fileEntry;
 }
 
 /** process a file from the dropdown list, maybe a fid, or a FileEntry */
 window.loaddrop = function loaddrop() {
     const fid = document.getElementById('filedropbox').value;
-    const ff = filelist[fid];
-    if (ff.isFile) {
-        ff.file( f => openfile(f))
+    if (fid === '!none!') return;
+    const fileEntryUrl = selectableFileList[fid];
+    if (fileEntryUrl.isFile) {
+        fileEntryUrl.file( file => {file.fullPath = fid; openfile(file);});   // is fileEntry
     } else {
-        posturiasync(ff);
+        posturiasync(fileEntryUrl);     // is string URL
     }
 }
 

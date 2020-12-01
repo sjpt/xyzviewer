@@ -1,6 +1,6 @@
 'use strict';
 var posturiasync, handlerForFid, refit, lastModified, addToFilelist;
-lastModified.archstart = `Last modified: 2020/11/30 10:13:26
+lastModified.archstart = `Last modified: 2020/12/01 14:20:01
 `
 var filelist = `
 StarCarr_Flint.csv
@@ -18,7 +18,7 @@ trenches.geojson
 woodplanned.geojson
 sample.cols
 vp10_dr004.dxf`.trim().split('\n');
-filelist.forEach(n => addToFilelist(n, 'StarCarr/'+n));
+filelist.forEach(n => addToFilelist('StarCarr/'+n, 'StarCarr/'+n, n));
 
 document.title = 'Star Carr: xyzviewer';
 const starturi = 'StarCarr/StarCarr_Flint.csv';

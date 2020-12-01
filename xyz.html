@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/11/30 18:23:46
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/01 13:03:40
 `</script>
 <html lang="en">
 	<head>
@@ -116,7 +116,10 @@
                 <b>loaded files: </b>
                 <span id='visibles'></span>
 
-                <span><span><br><b>available files: </b><select onchange="loaddrop(event);" id="filedropbox"></select></span>
+                <span><span><br><b>available files: </b>
+                    <select onchange="loaddrop(event);" id="filedropbox">
+                        <option value='!none!'>none available</option>
+                    </select></span>
                     <span class="help">Load additional datasets from those available at our host.
                     <br>
                     The dropdown has a list of all such available datasets.

@@ -53,6 +53,7 @@ addFileTypeHandler('.xlsx', csvReader);
 addFileTypeHandler('.yaml', csvReader);
 const binnop = () => {};
 binnop.rawhandler = true;
+binnop.hidden = true;
 addFileTypeHandler('.colbin', binnop);
 
 var usePhotoShader;
@@ -159,62 +160,6 @@ val(name, i) {
     if (k === -15) return '';
     return this.namevseti[name][k];
 }
-
-/** make a colour function for a field.
- * the input may be just field name,
- * or a structure with field fn (field name) and optional low and high values
- * If low and high are not given they are used as 1.5 standard deviations from the mean.
- * We may later add low and high colour values for greater flexibility.
- * 
- */
-// replaced by COL: in control box filterbox
-// async makecolourfun(fn, box) {
-//     if (typeof fn === 'function') return fn;
-//     if (fn === undefined || fn === '' || fn === 'random') return ()=>col3(Math.random(),Math.random(),Math.random());
-//     if (fn === 'fixed') {
-//         const cc = new THREE.Color().setStyle(E.colourpick.value);
-//         return ()=>cc;
-//     }
-//     if (fn === 'custom')
-//         try {
-//             const c = E.colourpick.value;
-//             if (c[0] === '#') {
-//                 const cc = new THREE.Color().setStyle(c);
-//                 E.colourpick.value = '#' + cc.getHexString();
-//                 return ()=>cc;
-//             }
-//             const f = await this.makefilterfun(c, box);
-//             //const col = f(da tas[0]);  // test
-//             return f;
-//         } catch(e) {
-//             return undefined;
-//         }
-//     if (typeof fn === 'string' && typeof (window[fn]) === 'function') return window[fn];  // need better formalization
-//     if (typeof fn === 'string') fn = { fn }
-//     const r = this.ranges[fn.fn];               // range
-//     const name = fn.fn;
-//     let col = await this.lazyLoadCol(name);
-//     if (isNaN(r.sd)) {
-//         const cf = function colourbyEnum(xyz, i) {    // colorby enumerated column
-//             const v = col[i];    // raw value
-//             const ii = NaN2i(v);                // just use the  valueset index
-//             return stdcol(ii);
-//         }
-//         return cf;
-//     } else {                            // colorby value column
-//         if (fn.low === undefined) fn.low = r.mean - 1.5 * r.sd;
-//         if (fn.high === undefined) fn.high = r.mean + 1.5 * r.sd;
-//         const low = fn.low;
-//         const range = fn.high - fn.low;
-
-//         const cf = function colourbyVal(xyz, i) {
-//             const v = col[i];    // raw value
-//             const nv = ( v - low) / range;      // normalized value
-//             return col3(nv, 1-nv, 1-nv);        // colour
-//         }
-//         return cf;
-//     }
-// }
 
 /** make a function for a filter (also colouring etc)
  * If the value is a string it is converted to a function
@@ -329,9 +274,16 @@ async lazyLoadCol(id) {
     if (fid.startsWith(',,')) { // NOT correct test!
         const resp = await fetch(fid);
         fblob = await resp.blob();
-    } else {
+    } else if (readyFiles[fid]) {
         fblob = readyFiles[fid];
-        if (!fblob) throw new Error('no ready file ' + fid);
+        // if (!fblob) throw new Error('no ready file ' + fid);
+    } else if (X.availableFileList[fid]) {
+        const makeFile = (fileEntry) =>
+            new Promise(resolve => fileEntry.file(resolve));
+        const file = await makeFile(X.availableFileList[fid]);
+        fblob = readyFiles[fid] = file;
+    } else {
+        throw new Error('no ready file ' + fid);
     }
     const buff = await fblob.arrayBuffer();
     return this.namecols[id] = new Float32Array(buff);
