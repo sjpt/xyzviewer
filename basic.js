@@ -1,6 +1,6 @@
 export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles, addToFilelist};
 const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/12/01 14:36:37
+X.lastModified.basic = `Last modified: 2020/12/02 10:48:17
 `
 // most of these expose things only for debug convenience
 X.posturiasync = posturiasync;
@@ -109,6 +109,7 @@ function handlerForFid(fid) {
 /** read and process a single file, given a File object */
 function openfile(file, item) {
     // const getAsEntry = window.getAsEntry || window.webkitGetAsEntry;
+    if (document.title === 'xyzviewer') document.title += ': ' + file.name;
     if (item) {
         const entry = item.webkitGetAsEntry();
         file.fullPath = entry.fullPath;

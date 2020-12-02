@@ -143,7 +143,6 @@ async function makechainlines(pfilterfun = E.filterbox.value) {
     if (chainlines && chainlines.visible === false) return;
     if (!myxyz.namecols) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
-    // const colourfun = await myxyz.makecolourfun(pcolourfun, E.colourby);
     if (chains.length === 0) makechains();
     var geom = new THREE.Geometry;
 
