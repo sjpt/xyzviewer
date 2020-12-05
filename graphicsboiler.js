@@ -303,7 +303,7 @@ const start = ()=>{
     E.lastmod.textContent = window.lastModified.xyzhtml;
     init();
 };
-if (document.readyState === 'complete')
+if (document.readyState === 'complete' || document.readyState === 'interactive')
     start(); 
 else
     document.onload = start;

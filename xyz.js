@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/05 10:19:34
+window.lastModified.xyz = `Last modified: 2020/12/05 15:57:37
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -535,6 +535,7 @@ finalize(fid, partial = false) {
         finish('x');
         finish('y');
         finish('z');
+        this.gencolby();
     }
 
     this.ranges.forEach = this.sForEach;
@@ -605,10 +606,11 @@ async filtergui(evt = {}) {
 
 /** generate colourby */
 gencolby() {
-    E.colourby.innerHTML = `<option value="fixed">fixed</option>`;
-    E.colourby.innerHTML += `<option value="random">random</option>`;
+    const s = [`<option value="fixed">fixed</option>`];
+    s.push(`<option value="random">random</option>`);
     for (const name of this.header)
-        E.colourby.innerHTML += `<option value="${name}">${name}</option>`;
+        s.push(`<option value="${name}">${name}</option>`);
+    E.colourby.innerHTML = s.join('');
 }
 
 /** generate stats from given data for a given field, or for all fields, also compute three.js position */
@@ -650,8 +652,6 @@ genstats(name = undefined) {
     });
 
     const sd = Math.sqrt((sum2 - 1/n * sum*sum) / n);
-    this.gencolby();
-
     return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n};
 }
 

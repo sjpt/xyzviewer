@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/05 10:16:00
-`</script>
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/05 15:31:21
+`
+var GX = {};
+GX.starttime = Date.now();
+</script>
 <html lang="en">
 	<head>
 		<title>xyzviewer</title>
@@ -227,6 +230,9 @@
         <script src="jsdeps/js-yaml.js"></script>
 		<script src="main.js"></script>
         <script src="gldebug.js"></script>
+        
+        <!-- loading this explicitly here rather than waiting saves near 1 second of load time-->
+        <script src="graphicsboiler.js" type="module"></script>
 
         <!-- <script type="module" src="./threeH.js"></script> -->
 		<!-- <script type="module" src="jsdeps/PLYLoader.js"></script>
@@ -246,7 +252,6 @@
         <script>
             // GX gives the handlers in this file access to necessary functions
             // while limiting pollution to the global scope.
-            var GX = {};
             setTimeout(async function() {
                 GX.gb = await import('./graphicsboiler.js');
                 GX.cols = (await import('./cols.js')).COLS;
@@ -254,7 +259,6 @@
                 GX.xyz = await import('./xyz.js');
                 GX.basic = await import('./basic.js');
                 GX.ospeech = (await import('./speech.js')).OrganicSpeech;
-
             }, 1000);
         </script>
 

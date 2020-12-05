@@ -18,7 +18,7 @@ interface MyExternals {
     jsyaml,  // from dependencies
     webkitSpeechRecognition
 }
-interface Window {lastModified, DxfParser, Stats};  // THREE here not X, just more convenient
+interface Window {lastModified, DxfParser, Stats, GX};  // THREE here not X, just more convenient
 declare var WA: any, W: Window, E: MyElements, X: MyExternals;
 
 // these are dom elements referred to by id
