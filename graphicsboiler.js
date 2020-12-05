@@ -1,18 +1,20 @@
 'use strict';
+
+window.lastModified.graphicsboiler = `Last modified: 2020/12/05 14:05:22
+`; console.log('>>>>graphicsboiler.js');
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-window.lastModified.graphicsboiler = `Last modified: 2020/11/30 18:47:18
-`
+import {spotsizeset, col3} from './xyz.js';
+//const  {THREE} = window; // 
+import {THREE} from "./threeH.js";
+import {} from "./raycast.js";
+
+import {OrbitControls} from './jsdeps/OrbitControls.js';
 
 
 export {addToMain, framenum, makeCircle, renderer, fullcanvas,
-    camera, usePhotoShader, orbcamera, outerscene};
-//import {refit} from './refit.js';
-const {THREE, Stats, E, log, X, col3} = window;
-X.scale = scale;
-X.init = init;
-X.select = select;
-
+    camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls, THREE};
+const {E, log, X, Stats} = window;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -30,9 +32,9 @@ let i; // very odd, to check
 function init() {
     // make sure all spotsize elements ready for appropriate events
     document.getElementsByName('spotsize').forEach(e => {
-        e.onmouseenter = (e) => X.spotsizeset(e, 'in'); 
-        e.onmouseleave = (e) => X.spotsizeset(e, 'out'); 
-        e.onclick = X.spotsizeset;
+        e.onmouseenter = (e) => spotsizeset(e, 'in'); 
+        e.onmouseleave = (e) => spotsizeset(e, 'out'); 
+        e.onclick = spotsizeset;
     });
 
     // interpretSearchString();
@@ -99,8 +101,8 @@ function init() {
     maingroup.scale.set(1,1,1);
     window.addEventListener( 'resize', onWindowResize, false );
 
-    if (THREE.OrbitControls) {
-        controls = new THREE.OrbitControls(orbcamera, renderer.domElement);
+    if (OrbitControls) {
+        controls = new OrbitControls(orbcamera, renderer.domElement);
         controls.autoRotate = false;  // was is_webgl
     }
 
@@ -110,9 +112,10 @@ function init() {
 
     document.body.appendChild(VRButton.createButton(renderer));
     animate();
-    Object.assign(X, {controls, orbcamera, camera, maingroup, renderer }); // mainly for debug
+    // ?? Object.assign(X, {controls, orbcamera, camera, maingroup, renderer }); // mainly for debug
 }
 
+// add an object to parent, default maingroup, and add a selection/visibility icon
 function addToMain(obj, name, parent = maingroup, xyz) {
     parent.add(obj);
     addvis(obj, name, xyz);
@@ -206,12 +209,6 @@ function makeCircle(s = 64) {
     return texture;
 }
 
-/** change VR resolution, 1 is 1080x1200 per eye, 1.4 is 'standard' for Vive */
-//function vrres(k) {
-//    RRRATIO = k;
-//    display.requestPresent( [ { source: renderer.domElement } ] );
-//}
-
 const addvisList = {};
 
 /** function to add visibility gui and photo swapper */
@@ -225,15 +222,25 @@ function addvis(obj, bname, xyz) {
     obj.name = name;
     const sfid = name.split('\\').pop().split('/').pop();
     E.visibles.innerHTML += `
-        <span id="${name}_k" onclick="select('${name}')">${sfid}:</span>
+        <span id="${name}_k" onclick="GX.gb.select('${name}')">${sfid}:</span>
         <span class="help">click on the item to select for filter/colour etc selection</span>
-        <input type="checkbox" checked="checked" onclick="addvis_clicked(event)" name="${name}"/>
+        <input type="checkbox" checked="checked" id="${name}_cb" onclick="GX.gb.addvis_clicked(event)" name="${name}"/>
         <span class="help">make item visible/invisible</span>
-    `
-    const item = addvisList[name] = {name, sfid, obj};
-    item.obj = obj;
+    `;
+    // attempt to add them later and avoid global GX.gb can sometimes create them,
+    // only to have them taken away again soon after.
+    // const cbs = () => {
+    //     if ((!E[`${name}_k`]) || (!E[`${name}_cb`])) return setTimeout(cbs,10);
+    //     E[`${name}_k`].onclick = () => select(name);
+    //     E[`${name}_cb`].onclick = event => addvis_clicked(event);
+    // }
+    // cbs();
+
+    // const item = 
+    addvisList[name] = {name, sfid, obj, xyz};
+    //?item.obj = obj;
     if (xyz) {
-        item.xyz = xyz;
+        //?item.xyz = xyz;
         xyz.name = name;
         xyz.sfid = sfid;
     }
@@ -269,9 +276,35 @@ function addvis_clicked(evt) {
     //window.currentThreeObj = ele.obj;
     //if (ele.obj.xyz) window.currentXyz = ele.obj.xyz;
 }
-window.addvis_clicked = addvis_clicked;
 
 /** set the sacel in x,y,z */
 function scale(x,y=x,z=y) {
     maingroup.scale.set(x,y,z);
 }
+
+
+// helpers, global
+function plan() {
+    maingroup.rotation.set(0,0,0);
+    home();
+}
+
+function elevation() {
+    maingroup.rotation.set(Math.PI/2,0,0);
+    home();
+}
+
+function home() {
+    controls.home();
+}
+
+const start = ()=>{
+    console.log('document loaded');
+    E.lastmod.textContent = window.lastModified.xyzhtml;
+    init();
+};
+if (document.readyState === 'complete')
+    start(); 
+else
+    document.onload = start;
+document.addEventListener("DOMContentLoaded",()=>{console.log('DOMContentLoaded loaded')});

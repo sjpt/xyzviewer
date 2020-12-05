@@ -5,7 +5,7 @@
         "module": "esnext",
         "moduleResolution": "node",
 
-        // "allowJs": true, // implicit as this is jsconfig.json
+        "allowJs": true, // implicit as this is jsconfig.json
         "checkJs": true
     },
     "exclude": ["./jsdeps/three*.js"]

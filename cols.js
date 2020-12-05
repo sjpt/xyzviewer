@@ -1,13 +1,17 @@
 /**  */
 'use strict';
 export {COLS};
-import {saveData} from './basic.js';
+window.lastModified.basic = `Last modified: 2020/12/05 09:57:47
+`; console.log('>>>>cols.js');
+import {saveData, addFileTypeHandler} from './basic.js';
+import {eqcols} from './jsdeps/colorHelpers.js';
+import {dataToMarkersGui} from './xyz.js';
 
-var {addFileTypeHandler, jsyaml, THREE, X, E, dataToMarkersGui} = window;
-X.lastModified.basic = `Last modified: 2020/11/27 19:50:28
-`
-var COLS = X.COLS = {};
-COLS.eq = X.makeColeq();    // save a set of perceptually equal hues
+const {jsyaml, X, E} = window;
+import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+
+var COLS = {};
+X.COLS = COLS;  // still needed in global scope for filters 
 
 /** for now key is probably just a field name:
  * we may consider more structured keys with colour scheme names etc., maybe related to fid
@@ -38,35 +42,40 @@ COLS.autocol = function(xyz, field) {
     const nv = xyz.namevseti[field];
     const nn = nv.length;
     const r = COLS[field] = {};
-    const eql = COLS.eq.length;
+    const eql = eqcols.length;
     for (let i = 0; i < nn; i++) {
         const v = nv[i];
-        r[v] = COLS.eq[Math.floor( i * eql /nn)]
+        r[v] = eqcols[Math.floor( i * eql /nn)]
     }
     COLS.show(xyz, field);
 }
 
 /** generate code for colour for field */
 COLS.gencol = function(xyz, field) {
-    COLS.show(xyz, field);
-    if (field === 'random') return 'COLS.random()';             // random colours
-    if (field === 'fixed') field = E.colourpick.value;          // fixed colour
+    try{
+        if (field === 'random') return 'COLS.random()';             // random colours
+        if (field === 'fixed') field = E.colourpick.value;          // fixed colour
 
-    if (xyz.namecolnstrs[field] > xyz.namecolnnum[field] && !COLS[field]) COLS.autocol(xyz, field);
+        if (xyz.namecolnstrs[field] > xyz.namecolnnum[field] && !COLS[field]) COLS.autocol(xyz, field);
 
-    if (COLS[field]) return `COLS["${field}"][${field}]`;       // field with defined colours
-    if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `X.stdcol(xyz.enumI("${field}", i))`; // mainly character field, no defined colours
+        if (COLS[field]) return `COLS["${field}"][${field}]`;       // field with defined colours
+
+        // below no longer needed, colours defined above instead
+        //if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `stdcol(xyz.enumI("${field}", i))`; // mainly character field, no defined colours
 
 
-    const r = xyz.ranges[field];
-    if (r === undefined) {
-        const c = new THREE.Color(field);
-        if (Object.getOwnPropertyNames(c).indexOf('r') !== -1)  // not sure how it manages c.r === 1 and 'r' in c, this is a better test
-            return `{r: ${c.r}, g: ${c.g}, b: ${c.b}}`          // field a constant colour value
-        throw new Error(`Field "${field}" not present.`)        // field not valid
+        const r = xyz.ranges[field];
+        if (r === undefined) {
+            const c = new THREE.Color(field);
+            if (Object.getOwnPropertyNames(c).indexOf('r') !== -1)  // not sure how it manages c.r === 1 and 'r' in c, this is a better test
+                return `{r: ${c.r}, g: ${c.g}, b: ${c.b}}`          // field a constant colour value
+            throw new Error(`Field "${field}" not present.`)        // field not valid
+        }
+        const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
+        return `COLS.forrange(${field}, ${low}, ${range})`;      // mainly number field
+    } finally {
+        COLS.show(xyz, field);        
     }
-    const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
-    return `COLS.forrange(${field}, ${low}, ${range})`;      // mainly number field
 }
 
 /** (inefficient) get colour for single value, mainly for debug */
@@ -116,10 +125,11 @@ COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
     let f = COLS[field];
     if (!f) {
         f = {};
-        const vs = xyz.namevset[field];
-        for (const k in vs) {
-            f[k] = X.stdcol(vs[k]);
-        }
+        console.error('unexpcted field with no colour in COLS.show()', field);
+        // const vs = xyz.namevset[field];
+        // for (const k in vs) {
+        //     f[k] = stdcol(vs[k]);
+        // }
     }
     let s = [];
     let i = 0;
@@ -144,4 +154,3 @@ COLS.set = function(f, fixed) {
 }
 
 addFileTypeHandler('.cols', COLS.reader);
-

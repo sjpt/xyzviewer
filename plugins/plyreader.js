@@ -1,13 +1,16 @@
 export {readply};
-import {addToMain} from './graphicsboiler.js';
-const {THREE, X, E, addFileTypeHandler} = window;
-addFileTypeHandler('.ply', plyReader);
+import {addToMain} from '../graphicsboiler.js';
+import {addFileTypeHandler} from '../basic.js';
 
-X.readply = readply;  // initial experiments
+const {X, E} = window;
+import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {PLYLoader} from '../jsdeps/PLYLoader.js';
+
+addFileTypeHandler('.ply', plyReader);
 
 /** main function for handling ply data */
 function plyReader(data, fid) {
-    const loader = new THREE.PLYLoader();
+    const loader = new PLYLoader();
     const geometry = loader.parse(data);
 
     X.currentXyz = new PLY(geometry, fid);
@@ -15,7 +18,7 @@ function plyReader(data, fid) {
 
 /** test function for handling ply data */
 function readply(fid = './data/p17.ply') {
-    var loader = new THREE.PLYLoader();
+    var loader = new PLYLoader();
     loader.load( fid, g => new PLY(g, fid));
 }
 
@@ -23,7 +26,7 @@ class PLY {
     constructor(geometry, fid) {
         this.geometry = geometry;
         this.fid = fid;
-        window.currentThreeObj = this.mesh = this.meshmaker(geometry, fid);
+        X.currentThreeObj = this.mesh = this.meshmaker(geometry, fid);
         this.spotsizeset(0.05);
         if (!geometry.attributes.color)  // choose white as base if colour will be added
             this.dataToMarkersGui();
@@ -53,7 +56,7 @@ meshmaker ( geometry, fid ) {
         material = new THREE.PointsMaterial( { color: 0xffffff, flatShading: true } );
         obj = new THREE.Points( geometry, material );
     }
-    if (geometry.attributes.color) material.vertexColors = THREE.VertexColors;
+    if (geometry.attributes.color) material.vertexColors = true; // THREE.VertexColors;
 
     // scaling
     const basescale = 30;
@@ -62,10 +65,6 @@ meshmaker ( geometry, fid ) {
     obj.scale.multiplyScalar(sc);
     obj.position.set(a.x+b.x,  a.y+b.y, a.z+b.z);
     obj.position.multiplyScalar(-sc/2);
-
-    X.plygeometry = geometry;
-    X.plyobj = obj;
-    X.plymaterial = material;
 
 //    mesh.position.x = - 0.2;
 //    mesh.position.y = - 0.02;

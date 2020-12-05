@@ -1,6 +1,8 @@
 // speech input for xyz
-//  
-var OrganicSpeech, controls, orbcamera, plan, elevation;
+//
+import {OrganicSpeech} from './speech.js';
+import {orbcamera, plan, elevation, controls} from './graphicsboiler.js';
+const {E} = window;
 //OrganicSpeech.commands = {};
 //OrganicSpeech.replace = {};
 
@@ -35,7 +37,7 @@ var OrganicSpeech, controls, orbcamera, plan, elevation;
         }
     }
 
-    window.speechhelp.innerHTML = `
+    E.speechhelp.innerHTML = `
 Check box for speech input.<br>
 Available commands:<br>
 <ul><li>
@@ -48,8 +50,8 @@ ${Object.keys(c).join('</li><li>')}
 // not really speech, but to help with phones
 function touch(event) {
     if (!event || event.touches.length >= 4) {
-        const s = window.gui.style;
-        const sb = window.speechbox.style;
+        const s = E.gui.style;
+        const sb = E.speechbox.style;
         if (s.fontSize) {
             s.fontSize = ''; s.transform=''; s.transformOrigin=''
             sb.transform = ''

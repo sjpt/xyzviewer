@@ -1,13 +1,16 @@
+// @ts-nocheck
 // speech input for Organic
+export {OrganicSpeech};
 var log = console.log, msgfix = console.log;
 
-var webkitSpeechRecognition, SpeechRecognition;
+var SpeechRecognition;
+// eslint-disable-next-line no-undef
 SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 
 // var webkitSpeechGrammarList, SpeechGrammarList;
 // SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
 
-var OrganicSpeech = (function() {
+const OrganicSpeechF = function() {
     // grammar is ignored by Chrome, 09/10/2020. we use list as helper
     // test with grammar  https://mcmw.abilitynet.org.uk/chrome-os-chromebook-speech-re
     // var grammar = '#JSGF V1.0; grammar colors; public <color> = ' + list.join(' ! ') + ';';
@@ -106,8 +109,9 @@ var OrganicSpeech = (function() {
         recognition = undefined;
         me._running = false;
     }
-    return me;
-})();
+    // return me;
+}
+const OrganicSpeech = new OrganicSpeechF();
 Object.defineProperty(OrganicSpeech, 'isRunning', {
     get: () => OrganicSpeech._running,
     set: v => { v ? OrganicSpeech._start() : OrganicSpeech._stop() }

@@ -1,52 +1,43 @@
+
 'use strict';
-import {addToMain} from './graphicsboiler.js';
-import {pdbReader} from './pdbreader.js';
-import {fileReader, lineSplitter, saveData, sleep, readyFiles} from './basic.js';
+window.lastModified.xyz = `Last modified: 2020/12/05 10:19:34
+`; console.log('>>>>xyz.js');
+import {addToMain, select} from './graphicsboiler.js';
+//?? import {pdbReader} from './pdbreader.js';
+import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
+import {COLS} from './cols.js';
+// import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "./threeH.js";
+
 //let E = window, X = window;
-window.lastModified.xyz = `Last modified: 2020/11/24 10:20:58
-`
 
 export {
     centrerange, // for draw centre consistency
     spotsizeset,
     dataToMarkersGui,
+    filtergui,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
-    stdcols, stdcol,
-    csvReader
+    col3, hsv
 };
-// temporary below
-// let filtergui;
 
-
-const {THREE, addFileTypeHandler, col3, E, X, addscript, csv, NaN4null, i2NaN, NaN2i} = window;
-// let E = window, X = window;
-X.xyzs = {};
+const {E, X} = window;
+import {addscript} from './basic.js';
+// const xyzs = {};
 const {log} = window;
-const stdcols = [
-    col3(0.5, 0.5, 0.5),
-    col3(1,0,0),
-    col3(0,1,0),
-    col3(0,0,1),
-    col3(0,1,1),
-    col3(1,0,1),
-    col3(1,1,0),
-    col3(1,1,1)
-    ];
-const stdcol = X.stdcol = n => stdcols[n%8];
+
+var XLSX;
 
 // ??? to engineer below more cleanly
 const spotsizeset = (a, b) => { if (X.currentXyz) X.currentXyz.spotsizeset(a, b); }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
 const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
-const centrerange = X.centrerange = new THREE.Vector3('unset');  // ranges for external use
+const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
+//X.centrerange
 
 /***/
-X.spotsizeset = spotsizeset;
-X.dataToMarkersGui = dataToMarkersGui;
-X.filtergui = filtergui;
-X.csvReader = csvReader;
-X.pdbReader = pdbReader;
+//X.csvReader = csvReader;
+//X.pdbReader = pdbReader;
 addFileTypeHandler('.csv', csvReader);
 addFileTypeHandler('.txt', csvReader);
 addFileTypeHandler('.xlsx', csvReader);
@@ -59,6 +50,7 @@ addFileTypeHandler('.colbin', binnop);
 var usePhotoShader;
 function csvReader(data, fid) { return new XYZ(data, fid); }
 csvReader.rawhandler = true;
+const baseguiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
 
 class XYZ {
     // comment in line below for typescript checking, comment out for js runtime
@@ -67,26 +59,27 @@ class XYZ {
 //var ranges; // data ranges, as structure of min/max
 // let particles, material;
 
-
 constructor(data, fid) {
     X.currentXyz = X.currentThreeObj = this.xyz = this;
     this.fid = fid;
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
     // colourby is dropdown, colourpick is colour picker
-    this.guiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
-    X.select(fid, this);
+    this.guiset = baseguiset;
+    select(fid, this);
+
+    this.makechainlines = undefined;
 }
 
 /** load data based on gui values */
 dataToMarkersGui(type) {
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
-        if (!this.guiset) this.guiset={};   // in case of pdbreader ... todo proper subclass
+        if (!this.guiset) this.guiset = baseguiset;   // in case of pdbreader ... todo proper subclass
         Object.assign(this.guiset, {colourby: E.colourby.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
         if (this.makechainlines)
-            this.makechainlines(E.filterbox.value, E.colourby.value);
-        return this.dataToMarkers(E.filterbox.value, E.colourby.value)
+            this.makechainlines(E.filterbox.value);
+        return this.dataToMarkers(E.filterbox.value)
     } else if (X.currentThreeObj.material ) {
         X.currentThreeObj.material.color.set(E.colourpick.value);
     }
@@ -167,7 +160,7 @@ val(name, i) {
  * mode may be 'force' to force recompilation (eg after new colour file loaded), 
  * or 'confirm' to confirm this filter has been applied
  */
-async makefilterfun(filtin, box, mode=false) {
+async makefilterfun(filtin, box, mode='') {
     let filt = filtin;
     const msg = (m, col) => {
         E.filterr.innerHTML = `${m} <br><code> ${filt.split('\n').join('<br>')}<code>`;
@@ -204,7 +197,7 @@ async makefilterfun(filtin, box, mode=false) {
 
             filt = filt.split('\n').map(l => {
                 if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
-                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_col = ' + X.COLS.gencol(this, ll)}
+                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_col = ' + COLS.gencol(this, ll)}
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
                 else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;
@@ -248,18 +241,16 @@ async makefilterfun(filtin, box, mode=false) {
 /** parse xlsl */
 async xlsxReader(raw, fid) {
     // only load this converter plugin if needed
-    if (!window.XLSX) {
+    if (!XLSX) {
         await addscript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.3/xlsx.full.min.js");
-        console.log('loaded', window.XLSX);
-        // window.XLSX = XLSX;
+        console.log('loaded', XLSX);
     }
-    let XLSXX = window.XLSX;
-    let workbook = XLSXX.read(raw, {type: 'binary'});
+    let workbook = XLSX.read(raw, {type: 'binary'});
     let firstSheet = workbook.SheetNames[0];
     let ss = workbook.Sheets[firstSheet];
     // could be made much more efficient if needed
     // also neither this nor main line allows for empty header field name, or repeated ones
-    this.extocsv = XLSXX.utils.sheet_to_csv(ss);
+    this.extocsv = XLSX.utils.sheet_to_csv(ss);
     return this.csvReader(this.extocsv, fid + '!');
 }
 
@@ -277,10 +268,10 @@ async lazyLoadCol(id) {
     } else if (readyFiles[fid]) {
         fblob = readyFiles[fid];
         // if (!fblob) throw new Error('no ready file ' + fid);
-    } else if (X.availableFileList[fid]) {
+    } else if (availableFileList[fid]) {
         const makeFile = (fileEntry) =>
             new Promise(resolve => fileEntry.file(resolve));
-        const file = await makeFile(X.availableFileList[fid]);
+        const file = await makeFile(availableFileList[fid]);
         fblob = readyFiles[fid] = file;
     } else {
         throw new Error('no ready file ' + fid);
@@ -317,7 +308,7 @@ async yamlReader(raw, fid) {
     await this.lazyLoadCol('z');
 
     dataToMarkersGui();
-    X.select(this.bfid, this);
+    select(this.bfid, this);
 }
 
 /** load the data as an array of arrays, and separate out header 
@@ -331,61 +322,64 @@ async csvReader(raw, fid) {
     this.prep();
     // let {cols, namecols, vset, namevset} = this;
     
-    window.newparse = false;    // separate tests rather than if else to allow both for quick performance comparison
-    window.oldparse = true;
+    // newparse = false;    // separate tests rather than if else to allow both for quick performance comparison
+    var oldparse = true;
 
     let header;
-    if (window.newparse) {    // use csv-parser, appears to be about twice as slow as using split (but more correct for ,")
-        console.time('newparse');
-        const separator = raw.substring(0,100).indexOf('\t') === -1 ? ',' : '\t';
+    // csv-parser not used ... never completely integrated and slower
+    // if (newparse) {    // use csv-parser, appears to be about twice as slow as using split (but more correct for ,")
+    //     console.time('newparse');
+    //     const separator = raw.substring(0,100).indexOf('\t') === -1 ? ',' : '\t';
 
-        const csvp = csv({
-            separator, 
-            // quote: undefined, raw: false,
-            mapHeaders: ({header}) => header.toLowerCase().trim().split(',')[0]
-        }); // get a parser
+    //     const csvp = csv({
+    //         separator, 
+    //         // quote: undefined, raw: false,
+    //         mapHeaders: ({header}) => header.toLowerCase().trim().split(',')[0]
+    //     }); // get a parser
 
-        csvp.on('data', (s) => {
-            if (!this.header) this.addHeader(Object.keys(s));
-            this.addRow(Object.values(s));  // what a waste making an object and destroying it again, but ...
-        });
-        // process in chunks, simulate continiuous read, and maybe avoid some sillies in parser?
-        const chl = 1000;
-        for (let i=0; i < raw.length; i += chl)
-            csvp.write(raw.substr(i, chl));
-        csvp.end();
-        header = this.header = csvp.headers;
-        console.timeEnd('newparse');
-        // csvp.destroy();
-    }
-    if (window.oldparse) {
+    //     csvp.on('data', (s) => {
+    //         if (!this.header) this.addHeader(Object.keys(s));
+    //         this.addRow(Object.values(s));  // what a waste making an object and destroying it again, but ...
+    //     });
+    //     // process in chunks, simulate continiuous read, and maybe avoid some sillies in parser?
+    //     const chl = 1000;
+    //     for (let i=0; i < raw.length; i += chl)
+    //         csvp.write(raw.substr(i, chl));
+    //     csvp.end();
+    //     header = this.header = csvp.headers;
+    //     console.timeEnd('newparse');
+    //     // csvp.destroy();
+    // }
+    const me = this;  // the this references inside this.lien = linex  were ok, but typescript s=does not seem to like them so use me
+    if (oldparse) {
         X.currentThreeObj = X.currentXyz = this; this.xyz = this;
         let sep;
         const st = Date.now();
-        this.line = function linex(row, numLines, bytesProcessedSoFar, bytesReadSoFar, length) {
-            this.byteLength = length;
+        let byteLength;
+        const linex = function linex(row, numLines, bytesProcessedSoFar, bytesReadSoFar, length) {
+            byteLength = length;
             if (row.trim() === '') return;
             // TODO proper comma parsing
             if (!sep) {                     // first non-empty row is treated as header
                 sep = row.indexOf('\t') === -1 ? ',' : '\t';
-                header = this.header = row.split(sep).map(x=>x.trim().toLowerCase().split(',')[0]);
-                this.addHeader(header);
+                header = me.header = row.split(sep).map(x=>x.trim().toLowerCase().split(',')[0]);
+                me.addHeader(header);
                 return;
             }
             const rowa = row.split(sep);    // rowa row as array
-            this.addRow(rowa);
-            if (this.n % this.tellUpdateInterval === 0) {
+            me.addRow(rowa);
+            if (me.n % me.tellUpdateInterval === 0) {
                 const dt = ((Date.now() - st)/1000).toFixed();
-                E.msgbox.innerHTML = `reading file ${fid}, line ${this.n}, bytes ${bytesProcessedSoFar} of ${length}, ${(bytesProcessedSoFar/length*100).toFixed()}%, ${dt} secs`;
+                E.msgbox.innerHTML = `reading file ${fid}, line ${me.n}, bytes ${bytesProcessedSoFar} of ${length}, ${(bytesProcessedSoFar/length*100).toFixed()}%, ${dt} secs`;
             }
-            if (this.n % this.graphicsUpdateInterval === 0 || this.n === this.firstUpdate)
-                this.finalize(fid, true); // needs some but NOT all
+            if (me.n % me.graphicsUpdateInterval === 0 || me.n === me.firstUpdate)
+                me.finalize(fid, true); // needs some but NOT all
         }
 
         if (raw instanceof File) {
             console.time('oldparsestream');
             await fileReader(raw, lineSplitter((line, numLines, bytesProcessedSoFar, bytesReadSoFar, length) => 
-                this.line(line, numLines, bytesProcessedSoFar, bytesReadSoFar, length)));
+                linex(line, numLines, bytesProcessedSoFar, bytesReadSoFar, length)));
             console.timeEnd('oldparsestream');
         } else {
             console.time('oldparse');
@@ -395,18 +389,18 @@ async csvReader(raw, fid) {
             let bytesProcessedSoFar = 0;
             for (let row of data) {             // row is row as string
                 bytesProcessedSoFar += row.length + 1;
-                this.line(row, this.n, bytesProcessedSoFar, length, length);
+                linex(row, me.n, bytesProcessedSoFar, length, length);
             }
             //console.profileEnd('oldparse');
             console.timeEnd('oldparse');
         }
         const dt = ((Date.now() - st)/1000).toFixed();
-        E.msgbox.innerHTML = `read ${fid} lines ${this.n}, bytes ${this.byteLength}, ${dt} secs`;
+        E.msgbox.innerHTML = `read ${fid} lines ${me.n}, bytes ${byteLength}, ${dt} secs`;
         setTimeout( () => E.msgbox.innerHTML = '', 5000);
     }
 
     console.time('finalize');
-    this.finalize(fid);
+    me.finalize(fid);
     console.timeEnd('finalize');
 }   // csvReader
 
@@ -546,7 +540,7 @@ finalize(fid, partial = false) {
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
     this.filtergui({keyCode: 13});    // display as markers
-    X.select(fid, this);
+    select(fid, this);
 }
 
 /** rebase a field based on centrerange, set o_ values */
@@ -556,7 +550,7 @@ rebase(fn) {
     // and also three vectors for position, but overhead too high
     const col = this.namecols[fn];
     for (let i = 0; i < col.length; i++) col[i] -= c;
-    this.ranges[fn] = this.genstats(undefined, fn);     // could be more efficient here and just modify old stats
+    this.ranges[fn] = this.genstats(fn);     // could be more efficient here and just modify old stats
 }
 
 /** convenience function for iterating fields of an object  */
@@ -572,7 +566,7 @@ sForEach(fun) {
 
 /** set/get the spotsize. input may be size or may be event from spotsize gui
 TODO, allow for number of pixels so value has similar effect on different devices */
-spotsizeset(eventsize, temp=false) {
+spotsizeset(eventsize, temp='') {
     let size = eventsize.srcElement ? +eventsize.srcElement.id.substring(4) : +eventsize;
     if (temp === 'out') size = this.permspotsize || this.guiset.spotsize;
     this.permspotsize = (temp === 'in') ? this.guiset.spotsize : size;
@@ -618,7 +612,7 @@ gencolby() {
 }
 
 /** generate stats from given data for a given field, or for all fields, also compute three.js position */
-genstats(datalsNO = this.NOdatas, name = undefined) {
+genstats(name = undefined) {
     // function tothreepos(datals) {
     //     for (const d of datals) { 
     //         d.pos = new THREE.Vector3(d.x, d.y, d.z); 
@@ -629,9 +623,9 @@ genstats(datalsNO = this.NOdatas, name = undefined) {
     if (!name) {   // repeat for all fields
         const lranges = {};
         for (name of this.header)  {
-            lranges[name] = this.genstats(datalsNO, name);
+            lranges[name] = this.genstats(name);
         }
-        if (centrerange.x === 'unset')  // centrerange is static set on first file, and use same for all subsequent files
+        if (centrerange.x === Infinity)  // centrerange is static set on first file, and use same for all subsequent files
             centrerange.set(lranges.x.mean, lranges.y.mean, lranges.z.mean);
         return lranges;
     }
@@ -686,11 +680,12 @@ setup(fid) {
         });
     }
     const size = 0.3;
-    this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: THREE.VertexColors } );
+    this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ 
+        depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
     X.currentThreeObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.xyz = this;
     addToMain( this.particles, fid, undefined, this );
-    X.xyzs[this.name] = this;
+    // xyzs[this.name] = this;
 } // setup
 
 // save the xyz as separate column files
@@ -707,7 +702,7 @@ async savefiles() {
     delete obj.namevseti;    
     delete obj.vset;
     delete obj.vsetlen;
-    delete obj.vseti;       // ???
+//    delete obj.vseti;       // ???
        
     delete obj.material;
     delete obj.geometry;
@@ -735,21 +730,31 @@ enumF(f,i) {
 
 } // end class XYZ
 
-// helpers, global
-function plan() {
-    window.maingroup.rotation.set(0,0,0);
-    home();
+// for now these are intentionally INSIDE the xyz moduke but OUTSIDE the XYZ class.
+/** code for encoding integers with NaNs, first 16 reserved */
+var _kkk = new Float32Array([NaN]);
+var _iii = new Uint32Array(_kkk.buffer);
+// eslint-disable-next-line no-unused-vars
+var _bbb = new Uint8Array(_kkk.buffer)
+var iNaN = _iii[0];
+function i2NaN(i) {
+    _kkk[0] = NaN;
+    _iii[0] += i+16;
+    return _kkk[0];
+}
+// eslint-disable-next-line no-unused-vars
+function NaN2i(f) {
+    _kkk[0] = f;
+    return _iii[0] - iNaN - 16;
 }
 
-function elevation() {
-    window.maingroup.rotation.set(Math.PI/2,0,0);
-    home();
-}
-X.plan = plan; X.elevation = elevation; 
+// eslint-disable-next-line no-unused-vars
+var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null
 
-function home() {
-    window.controls.home();
-}
+/** convenience function for rgb colour */
+function col3(r, g=r, b=g) { return new THREE.Color().setRGB(r, g, b); }
+// eslint-disable-next-line no-unused-vars
+function hsv(h, s, v) { return new THREE.Color().setHSV(h, s, v); }
 
 
 /* reminder to me

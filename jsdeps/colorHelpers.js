@@ -1,10 +1,14 @@
 // Various colour helper functions not specific to xyzviewer.
+window.lastModified.xyz = `Last modified: 2020/12/05 09:56:02
+`; console.log('>>>>colorHelpers.js');
 
 // CIElab code drom https://raw.githubusercontent.com/antimatter15/rgb-lab/master/color.js
 // the following functions are based off of the pseudocode
 // found on www.easyrgb.com
+export {eqcols};
 
-var COLS, THREE
+import {THREE} from "../threeH.js"; // import * as THREE from "./three121.module.js";
+
 
 // eslint-disable-next-line no-unused-vars
 function lab2rgb(lab){
@@ -125,9 +129,10 @@ function makeColeq() {
     //   const h = oh[i], h1 = oh[i+1];
     //   console.log(i, h, deltaHSV([h,1,1], [h1,1,1]), oh[i+1]-oh[i])
     // }
-    COLS.eqh = oh;      // save for debug
+    // COLS.eqh = oh;      // save for debug
     return o;
 }
+const eqcols = makeColeq();
 
 /**  http://snipplr.com/view.php?codeview&id=14590
 * HSV to RGB color conversion
@@ -211,7 +216,7 @@ function hsv2rgb(h, s, v, ret) {
 // eslint-disable-next-line no-unused-vars
 function rgb2hsv(r, g, b) {
   let arr = false;
-  if (Array.isArray(h)) { g = r[1]; b = r[2]; r = r[0]; arr = true; }
+  if (Array.isArray(r)) { g = r[1]; b = r[2]; r = r[0]; arr = true; }
   if (typeof (r) !== "number") { g = r.g; b = r.b; r = r.r; }
   let rr, gg, bb,
       h, s,

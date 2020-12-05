@@ -3,8 +3,8 @@
 //import {particles} from './xyz.js';
 export {photoShader_clicked};
 
-const {THREE, E, X} = window;
-window.photoShader_clicked = photoShader_clicked;
+const {E, X} = window;
+import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
 
 var photos;
 /*********** */

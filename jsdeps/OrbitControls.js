@@ -7,7 +7,7 @@
  * 
  * extra 1st person keys added by Stephen Todd WASD IJKL
  */
-/*global THREE */ // , console */
+/*glo bal THREE */ // , console */
 
 // This set of controls performs orbiting, dollying (zooming), and panning. It maintains
 // the "up" direction as +Y, unlike the TrackballControls. Touch on tablet and phones is
@@ -25,7 +25,12 @@
 
 var defaultDistance;
 
-THREE.OrbitControls = function ( object, domElement ) {
+export {OrbitControls};
+// const {X} = window, {THREE} = X; // import * as THREE from "./three121.module.js";
+import {THREE} from "../threeH.js"; // import * as THREE from "./three121.module.js";
+
+
+const OrbitControls = function ( object, domElement ) {
 
 	this.modSpeed = 1;
 
@@ -300,6 +305,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( lastPosition.distanceTo( this.object.position ) > 0 ) {
 
+			// @ts-ignore
 			this.dispatchEvent( changeEvent );
 
 			lastPosition.copy( this.object.position );
@@ -362,6 +368,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
 		scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
+		// @ts-ignore
 		scope.dispatchEvent( startEvent );
 
 	}
@@ -431,6 +438,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
 		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
+		// @ts-ignore
 		scope.dispatchEvent( endEvent );
 		state = STATE.NONE;
 
@@ -465,7 +473,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 		}
 
 		scope.update();
+		// @ts-ignore
 		scope.dispatchEvent( startEvent );
+		// @ts-ignore
 		scope.dispatchEvent( endEvent );
 
 	}
@@ -593,6 +603,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		}
 
+		// @ts-ignore
 		scope.dispatchEvent( startEvent );
 
 	}
@@ -680,6 +691,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( scope.enabled === false ) return;
 
+		// @ts-ignore
 		scope.dispatchEvent( endEvent );
 		state = STATE.NONE;
 
@@ -699,10 +711,4 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 };
 
-function killev(event) {
-	event.stopPropagation();
-	event.preventDefault();
-	return true;
-}
-
-THREE.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );

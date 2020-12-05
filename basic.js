@@ -1,19 +1,18 @@
-export {addFileTypeHandler, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, writeFile, saveData, sleep, readyFiles, addToFilelist};
-const {killev, addFileTypeHandler, E, X, log} = window;  // killev from OrbitControls ???
-X.lastModified.basic = `Last modified: 2020/12/02 10:48:17
+export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
+    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop};
+const {E, X, log} = window;
+window.lastModified.basic = `Last modified: 2020/12/05 12:27:31
 `
-// most of these expose things only for debug convenience
-X.posturiasync = posturiasync;
-X.handlerForFid = handlerForFid;
-X.streamReader = streamReader;
-X.saveData = saveData;
-X.readyFiles = readyFiles;
-X.addToFilelist = addToFilelist;
-
-X.proxy = '/remote/';
-
 const queryVariables = {};
 var readyFiles = {};
+
+var fileTypeHandlers; //  = {};
+// eslint-disable-next-line no-unused-vars
+function addFileTypeHandler(ftype, fun) {
+    if (!fileTypeHandlers) fileTypeHandlers = {};
+    fileTypeHandlers[ftype] = fun;
+}
+
 
 /** get query variables from search string */
 function getQueryVariables() {
@@ -29,9 +28,9 @@ getQueryVariables();
 
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 function showfirstdata() {
-    if (window.location.search.startsWith('?arch')) {
-        window.addscript("archstart.js");
-    }
+    if (window.location.search.startsWith('?arch')) import("./StarCarr/archstart.js");
+    if (window.location.search.startsWith('?fold')) import('./extras/folddemo.js');
+
     const {startcode, startdata, pdb} = queryVariables;
     if (startcode) eval(startcode);
     if (pdb) posturiasync('https://files.rcsb.org/download/' + pdb + '.pdb');
@@ -53,22 +52,25 @@ document.onpaste = docdroppaste;
 
 
 /** post a uri and process callback  */
-function posturiasync(puri, callb='auto', data='') {
-    console.time('load: '+puri);
+async function posturiasync(puri, callb, data = '') {
+    console.time('load: ' + puri);
+    if (!callb) callb = await handlerForFid(puri);
     const binary = puri.endsWith('.ply');
-    if (callb === 'auto') callb = handlerForFid(puri);
-    var req = new XMLHttpRequest();
-    req.open("GET", puri, true);
-    if (binary) req.responseType = 'arraybuffer';
-    req.setRequestHeader("Content-type", binary ? "application/octet-stream" : "text/plain;charset=UTF-8");
-    req.send(data);
-    req.onload = function () { 
-        console.timeEnd('load: '+puri);
-        callb(binary ? req.response : req.responseText, puri);
-    }   // eslint-disable-line no-unused-vars
-    req.onerror = function (oEvent) { console.error('cannot load', puri, oEvent); }
-    req.ontimeout = function (oEvent) { console.error('timeout error, cannot load', puri, oEvent); }
-    // req.onprogress = function (e) { console.log('progress', puri, e.loaded, e.total); }
+    return new Promise( resolve => {
+        var req = new XMLHttpRequest();
+        req.open("GET", puri, true);
+        if (binary) req.responseType = 'arraybuffer';
+        req.setRequestHeader("Content-type", binary ? "application/octet-stream" : "text/plain;charset=UTF-8");
+        req.send(data);
+        req.onload = function () { 
+            console.timeEnd('load: '+puri);
+            callb(binary ? req.response : req.responseText, puri);
+            resolve();
+        }   // eslint-disable-line no-unused-vars
+        req.onerror = function (oEvent) { console.error('cannot load', puri, oEvent); }
+        req.ontimeout = function (oEvent) { console.error('timeout error, cannot load', puri, oEvent); }
+        // req.onprogress = function (e) { console.log('progress', puri, e.loaded, e.total); }
+    });
 }
 
 /** interpret he search string * /
@@ -98,16 +100,21 @@ function openfiles(droptarget = lastdroptarget) {
         openfile(files[f], items[f]);
 }
 
-/** get the correct handler for a file name */
-function handlerForFid(fid) {
+/** get the correct handler for a file name, autoload if necessary */
+async function handlerForFid(fid) {
     const ext = getFileExtension(fid);
-    let handler = X.fileTypeHandlers[ext];
+    let handler = fileTypeHandlers[ext];
+    if (!handler) {  // <<< TODO catch
+        await import('./plugins/' + ext.substring(1) + 'reader.js');
+        handler = fileTypeHandlers[ext];
+    }
+
     // if (!handler) handler = window[ext.substring(1) + 'Reader'];
     return handler;
 }
 
 /** read and process a single file, given a File object */
-function openfile(file, item) {
+async function openfile(file, item) {
     // const getAsEntry = window.getAsEntry || window.webkitGetAsEntry;
     if (document.title === 'xyzviewer') document.title += ': ' + file.name;
     if (item) {
@@ -118,7 +125,7 @@ function openfile(file, item) {
     readyFiles[file.fullPath] = file;
 
     console.time('load file: ' + file.fullPath)
-    const handler = handlerForFid(file.fullPath);
+    const handler = await handlerForFid(file.fullPath);
 
     if (handler && handler.rawhandler) {
         handler(file, file.fullPath);
@@ -129,6 +136,7 @@ function openfile(file, item) {
         reader.onload = function(e) {
             var data = e.target.result;
             console.timeEnd('load file: ' + file.fullPath)
+            // @ts-ignore
             log('load', file.name, data.length);
             handler(data, file.fullPath);
         };
@@ -180,15 +188,17 @@ async function _scanFiles(item, availableFileList = {}, directoryEntries = {}) {
     });
 }
 
+const availableFileList = {};
 async function openDirectory(entry) {
-    let availableFileList = {}, directoryEntries= {};
+    let directoryEntries= {};
     await _scanFiles(entry, availableFileList, directoryEntries);  // <<<< this kills dt.files
-    window.availableFileList = availableFileList;
+    //??? window.availableFileList = availableFileList;
 
     // await Promise.all(promises);
     log('found files:', Object.keys(availableFileList), Object.keys(directoryEntries));
     for (const fullPath in availableFileList) {
-        if (handlerForFid(fullPath) && !handlerForFid(fullPath).hidden)
+        const handler = await handlerForFid(fullPath);
+        if (handler && !handler.hidden)
             addToFilelist(fullPath, availableFileList[fullPath]);
     }
 }
@@ -206,7 +216,8 @@ function addToFilelist(fullPath, fileEntry, displayName) {
 }
 
 /** process a file from the dropdown list, maybe a fid, or a FileEntry */
-window.loaddrop = function loaddrop() {
+function loaddrop() {
+    // @ts-ignore
     const fid = document.getElementById('filedropbox').value;
     if (fid === '!none!') return;
     const fileEntryUrl = selectableFileList[fid];
@@ -295,6 +306,7 @@ function streamReader(url, chunkProcess, endProcess) {
 /** read file in chunks and submit chunks to chunkProcess(chunk, bytesSoFar, length) */
 async function fileReader(file, chunkProcess = log, endProcess = () => log('end'), chunksize = 2**17) {
     let off = 0;
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         const slice = file.slice(off, off + chunksize);
         const chunk = await slice.text();
@@ -306,7 +318,7 @@ async function fileReader(file, chunkProcess = log, endProcess = () => log('end'
 }
 
 /** read file in chunks, break into lines, and submit lines to lineProcess(line, numLines, bytesProcessedSoFar, bytesReadSoFar, length) */
-function lineSplitter(lineProcess = (l,n) => {if (n%100 === 0) log(n, l);} ) {
+function lineSplitter(lineProcess = (l,n, b, bsf, len) => {if (n%100 === 0) log(n, l, b, bsf, len);} ) {
     let pend = '';
     let lines = 0, bytes = 0;
     return function(chunk, bytesSoFar, length) {
@@ -326,7 +338,7 @@ function saveData(fileName, ...data) { // does the same as FileSaver.js
     const blob = new Blob(data);
     var a = document.createElement("a");
     document.body.appendChild(a);
-    a.style = "display: none";
+    a.style.display = "none";
 
     var url = window.URL.createObjectURL(blob);
     a.href = url;
@@ -337,3 +349,26 @@ function saveData(fileName, ...data) { // does the same as FileSaver.js
 
 // permit await sleep(xxx)
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/** add a script dynamically */
+// eslint-disable-next-line no-unused-vars
+// this can support modules, but better just use import() instead
+function addscript(src, type = 'text/javascript') {
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = type;
+    script.src = src;
+    head.appendChild(script);
+
+    return new Promise(resolve => {
+        script.onload = () => {
+            resolve();
+        }
+    });
+}
+
+function killev(event) {
+	event.stopPropagation();
+	event.preventDefault();
+	return true;
+}

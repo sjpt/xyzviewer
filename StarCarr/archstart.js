@@ -1,7 +1,11 @@
 'use strict';
-var posturiasync, handlerForFid, refit, lastModified, addToFilelist;
-lastModified.archstart = `Last modified: 2020/12/01 14:38:36
+export {filelist};
+window.lastModified.archstart = `Last modified: 2020/12/05 14:06:02
 `
+const {E} = window;
+import {posturiasync, addToFilelist} from '../basic.js';
+import {plan} from '../graphicsboiler.js';
+import {refit} from './refit.js';
 var filelist = `
 Flint.csv
 Fungi.csv
@@ -17,17 +21,19 @@ starcarrsurf.geojson
 trenches.geojson
 woodplanned.geojson
 sample.cols
-vp10_dr004.dxf`.trim().split('\n');
+vp10_dr004.dxf
+ta0280_DSM_2M.asc
+ta0281_DSM_2M.asc`.trim().split('\n');
 filelist.forEach(n => addToFilelist('StarCarr/'+n, 'StarCarr/'+n, n));
 
 document.title = 'Star Carr: xyzviewer';
 const starturi = 'StarCarr/Flint.csv';
-posturiasync(starturi, function(data, puri) {
-    handlerForFid(starturi)(data, puri);
+(async function start() {
+    await posturiasync(starturi);
+    plan();
     refit();
     posturiasync('StarCarr/contours.geojson');
-    window.plan();
-});
+})();
 
 let archxref = 
 `<a href="https://archaeologydataservice.ac.uk/archives/view/postglacial_2013/index.cfm" target="_blank">
@@ -60,9 +66,8 @@ Star Carr Data and Support:
 </div>
 `
 
-window.ack.innerHTML = archhh;
-
-setTimeout(() => window.ack.style.display = "none", 10000)
-window.xexpbutton.style.display = 'none';
+// display the acknowledgements for 10 seconds
+E.ack.innerHTML = archhh;
+setTimeout(() => E.ack.style.display = "none", 10000)
 
 // appendNodeFromHTML(window.document.body, archhh);

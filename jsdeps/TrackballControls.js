@@ -2,7 +2,10 @@
  * @author Eberhard Graether / http://egraether.com/
  */
 
-THREE.TrackballControls = function ( object, domElement ) {
+// use indirection to THREEX, otherwise can confuse typescript management of cross-file references
+var {THREE: THREEX} = window;
+
+THREEX.TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
 	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM: 4, TOUCH_PAN: 5 };
@@ -35,26 +38,26 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	// internals
 
-	this.target = new THREE.Vector3();
+	this.target = new THREEX.Vector3();
 
-	var lastPosition = new THREE.Vector3();
+	var lastPosition = new THREEX.Vector3();
 
 	var _state = STATE.NONE,
 	_prevState = STATE.NONE,
 
-	_eye = new THREE.Vector3(),
+	_eye = new THREEX.Vector3(),
 
-	_rotateStart = new THREE.Vector3(),
-	_rotateEnd = new THREE.Vector3(),
+	_rotateStart = new THREEX.Vector3(),
+	_rotateEnd = new THREEX.Vector3(),
 
-	_zoomStart = new THREE.Vector2(),
-	_zoomEnd = new THREE.Vector2(),
+	_zoomStart = new THREEX.Vector2(),
+	_zoomEnd = new THREEX.Vector2(),
 
 	_touchZoomDistanceStart = 0,
 	_touchZoomDistanceEnd = 0,
 
-	_panStart = new THREE.Vector2(),
-	_panEnd = new THREE.Vector2();
+	_panStart = new THREEX.Vector2(),
+	_panEnd = new THREEX.Vector2();
 
 	// for reset
 
@@ -98,7 +101,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	this.getMouseOnScreen = function ( clientX, clientY ) {
 
-		return new THREE.Vector2(
+		return new THREEX.Vector2(
 			( clientX - _this.screen.left ) / _this.screen.width,
 			( clientY - _this.screen.top ) / _this.screen.height
 		);
@@ -107,7 +110,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	this.getMouseProjectionOnBall = function ( clientX, clientY ) {
 
-		var mouseOnBall = new THREE.Vector3(
+		var mouseOnBall = new THREEX.Vector3(
 			( clientX - _this.screen.width * 0.5 - _this.screen.left ) / (_this.screen.width*.5),
 			( _this.screen.height * 0.5 + _this.screen.top - clientY ) / (_this.screen.height*.5),
 			0.0
@@ -153,8 +156,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		if ( angle ) {
 
-			var axis = ( new THREE.Vector3() ).crossVectors( _rotateStart, _rotateEnd ).normalize(),
-				quaternion = new THREE.Quaternion();
+			var axis = ( new THREEX.Vector3() ).crossVectors( _rotateStart, _rotateEnd ).normalize(),
+				quaternion = new THREEX.Quaternion();
 
 			angle *= _this.rotateSpeed;
 
@@ -554,4 +557,4 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 };
 
-THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+THREEX.TrackballControls.prototype = Object.create( THREEX.EventDispatcher.prototype );

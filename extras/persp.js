@@ -1,6 +1,6 @@
 'use strict';
-
-var THREE, Stats;
+export {};
+var {THREE, Stats} = window;
 
 var log = console.log;
 
@@ -79,7 +79,7 @@ function init() {
 var cube, mat, mesh, light, amb; // , cubeb, wire, line, sline, geom, mat, mesh;
 function object(size = 1) {
     mat = new THREE.MeshStandardMaterial();
-    cube = new THREE.CubeGeometry(2*size,2*size,2*size);
+    cube = new THREE.BoxGeometry(2*size,2*size,2*size);
     mesh = new THREE.Mesh(cube, mat);
 
     // 1,3,4,6 are the back face, we want triangles through 6
@@ -103,7 +103,7 @@ function object(size = 1) {
 
 function objects(n) {
     const sc = Math.min(1, n**(-1/2.5) * 3);
-    bv = new THREE.CubeGeometry(2*sc,2*sc,2*sc).vertices;
+    bv = new THREE.BoxGeometry(2*sc,2*sc,2*sc).vertices;
 
     scene.children=[light, amb];
     for (let i=0; i<n; i++) {
@@ -113,7 +113,7 @@ function objects(n) {
 }
 function V(x,y,z) {return  new THREE.Vector3(x,y,z);}
 
-let bv = new THREE.CubeGeometry(2,2,2).vertices;
+let bv = new THREE.BoxGeometry(2,2,2).vertices;
 function distort(sc = 1, m = 0.7, d) {
     const q = new THREE.Quaternion(Math.random() * m,-Math.random() * m,0,1).normalize()
     const e = cube.vertices;

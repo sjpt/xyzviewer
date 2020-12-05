@@ -1,9 +1,10 @@
 'use strict';
 export {pdbReader, expandchain};
-import {addToMain, usePhotoShader, orbcamera, renderer,
-    outerscene, camera} from './graphicsboiler.js';
-import {dataToMarkersGui, XYZ} from './xyz.js';
-const {THREE, addFileTypeHandler, log, col3, E, X} = window;  // killev from OrbitControls ????
+import {addToMain, usePhotoShader, orbcamera, renderer} from '../graphicsboiler.js';
+import {dataToMarkersGui, XYZ, col3} from '../xyz.js';
+import {addFileTypeHandler} from '../basic.js';
+const {log, E} = window;
+import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
 
 
 addFileTypeHandler('.pdb', pdbReader);
@@ -44,7 +45,7 @@ function pdbReader(data, fid) {
         const d = [];
         format.forEach( f => {
             if (!f) return;  // final dummy one
-            let v = l.substring(f[0] - 1, f[1]).trim();
+            let v = l.substring(+f[0] - 1, f[1]).trim();
             d.push(v);
         });
         myxyz.addRow(d);
@@ -64,7 +65,7 @@ function pdbReader(data, fid) {
         chaindists();
         virusshow();
     }
-    document.title = '3dv: ' + fid;
+    document.title = 'xyzviewer: ' + fid;
 }
 // var vdbReader = pdbReader;  // so we can read vdb files with same function
 
@@ -104,8 +105,8 @@ function makechains(l = 5, cols = myxyz.namecols) {
     const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'];
     const chainnc = cols.chainn = new Float32Array(xc.length);
     chains = [];
-    let c = -1;
-    let s, near, far,  i = -1;
+    let c = -1, i = -1;
+    let s = new THREE.Vector3(), near = s, far = s;    // values only used to keep compiler quiet abut not set, set poperly in startc()
     const posi = new THREE.Vector3(), posn = new THREE.Vector3();
     startc();
 
@@ -135,7 +136,7 @@ function makechains(l = 5, cols = myxyz.namecols) {
     }
 
     log('number of chains for separation', l, 'is',  c);
-    myxyz.ranges.chainn = myxyz.genstats(-9999, 'chainn');
+    myxyz.ranges.chainn = myxyz.genstats('chainn');
 }
 
 /** make graphics for chain as lines */
@@ -146,7 +147,7 @@ async function makechainlines(pfilterfun = E.filterbox.value) {
     if (chains.length === 0) makechains();
     var geom = new THREE.Geometry;
 
-    const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: THREE.VertexColors } );
+    const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true }); // THREE.VertexColors } );
     // maingroup.remove(chainlines);
     if (!chainlines) {
         chainlines = new THREE.LineSegments(geom, linemat);
@@ -230,7 +231,7 @@ function chaindists(sc = 1) {
             }
         }
     }
-    const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: THREE.VertexColors } );
+    const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true} ); // THREE.VertexColors } );
     //maingroup.remove(rlines);
     groupgeom.remove(rlines);
     rlines = new THREE.LineSegments(linegeom, linemat);
@@ -311,91 +312,11 @@ function chaindists(sc = 1) {
 
     // finish off the mesh ready for drawing
     trigeom.computeFaceNormals();
-    const meshmat = new THREE.MeshPhongMaterial( { color: 0xffffff, opacity: 1, vertexColors: THREE.VertexColors, side: THREE.DoubleSide } );
+    const meshmat = new THREE.MeshPhongMaterial( { color: 0xffffff, opacity: 1, vertexColors: true /*THREE.VertexColors*/, side: THREE.DoubleSide } );
     if (polygonmesh) groupgeom.remove(polygonmesh);
     polygonmesh = new THREE.Mesh(trigeom, meshmat);
     addToMain(polygonmesh, 'polygon', groupgeom);
+    polygonmesh.name = 'pdbpolygonmesh'
 
     return dds;
-}
-
-/** raycasting */
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2();
-document.onmousemove = onMouseMove;
-document.onclick = onMouseMove;
-let onMouseMove_lastface;
-
-function onMouseMove( event ) {
-    // calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-    if (event.target !== E.canvas || !(event.ctrlKey || event.type === 'click'))  return;
-    mouse.x = ( event.offsetX / E.canvas.style.width.replace('px','') ) * 2 - 1;
-    mouse.y = - ( event.offsetY / E.canvas.style.height.replace('px','') ) * 2 + 1;
-
-    // ~~~~~~~~ each frame?
-    // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera( mouse, camera );
-    const th = X.raywidth || 0.2;
-    raycaster.params.Points.threshold = th;
-    raycaster.params.Line.threshold = th;   // ?? have the three.js rules changed ??
-    // raycaster.linePrecision = th;
-
-    // calculate objects intersecting the picking ray
-    console.time('inter')
-    var intersects = raycaster.intersectObjects( outerscene.children, true );
-    console.timeEnd('inter')
-    const num = intersects.length;
-    intersects = intersects.splice(0, 10);
-
-    //for ( var i = 0; i < intersects.length; i++ ) {
-    //    //intersects[ i ].object.material.color.set( 0xff0000 );
-    //
-    //}
-    E.msgbox.innerHTML = `hits ${num} shown ${intersects.length}. Hover for details.<br>`;
-    intersects.forEach(function(ii) {
-    //const ii = intersects[0];
-        if (ii && ii.object === polygonmesh) {
-            const face = ii.face;
-            if (onMouseMove_lastface !== face) {
-                if (onMouseMove_lastface)
-                    onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
-                if (!face.ocol) face.ocol = face.color.clone();
-                face.color.setRGB(1,1,0);
-                polygonmesh.geometry.colorsNeedUpdate = true;
-                const chainsa = Array.from(face.chainset);
-                console.log(face, chainsa);
-                E.filterbox.value = '[' + chainsa + '].includes(chainn)';
-                dataToMarkersGui();
-                onMouseMove_lastface = face;
-            }
-        }
-        const xyz = ii.object.xyz;
-        let frow;
-        if (xyz) {
-            const s = [];
-            const i = ii.index;
-            // const row = xyz.datas[ii.index];
-            for (const name in xyz.namecols) { 
-                const v = xyz.val(name, i); 
-                if (typeof v !== 'object') 
-                    s.push(name + ': ' + v);
-            }
-            frow = s.join('<br>');
-        } else {
-            frow = 'no detailed information';
-        }
-        E.msgbox.innerHTML += `<span>${ii.object.name}:${ii.index} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}</span>
-            <span class="help">${frow}</span><br>
-        `;
-   });
-
-
-    // console.log(ii ? ii.object : 'nohit');
-    if (onMouseMove_lastface && !intersects.length) {
-        onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
-        E.filterbox.value = '';
-        dataToMarkersGui();
-        onMouseMove_lastface = undefined;
-    }
 }

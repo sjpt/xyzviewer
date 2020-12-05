@@ -1,23 +1,31 @@
 'use strict';
 
-var gl, renderer, framenum, findval, oplist, opmode, serious, showbaderror;
+// var gl, renderer, framenum;
+var WA;
 const Gldebug = {
+    // compute Gldebug.gllist list of extensions
+    allglex: function(glgl = Gldebug.gl) {
+        Gldebug.gllist = [glgl];
+        let exts = glgl.getSupportedExtensions();
+        for (let i = 0; i < exts.length; i++) Gldebug.gllist.push(glgl.getExtension(exts[i]));
+    },
+
     stopframe: -999, action: undefined, ops: undefined,
     start: function startgldebug(opts = {}) {
         var action;
         if (opts === true) opts = {action: 'logerr'};
         if (typeof opts === 'object') {
-            Gldebug.stopframe = framenum + opts.frames + 1;
+            Gldebug.stopframe = WA.framenum + opts.frames + 1;
             action = opts.action;
         }
         if (typeof opts === 'number') {
-            Gldebug.stopframe = framenum + opts;
+            Gldebug.stopframe = WA.framenum + opts;
             action = undefined;
         }
         Gldebug.action = action;
-        let glgl = opts.gl || Gldebug.gl || gl || (renderer && renderer.context);
+        let glgl = opts.gl || Gldebug.gl || WA.gl || (WA.renderer && WA.renderer.getContext());
         if (!glgl) {
-            log('Gldebug, no context on which to start.');
+            console.error('Gldebug, no context on which to start.');
             return;
             // below does not work,
             // We could operate globally on __proto__, but probably cleaner just not to support it.
@@ -26,7 +34,7 @@ const Gldebug = {
         }
         Gldebug.gl = glgl;
         if (glgl.old) { console.error("already debugging"); return; }
-        if (!Gldebug.gllist) allglex(gl);
+        if (!Gldebug.gllist) Gldebug.allglex(glgl);
 
         // iterate over basic gl + all extensions
         let ggl;
@@ -40,7 +48,7 @@ const Gldebug = {
                         ggll[ff] = function () {
                             let r = of.apply(ggll, arguments);
                             Gldebug.ops[ff] = (Gldebug.ops[ff] || 0) + 1;
-                            checkglerror("debug wrapped " + ff, undefined, arguments);
+                            Gldebug.checkglerror("debug wrapped " + ff, undefined, arguments);
                             return r;
                         };
                         //ggl[ff].name = 'wrapped_' + ff; // invalid
@@ -65,12 +73,6 @@ Gldebug.stop = function (ggl = Gldebug.gl) {
     }
 }
 
-// compute Gldebug.gllist list of extensions
-function allglex(glgl = Gldebug.gl) {
-    Gldebug.gllist = [glgl];
-    let exts = glgl.getSupportedExtensions();
-    for (let i = 0; i < exts.length; i++) Gldebug.gllist.push(glgl.getExtension(exts[i]));
-}
 
 Gldebug.ops = {};
 
@@ -80,8 +82,15 @@ logall: log all
 breakerr: break on errors
 breakall: break on every call
 */
-function checkglerror(msg, action = undefined, args = undefined) {
-    if (framenum >= Gldebug.stopframe) {Gldebug.stop(); return; }
+Gldebug. checkglerror = function(msg, action = undefined, args = undefined) {
+    /** find exact value in object, return (list of) keys */
+    function findval(obj, val) {
+        var s = [];
+        for (var n in obj) if (obj[n] === val) s.push(n);
+        return s;
+    }
+
+    if (WA.framenum >= Gldebug.stopframe) {Gldebug.stop(); return; }
     let lgl = Gldebug.gl;
     let rc = lgl.getError();
     let errmsg = (rc) ? findval(lgl, rc) : 'OK';
@@ -92,26 +101,21 @@ function checkglerror(msg, action = undefined, args = undefined) {
     }
 
     if (action.indexOf('logall') !== -1)
-        log(framenum, ">> gl" + msg + "            " + errmsg[0] + " (" + rc + " 0x" + rc.toString(16) + ")");
+        console.log(WA.framenum, ">> gl" + msg + "            " + errmsg[0] + " (" + rc + " 0x" + rc.toString(16) + ")");
     if (action.indexOf('breakallall') !== -1)
         // eslint-disable-next-line no-debugger
         debugger;
 
     if (rc) {
         if (action.indexOf('logerr') !== -1)
-            console.error(framenum, ">> gl error " + errmsg[0] + " (" + rc + " 0x" + rc.toString(16) + ") in " + msg + '  opmode=' + opmode + ' ' + oplist[opmode]);
+            console.log(WA.framenum, ">> gl error " + errmsg[0] + " (" + rc + " 0x" + rc.toString(16) + ") in " + msg);
         if (action.indexOf('breakerr') !== -1)
             // eslint-disable-next-line no-debugger
             debugger;
-        if (action.indexOf('seriouserr') !== -1)
-            serious(msg);
     }
 
     if (rc === lgl.CONTEXT_LOST_WEBGL) {
-        showbaderror("WebGL context lost ~ you will probably need to refresh.");
+        console.error("WebGL context lost ~ you will probably need to refresh.");
     }
     return rc;
 }
-
-var log;
-if (!log) log = console.log;

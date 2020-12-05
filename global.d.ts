@@ -1,23 +1,40 @@
 // this is not included in runtime.  Here to help typescript-like type checking.
+//     W:Window, X:MyExternals, E:MyElements;
+// }
+
+// effected by .eslintrc.yaml, settings.json, tsconfig.json (if present), jsconfig.json (if not tsconfig.json)
+//
+// We can see what pollution globals we have introduced using a call globalPollution() in dev tools.
+//
 interface MyExternals {
-    THREE,  Stats, style, pdbReader, vdbReader, init,
-    killev, icol, csvReader, geojsonReader,
-    photoShader_clicked, addvis_clicked, spotsizeset, xexpbutton, expbutton, addFileTypeHandler, fileTypeHandlers, log,
-    scale, maingroup, dataToMarkersGui, defaultDistance, col3, rgb, hsv, filtergui, posturiasync, refit, addscript,
-    currentXyz, currentThreeObj, readply, WEBVR, ascgeom, ascmesh, plygeometry, plyobj, plymaterial, camera, cube, cubemesh, ascReader,
-    enumI, enumF
-    W:Window, X:MyExternals, E:MyElements;
+    COLS,               // no longer needed for gui for COLS.set, but needed for scope of filter expressions
+    // OrganicSpeech,      // gui
+
+    currentXyz, currentThreeObj, 
+    defaultDistance,    // tweak
+    proxy,              // tweak, only instanced if set eg in dev tools
+    raywidth,           // tweak, only instanced if set eg in dev tools
+    xyzspeechupdate,    // should be moved and clarified
+    jsyaml,  // from dependencies
+    webkitSpeechRecognition
 }
-interface Window extends MyExternals {};
+interface Window {lastModified, DxfParser, Stats};  // THREE here not X, just more convenient
+declare var WA: any, W: Window, E: MyElements, X: MyExternals;
 
-var W = window as Window;
-var E = window as MyElements;
-var X = window as MyExternals;
+// these are dom elements referred to by id
 interface MyElements {
-    gui, canvas, filterbox, msgbox, visibles, photoscheck, info, colourby, filterr, fileChooser,
-    colourpick
-
+    gui, canvas, filterbox, msgbox, visibles, photoscheck, info, filterr, fileChooser, colkey,
+    colourpick, filedropbox, colourby, filtcount, ack, speechhelp, speechbox, lastmod
 }
 interface Element { blur; }
 
 interface EventTarget { result; }
+
+// current issues 4/12/2020: grid,js,  pdbreader.js, persp.js, plyreader.js
+// typeof Face3 {ocol, chainset, xyz }
+
+// experiments getting three module type checking right
+//import * as THREE from "./jsdeps/three121.module";
+//interface PointsMaterial extends Material{};
+//interface Scene extends Object3D{};
+//interface Scene {add};

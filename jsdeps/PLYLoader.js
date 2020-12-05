@@ -7,7 +7,7 @@
  * Limitations: ASCII decoding assumes file is UTF-8.
  *
  * Usage:
- *	var loader = new THREE.PLYLoader();
+ *	var loader = new THREE. PLYLoader();
  *	loader.load('./models/ply/ascii/dolphins.ply', function (geometry) {
  *
  *		scene.add( new THREE.Mesh( geometry ) );
@@ -26,8 +26,11 @@
  *
  */
 
+export {PLYLoader}
+import {THREE} from "../threeH.js"; // import * as THREE from "./three121.module.js";
 
-THREE.PLYLoader = function ( manager ) {
+
+const PLYLoader = function ( manager ) {
 
 	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
@@ -35,9 +38,9 @@ THREE.PLYLoader = function ( manager ) {
 
 };
 
-THREE.PLYLoader.prototype = {
+PLYLoader.prototype = {
 
-	constructor: THREE.PLYLoader,
+	constructor: PLYLoader,
 
 	load: function ( url, onLoad, onProgress, onError ) {
 
