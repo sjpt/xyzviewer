@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/05 15:57:37
+window.lastModified.xyz = `Last modified: 2020/12/05 17:03:39
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -437,6 +437,7 @@ addHeader(header) {
         this.colnnull[i] = 0;
         this.colnnum[i] = 0;
     }
+    this.gencolby();
 }
 
 // add a row, array of values, return new n
@@ -535,7 +536,6 @@ finalize(fid, partial = false) {
         finish('x');
         finish('y');
         finish('z');
-        this.gencolby();
     }
 
     this.ranges.forEach = this.sForEach;

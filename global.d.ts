@@ -30,7 +30,7 @@ interface Element { blur; }
 
 interface EventTarget { result; }
 
-// current issues 4/12/2020: grid,js,  pdbreader.js, persp.js, plyreader.js
+// current issues 4/12/2020: grid,  xyz, raycast, pdbreader, persp, plyreader, ascreader
 // typeof Face3 {ocol, chainset, xyz }
 
 // experiments getting three module type checking right
