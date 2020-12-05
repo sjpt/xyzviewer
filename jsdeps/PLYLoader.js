@@ -148,10 +148,11 @@ PLYLoader.prototype = {
 
 						}
 
-						currentElement = {};
-						currentElement.name = lineValues[ 0 ];
-						currentElement.count = parseInt( lineValues[ 1 ] );
-						currentElement.properties = [];
+						currentElement = {
+							name: lineValues[ 0 ],
+							count: parseInt( lineValues[ 1 ] ),
+							properties: []
+						};
 
 						break;
 
@@ -444,7 +445,7 @@ PLYLoader.prototype = {
 				for ( var currentElementCount = 0; currentElementCount < header.elements[ currentElement ].count; currentElementCount ++ ) {
 
 					result = binaryReadElement( body, loc, header.elements[ currentElement ].properties, little_endian );
-					loc += result[ 1 ];
+					loc += +result[ 1 ];
 					var element = result[ 0 ];
 
 					handleElement( buffer, header.elements[ currentElement ].name, element );

@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/05 14:05:22
+window.lastModified.graphicsboiler = `Last modified: 2020/12/05 18:12:06
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -12,7 +12,7 @@ import {} from "./raycast.js";
 import {OrbitControls} from './jsdeps/OrbitControls.js';
 
 
-export {addToMain, framenum, makeCircle, renderer, fullcanvas,
+export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup,
     camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls, THREE};
 const {E, log, X, Stats} = window;
 

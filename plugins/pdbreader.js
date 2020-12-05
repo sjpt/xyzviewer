@@ -316,7 +316,6 @@ function chaindists(sc = 1) {
     if (polygonmesh) groupgeom.remove(polygonmesh);
     polygonmesh = new THREE.Mesh(trigeom, meshmat);
     addToMain(polygonmesh, 'polygon', groupgeom);
-    polygonmesh.name = 'pdbpolygonmesh'
 
     return dds;
 }

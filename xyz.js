@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/05 17:03:39
+window.lastModified.xyz = `Last modified: 2020/12/05 17:34:23
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -18,7 +18,7 @@ export {
     filtergui,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
-    col3, hsv
+    col3
 };
 
 const {E, X} = window;
@@ -131,6 +131,7 @@ async dataToMarkers(pfilterfun) {
     const cola = new THREE.BufferAttribute(col , 3);
     geometry.setAttribute('position', verta);
     geometry.setAttribute('color', cola);
+    // @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
     this.particles.geometry = geometry;
     if (filterfun)
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}`;
@@ -574,8 +575,10 @@ spotsizeset(eventsize, temp='') {
     this.guiset.spotsize = size;
     if (usePhotoShader) {
         const k = 1000;
-        const r = this.material.uniforms.size.value / k;
-        if (size !== undefined) this.material.uniforms.size.value = size * k;
+        // @ts-ignore standard xyz.material does not have uniforms, but we have overriddem it with one that DOES 
+        const sizeUniform = this.material.uniforms.size;
+        const r = sizeUniform.value / k;
+        if (size !== undefined) sizeUniform.value = size * k;
         return r;
     }
     const r = this.material.size;
@@ -753,8 +756,8 @@ var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null
 
 /** convenience function for rgb colour */
 function col3(r, g=r, b=g) { return new THREE.Color().setRGB(r, g, b); }
-// eslint-disable-next-line no-unused-vars
-function hsv(h, s, v) { return new THREE.Color().setHSV(h, s, v); }
+// // eslint-disable-next-line no-unused-vars
+// function hsv(h, s, v) { return new THREE.Color().setHSV(h, s, v); }
 
 
 /* reminder to me

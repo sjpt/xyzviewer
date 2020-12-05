@@ -1,6 +1,6 @@
 'use strict';
 export {};
-import {outerscene, camera} from './graphicsboiler.js';
+import {maingroup, camera} from './graphicsboiler.js';
 import {dataToMarkersGui} from './xyz.js';
 const {E, X} = window;
 import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
@@ -10,7 +10,7 @@ var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 document.onmousemove = onMouseMove;
 document.onclick = onMouseMove;
-let onMouseMove_lastface;
+let lastface, lastcol, lastint0;
 
 function onMouseMove( event ) {
     // calculate mouse position in normalized device coordinates
@@ -27,9 +27,10 @@ function onMouseMove( event ) {
     raycaster.params.Line.threshold = th;   // ?? have the three.js rules changed ??
     // raycaster.linePrecision = th;
 
-    // calculate objects intersecting the picking ray
+    // calculate visible objects intersecting the picking ray
     console.time('inter')
-    var intersects = raycaster.intersectObjects( outerscene.children, true );
+    const visibles = []; maingroup.traverseVisible(v => visibles.push(v))
+    var intersects = raycaster.intersectObjects( visibles, false );
     console.timeEnd('inter')
     const num = intersects.length;
     intersects = intersects.splice(0, 10);
@@ -39,31 +40,42 @@ function onMouseMove( event ) {
     //
     //}
     E.msgbox.innerHTML = `hits ${num} shown ${intersects.length}. Hover for details.<br>`;
+
+    // colour picked face (eg but not necessarily virus polygon)
+    let int0 = intersects[0];
+    let newface = int0 && int0.face;
+    if (newface !== lastface) {
+        if (lastface) {
+            lastface.color.copy(lastcol);
+            lastint0.object.geometry.colorsNeedUpdate = true;
+        }
+        if (newface) {
+            lastcol = newface.color.clone();
+            newface.color.setRGB(1,1,0);
+            int0.object.geometry.colorsNeedUpdate = true;
+
+            // bit below dependent on chainset link/dependency
+            const chainsa = Array.from(newface.chainset);
+            if (chainsa) E.filterbox.value = '?[' + chainsa + '].includes(chainn)';
+        } else {
+            E.filterbox.value = '';
+        }
+        dataToMarkersGui();
+    }
+    lastface = newface;
+    lastint0 = int0;
+
+
     intersects.forEach(function(ii) {
     //const ii = intersects[0];
-        if (ii && ii.object.name === 'pdbpolygonmesh') {    // TODO wrong dependency here ....
-            const face = ii.face;
-            if (onMouseMove_lastface !== face) {
-                if (onMouseMove_lastface)
-                    onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
-                if (!face.ocol) face.ocol = face.color.clone();
-                face.color.setRGB(1,1,0);
-                ii.object.geometry.colorsNeedUpdate = true;
-                const chainsa = Array.from(face.chainset);
-                console.log(face, chainsa);
-                E.filterbox.value = '[' + chainsa + '].includes(chainn)';
-                dataToMarkersGui();
-                onMouseMove_lastface = face;
-            }
-        }
         const xyz = ii.object.xyz;
         let frow;
         if (xyz) {
             const s = [];
-            const i = ii.index;
+            const ind = ii.index;
             // const row = xyz.datas[ii.index];
             for (const name in xyz.namecols) { 
-                const v = xyz.val(name, i); 
+                const v = xyz.val(name, ind); 
                 if (typeof v !== 'object') 
                     s.push(name + ': ' + v);
             }
@@ -71,17 +83,18 @@ function onMouseMove( event ) {
         } else {
             frow = 'no detailed information';
         }
-        E.msgbox.innerHTML += `<span>${ii.object.name}:${ii.index} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}</span>
+        const indshow = ii.face ? ii.faceIndex : ii.index;
+        E.msgbox.innerHTML += `<span>${ii.object.name}:${indshow} ${ii.point.x.toFixed()}, ${ii.point.y.toFixed()}, ${ii.point.z.toFixed()}</span>
             <span class="help">${frow}</span><br>
         `;
    });
 
 
     // console.log(ii ? ii.object : 'nohit');
-    if (onMouseMove_lastface && !intersects.length) {
-        onMouseMove_lastface.color.copy(onMouseMove_lastface.ocol);
+    if (lastface && !intersects.length) {
+        lastface.color.copy(lastface.ocol);
         E.filterbox.value = '';
         dataToMarkersGui();
-        onMouseMove_lastface = undefined;
+        lastface = undefined;
     }
 }

@@ -18,7 +18,7 @@ interface MyExternals {
     jsyaml,  // from dependencies
     webkitSpeechRecognition
 }
-interface Window {lastModified, DxfParser, Stats, GX};  // THREE here not X, just more convenient
+interface Window {lastModified; DxfParser; Stats; GX};  // THREE here not X, just more convenient
 declare var WA: any, W: Window, E: MyElements, X: MyExternals;
 
 // these are dom elements referred to by id
@@ -26,12 +26,14 @@ interface MyElements {
     gui, canvas, filterbox, msgbox, visibles, photoscheck, info, filterr, fileChooser, colkey,
     colourpick, filedropbox, colourby, filtcount, ack, speechhelp, speechbox, lastmod
 }
-interface Element { blur; }
+interface Element { blur }
 
 interface EventTarget { result; }
 
 // current issues 4/12/2020: grid,  xyz, raycast, pdbreader, persp, plyreader, ascreader
-// typeof Face3 {ocol, chainset, xyz }
+
+// experiments getting our 'extensions' permitted
+//class Face3 extends Face3{ocol; chainset; xyz;}
 
 // experiments getting three module type checking right
 //import * as THREE from "./jsdeps/three121.module";
