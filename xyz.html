@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/05 15:31:21
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/06 20:54:56
 `
 var GX = {};
 GX.starttime = Date.now();
@@ -111,6 +111,16 @@ GX.starttime = Date.now();
                     <input type="checkbox" id="speechbox" onchange="GX.ospeech.isRunning=this.checked"/>
                 </span>
                 <span class="help" id="speechhelp">check for speech input</span>
+                <br>
+                <span>
+                    <b>lasso: </b>
+                    <input type="checkbox" id="lassobox" onchange="GX.lasso.setrun(this.checked)"/>
+                </span>
+                <span class="help" id="speechhelp">check for lasso creation
+                    <br>normal mode is additive
+                    <br>alt key for subtractive
+                    <br>ctrl key for xor
+                </span>
                 <br>
                 <b>loaded files: </b>
                 <span id='visibles'></span>
@@ -259,6 +269,7 @@ GX.starttime = Date.now();
                 GX.xyz = await import('./xyz.js');
                 GX.basic = await import('./basic.js');
                 GX.ospeech = (await import('./speech.js')).OrganicSpeech;
+                GX.lasso =  (await import('./lasso.js'));
             }, 1000);
         </script>
 

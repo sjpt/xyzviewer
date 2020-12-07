@@ -55,8 +55,11 @@ function onMouseMove( event ) {
             int0.object.geometry.colorsNeedUpdate = true;
 
             // bit below dependent on chainset link/dependency
-            const chainsa = Array.from(newface.chainset);
-            if (chainsa) E.filterbox.value = '?[' + chainsa + '].includes(chainn)';
+            // TODO: change filterbox without disturbing related things such as COL:
+            if (newface.chainset) {
+                const chainsa = Array.from(newface.chainset);
+                E.filterbox.value = '?[' + chainsa + '].includes(chainn)';
+            }
         } else {
             E.filterbox.value = '';
         }

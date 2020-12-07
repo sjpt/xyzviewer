@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/05 18:12:06
+window.lastModified.graphicsboiler = `Last modified: 2020/12/06 18:00:48
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -12,18 +12,20 @@ import {} from "./raycast.js";
 import {OrbitControls} from './jsdeps/OrbitControls.js';
 
 
-export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup,
-    camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls, THREE};
+export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene,
+    camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls};
 const {E, log, X, Stats} = window;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var container, stats;
-var camera, maingroup, outerscene, renderer,
+let container, stats;
+let camera, maingroup, outerscene, renderer,
     controls, canvas, orbcamera, camscene, display,
     usePhotoShader = false, light0, light1;
+const nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
+const nocamscene = new THREE.Scene();
 X.defaultDistance = 50;
-var autoClear = false;
+let autoClear = false;
 
 // window.onload = init;  // do in html
 
@@ -154,6 +156,12 @@ camscene.updateMatrixWorld(true);
 //if (outerscene.children.length) {
     renderer.clear();   // if three.js does not see anything it doesn't clear???
     renderer.render( outerscene, camera );
+    if (nocamscene.children.length !== 0) {  // ??? TODO, do this on resize() ?
+        nocamcamera.right = window.innerWidth;
+        nocamcamera.top = window.innerHeight;
+        nocamcamera.updateProjectionMatrix();
+        renderer.render(nocamscene, nocamcamera);
+    }
 // } else {  // temporary alternative for performance debug
 //     if (renderer.autoClear) renderer.clear();
 //     display.submitFrame();

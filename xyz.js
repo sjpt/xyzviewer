@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/05 17:34:23
+window.lastModified.xyz = `Last modified: 2020/12/07 11:23:10
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -8,6 +8,7 @@ import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandle
 import {COLS} from './cols.js';
 // import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
 import {THREE} from "./threeH.js";
+import {lassoGet} from "./lasso.js";
 
 //let E = window, X = window;
 
@@ -67,6 +68,7 @@ constructor(data, fid) {
     // colourby is dropdown, colourpick is colour picker
     this.guiset = baseguiset;
     select(fid, this);
+    this._col = new THREE.Color(1,1,1);
 
     this.makechainlines = undefined;
 }
@@ -87,6 +89,7 @@ dataToMarkersGui(type) {
 
 /** load the data with given filter and colour functions if required, and display as markers */
 async dataToMarkers(pfilterfun) {
+    const st = performance.now();
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const l = xc.length;
@@ -99,13 +102,15 @@ async dataToMarkers(pfilterfun) {
     for (let i = 0; i < l; i ++ ) {
         let du;
         if (filterfun) {
+            this._col.setRGB(0.3, 0.3, 0.3);
             const df = filterfun(this, i);
             if (!df) continue;
             if (typeof df === 'object') du = df;
+        } else {
+            this._col.setRGB(1,1,1);
         }
         if (!du) du = {_x: xc[i], _y: yc[i], _z: zc[i]};
-        let c = du._col || col3(0.3, 0.3, 0.3);
-        if (!c) c = {r:1, g:1, b:1};            // ??? patch for hybrid numeric/alpha ???
+        let c = this._col; 
         let _x = du._x !== undefined ? du._x : xc[i];
         let _y = du._y !== undefined ? du._y : yc[i];
         let _z = du._z !== undefined ? du._z : zc[i];
@@ -133,8 +138,9 @@ async dataToMarkers(pfilterfun) {
     geometry.setAttribute('color', cola);
     // @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
     this.particles.geometry = geometry;
+    const dt = Math.round(performance.now() - st);
     if (filterfun)
-        E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}`;
+        E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}`;
     else 
         E.filtcount.innerHTML = 'no filter applied: #points=' + l;
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
@@ -160,6 +166,17 @@ val(name, i) {
  * Flags any failure in E.filterr.innerHTML and returns undefined
  * mode may be 'force' to force recompilation (eg after new colour file loaded), 
  * or 'confirm' to confirm this filter has been applied
+ * 
+ * Filter understands special cases of X,Y,Z and COL
+ * X,Y,Z refer to _x,_y,_z are local variables in the filter
+ * 
+ * COL: refers to xyz._col, a prepared THREE.Colour() object 
+ * This is set to a default before executing the filter
+ * and may be set (eg xyz._col.setRGB(1,0,0)) during execution of the filter
+ * Handling colour this way 
+ *  * reduces the need for generating new color object for each filter execution
+ *  * reduces the risk of overriding contributing COLS object in complex filters
+ * 
  */
 async makefilterfun(filtin, box, mode='') {
     let filt = filtin;
@@ -190,6 +207,7 @@ async makefilterfun(filtin, box, mode='') {
     else if (typeof filt === 'string') {
         try {
             const used = [];
+            filt = filt.replace(/\blasso\b/g, 'xyz._lasso(x,y,z)');
             for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
                 if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
                     used.push(fn);
@@ -198,7 +216,8 @@ async makefilterfun(filtin, box, mode='') {
 
             filt = filt.split('\n').map(l => {
                 if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
-                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_col = ' + COLS.gencol(this, ll)}
+                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = 'xyz._col.set(' + COLS.gencol(this, ll) + ')'}
+                else if (l.startsWith('COLX:')) {const ll = l.substring(5).trim(); l = 'xyz._col.set(' + ll + ')'}
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
                 else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;
@@ -208,11 +227,11 @@ async makefilterfun(filtin, box, mode='') {
 
             // generate filter
             // if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
-            filt += '\nreturn {_x, _y, _z, _col};'
+            filt += '\nreturn {_x, _y, _z};'        // note, xyz._col is implicit output
             // todo: make special case filters for pure number/pure alpha columns???
             const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
             filt = `"use strict";
-                var _x, _y, _z, _col;
+                var _x, _y, _z;
                 ${uu}\n
             ` + filt;
             this.lastCodeGenerated = filt;
@@ -731,7 +750,22 @@ enumF(f,i) {
 }
 // X.en umI = en umI; X.en umF = en umF; 
 
+// /** screen position; working towards lasso filter */
+// spos(x,y,z) {
+//     sv3.set(x,y,z).project(camera);
+//     sv3.x = (sv3.x + 1) * 0.5 * window.innerWidth;
+//     sv3.y = (sv3.y + 1) * 0.5 * window.innerHeight;
+//     return sv3;
+// }
+/** lasso value, can be used for filter or color */
+_lasso(x,y,z,id) {
+    return lassoGet(x,y,z,id);
+}
+
+
 } // end class XYZ
+
+//const sv3 = new THREE.Vector3();
 
 // for now these are intentionally INSIDE the xyz moduke but OUTSIDE the XYZ class.
 /** code for encoding integers with NaNs, first 16 reserved */
