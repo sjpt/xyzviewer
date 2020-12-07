@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/06 18:00:48
+window.lastModified.graphicsboiler = `Last modified: 2020/12/07 13:18:54
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -316,3 +316,23 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 else
     document.onload = start;
 document.addEventListener("DOMContentLoaded",()=>{console.log('DOMContentLoaded loaded')});
+
+// convenience for matrix display
+// to use in DevTools, settings/Preferences/Console/Enable custom formatters
+// helpful details to see matrices more easily
+// @ts-ignore
+window.devtoolsFormatters = [{
+    header: function(obj) {
+        return obj.isMatrix4 ? ['div', {}, obj.toString()] : null  },
+    hasBody: ()=>false
+    }]
+
+THREE.Matrix4.prototype.toString = function() {
+    const mm = Array.from(this.elements).map(e => ' ' + e.toFixed(3).replace('.000', ''));
+    return 'mat4: [' +
+       [mm.slice(0,4),
+       mm.slice(4,8),
+       mm.slice(8,12),
+       mm.slice(12,16)].join('   ')
+       + ']'
+}

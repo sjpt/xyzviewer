@@ -2,7 +2,7 @@
 export {start, stop, map, paint, lassoGet, setrun};
 import {camera, renderer, addToMain, controls, nocamscene, maingroup} from './graphicsboiler.js';
 import {dataToMarkersGui} from './xyz.js';
-const {E, X} = window;
+const {E} = window;
 import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
 
 let map, mapt, size = new THREE.Vector2(), startx, starty, lastx, lasty, flag, canvas;
@@ -87,14 +87,20 @@ function start(pflag = 0xff) {
     material.map = mapt;
     let geometry = new THREE.PlaneGeometry(size.x, size.y);
     let mesh = new THREE.Mesh(geometry, material);
-    X.mesh = mesh
     mesh.position.set(size.x/2, size.y/2, 0);
     addToMain(mesh, 'lasso_' + lassos.length, nocamscene);
     // mesh.scale.set(0.08,0.08,1)
 
-    const mgmat = maingroup.matrixWorld.clone();
+    // compute the complete object position => screen (map) position matrix
+    const totmat = new THREE.Matrix4();
+    const m = () => new THREE.Matrix4();
+    totmat.multiply(m().makeTranslation(size.x/2, size.y/2, 0));
+    totmat.multiply(m().makeScale(size.x/2, size.y/2, 0));
+    totmat.multiply(camera.projectionMatrix);
+    totmat.multiply(camera.matrixWorldInverse);
+    totmat.multiply(maingroup.matrixWorld);
 
-    lassos.push({camera, map, size, mgmat})
+    lassos.push({map, size, totmat})
 
 }
 function stop() {
@@ -111,14 +117,15 @@ function stop() {
 }
 
 const sv3 = new THREE.Vector3();
+// const sv3a = new THREE.Vector3();
 
 /** get the lasso value for a point x,y,z,  */
 function lassoGet(x,y,z, id=lassos.length-1) {
-    const {camera, map, size, mgmat} = lassos[id];
-    sv3.set(x,y,z).applyMatrix4(mgmat);  // << TODO precompute the competel transform chain as single matrix
-    sv3.project(camera);
-    sv3.x = Math.round((sv3.x + 1) * 0.5 * size.x);
-    sv3.y = Math.round((sv3.y + 1) * 0.5 * size.y);
+    const {map, size, totmat} = lassos[id];
+    sv3.set(x,y,z).applyMatrix4(totmat);
+    sv3.x = Math.round(sv3.x);
+    sv3.y = Math.round(sv3.y);
+
     if (sv3.x < 0 || sv3.x >= size.x || sv3.y < 0 || sv3.y >= size.y) return 0;
     return map[sv3.x + sv3.y * size.x];
 }

@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/07 11:23:10
+window.lastModified.xyz = `Last modified: 2020/12/07 15:13:03
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -87,6 +87,7 @@ dataToMarkersGui(type) {
     }
 }
 
+
 /** load the data with given filter and colour functions if required, and display as markers */
 async dataToMarkers(pfilterfun) {
     const st = performance.now();
@@ -94,9 +95,9 @@ async dataToMarkers(pfilterfun) {
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const l = xc.length;
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
-    let vert = new Float32Array(l*3);
-    let col = new Float32Array(l*3);
-    const geometry = this.geometry = new THREE.BufferGeometry();
+    let vert = this._svert = this._svert || new Float32Array(l*3);
+    let col = this._scol = this._scol || new Float32Array(l*3);
+    const geometry = this.geometry = this.geometry || new THREE.BufferGeometry();
     let ii = 0;
     let noxyz = 0;
     for (let i = 0; i < l; i ++ ) {
@@ -126,14 +127,16 @@ async dataToMarkers(pfilterfun) {
         }
     }
     const ll = ii/3;
-    if (ll !== l) {
-        vert = vert.slice(0, ii);
-        col = col.slice(0, ii);
-    }
+    // if (ll !== l) {
+    //     vert = vert.slice(0, ii);
+    //     col = col.slice(0, ii);
+    // }
     if (noxyz) console.log('ddata/filter failed to give xyz for', noxyz, 'elements');
     if (ll === 0) {console.log('ddata/filter failed to give any xyz'); }
-    const verta = new THREE.BufferAttribute(vert , 3);
-    const cola = new THREE.BufferAttribute(col , 3);
+    const verta = this._verta = this._verta || new THREE.BufferAttribute(vert, 3);
+    const cola = this._cola = this._cola || new THREE.BufferAttribute(col, 3);
+    verta.count = cola.count = ll;
+    verta.needsUpdate = cola.needsUpdate = true;
     geometry.setAttribute('position', verta);
     geometry.setAttribute('color', cola);
     // @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
@@ -142,7 +145,7 @@ async dataToMarkers(pfilterfun) {
     if (filterfun)
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}`;
     else 
-        E.filtcount.innerHTML = 'no filter applied: #points=' + l;
+        E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}`;
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
 
     return [ll,l];
@@ -705,6 +708,7 @@ setup(fid) {
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ 
         depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
     X.currentThreeObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
+    this.particles.frustumCulled = false;
     this.particles.xyz = this;
     addToMain( this.particles, fid, undefined, this );
     // xyzs[this.name] = this;
