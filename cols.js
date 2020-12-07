@@ -1,7 +1,7 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2020/12/05 09:57:47
+window.lastModified.basic = `Last modified: 2020/12/07 11:38:26
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
@@ -145,11 +145,11 @@ COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
 COLS.set = function(f, fixed) {
     if (E.colourby.value !== f) E.colourby.value = fixed ? 'fixed' : f;
     const ofilt = '\n' + E.filterbox.value + '\n'
-    let g = ofilt.match(/(.*)\nCOL:(.*?)\n(.*)/);
+    let g = ofilt.match(/(.*)\nCOLX:'(.*?)'\n(.*)/);
     if (g)
-        E.filterbox.value = `${g[1]}\nCOL:${f}\n${g[3]}`.trim();
+        E.filterbox.value = `${g[1]}\nCOLX:'${f}'\n${g[3]}`.trim();
     else
-        E.filterbox.value = `COL:${f}\n${ofilt}`.trim();
+        E.filterbox.value = `COLX:'${f}'\n${ofilt}`.trim();
     dataToMarkersGui();
 }
 
