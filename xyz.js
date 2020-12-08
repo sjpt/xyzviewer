@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/08 11:22:40
+window.lastModified.xyz = `Last modified: 2020/12/08 12:32:30
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -219,7 +219,7 @@ async makefilterfun(filtin, box, mode='') {
 
             filt = filt.split('\n').map(l => {
                 if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
-                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = 'xyz._col.set(' + COLS.gencol(this, ll) + ')'}
+                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = 'xyz._col.' + COLS.gencol(this, ll)}
                 else if (l.startsWith('COLX:')) {const ll = l.substring(5).trim(); l = 'xyz._col.set(' + ll + ')'}
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;

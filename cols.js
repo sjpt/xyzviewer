@@ -1,7 +1,7 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2020/12/08 11:48:59
+window.lastModified.basic = `Last modified: 2020/12/08 12:41:57
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
@@ -50,15 +50,15 @@ COLS.autocol = function(xyz, field) {
     COLS.show(xyz, field);
 }
 
-/** generate code for colour for field */
+/** generate code for setting colour for field */
 COLS.gencol = function(xyz, field) {
     try{
-        if (field === 'random') return 'COLS.random()';             // random colours
+        if (field === 'random') return 'set(COLS.random())';             // random colours
         if (field === 'fixed') field = E.colourpick.value;          // fixed colour
 
         if (xyz.namecolnstrs[field] > xyz.namecolnnum[field] && !COLS[field]) COLS.autocol(xyz, field);
 
-        if (COLS[field]) return `COLS["${field}"][${field}]`;       // field with defined colours
+        if (COLS[field]) return `set(COLS["${field}"][${field}])`;       // field with defined colours
 
         // below no longer needed, colours defined above instead
         //if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `stdcol(xyz.enumI("${field}", i))`; // mainly character field, no defined colours
@@ -68,11 +68,11 @@ COLS.gencol = function(xyz, field) {
         if (r === undefined) {
             const c = new THREE.Color(field);
             if (Object.getOwnPropertyNames(c).indexOf('r') !== -1)  // not sure how it manages c.r === 1 and 'r' in c, this is a better test
-                return `{r: ${c.r}, g: ${c.g}, b: ${c.b}}`          // field a constant colour value
+                return `setRGB(${c.r}, ${c.g}, ${c.b})`          // field a constant colour value
             throw new Error(`Field "${field}" not present.`)        // field not valid
         }
         const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
-        return `COLS.forrange(${field}, ${low}, ${range})`;      // mainly number field
+        return `set(COLS.forrange(${field}, ${low}, ${range}))`;      // mainly number field
     } finally {
         COLS.show(xyz, field);        
     }
@@ -81,7 +81,7 @@ COLS.gencol = function(xyz, field) {
 /** (inefficient) get colour for single value, mainly for debug */
 COLS.colfor = function(xyz, field, i) {
     const sf = COLS.gencol(xyz, field);
-    const f = new Function('xyz', 'i', 'return ' + sf);
+    const f = new Function('xyz', 'i', `${field} = xyz.val("${field}", ${i});return xyz._col.` + sf);
     return f(xyz, i);
 }
 
@@ -125,11 +125,8 @@ COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
     let f = COLS[field];
     if (!f) {
         f = {};
-        console.error('unexpcted field with no colour in COLS.show()', field);
-        // const vs = xyz.namevset[field];
-        // for (const k in vs) {
-        //     f[k] = stdcol(vs[k]);
-        // }
+        // not unexpected, may be colour constant or ???
+        // console.error('unexpcted field with no colour in COLS.show()', field);
     }
     let s = [];
     let i = 0;
