@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/07 15:13:03
+window.lastModified.xyz = `Last modified: 2020/12/08 11:22:40
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -135,17 +135,17 @@ async dataToMarkers(pfilterfun) {
     if (ll === 0) {console.log('ddata/filter failed to give any xyz'); }
     const verta = this._verta = this._verta || new THREE.BufferAttribute(vert, 3);
     const cola = this._cola = this._cola || new THREE.BufferAttribute(col, 3);
-    verta.count = cola.count = ll;
     verta.needsUpdate = cola.needsUpdate = true;
     geometry.setAttribute('position', verta);
     geometry.setAttribute('color', cola);
+    geometry.setDrawRange(0, ll);
     // @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
     this.particles.geometry = geometry;
     const dt = Math.round(performance.now() - st);
     if (filterfun)
-        E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}`;
+        E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}ms`;
     else 
-        E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}`;
+        E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
 
     return [ll,l];
@@ -285,7 +285,7 @@ async lazyLoadCol(id) {
     const t = this.namecols[id]; if (t) return t;
     const fid = this.bfid + '_' + id + '.colbin';
     let fblob;
-    if (fid.startsWith(',,')) { // NOT correct test!
+    if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test!
         const resp = await fetch(fid);
         fblob = await resp.blob();
     } else if (readyFiles[fid]) {
@@ -326,9 +326,11 @@ async yamlReader(raw, fid) {
     }
 
     this.bfid = fid.substring(0, fid.length - 5);
-    await this.lazyLoadCol('x');
-    await this.lazyLoadCol('y');
-    await this.lazyLoadCol('z');
+    const p = [];
+    p.push(this.lazyLoadCol('x'));
+    p.push(this.lazyLoadCol('y'));
+    p.push(this.lazyLoadCol('z'));
+    await Promise.all(p);
 
     dataToMarkersGui();
     select(this.bfid, this);
