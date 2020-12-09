@@ -1,7 +1,7 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop};
 const {E, X, log} = window;
-window.lastModified.basic = `Last modified: 2020/12/05 12:27:31
+window.lastModified.basic = `Last modified: 2020/12/09 19:31:31
 `
 const queryVariables = {};
 var readyFiles = {};
@@ -30,6 +30,16 @@ getQueryVariables();
 function showfirstdata() {
     if (window.location.search.startsWith('?arch')) import("./StarCarr/archstart.js");
     if (window.location.search.startsWith('?fold')) import('./extras/folddemo.js');
+    if (window.location.search.startsWith('?ox')) {
+        if (location.host.startsWith('csynth')) 
+            queryVariables.startdata='../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
+        if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) 
+            queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
+        setTimeout(async () => {
+            (await import('./cols.js')).COLS.set('batch');
+            X.currentXyz.spotsizeset(0.02);
+        }, 1000);
+    } 
 
     const {startcode, startdata, pdb} = queryVariables;
     if (startcode) eval(startcode);

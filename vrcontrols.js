@@ -1,11 +1,12 @@
 // very basic controls for VR
 
 export {vrstart, vrframe}
-import {renderer, maingroup, controls} from "./graphicsboiler.js";
+import {renderer, maingroup, outerscene, controls} from "./graphicsboiler.js";
 // import {THREE} from './threeH.js';
 
+let controller1, controller2;
 function vrstart() {
-    const controller1 = renderer.xr.getController( 0 );
+    controller1 = renderer.xr.getController( 0 );
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
 
@@ -26,10 +27,10 @@ function vrstart() {
 
     maingroup.add( controller1 );
 
-    // const controller2 = renderer.xr.getController( 1 );
-    // controller2.addEventListener( 'selectstart', onSelectStart );
-    // controller2.addEventListener( 'selectend', onSelectEnd );
-    // maingroup.add( controller2 );
+    controller2 = renderer.xr.getController( 1 );
+    controller2.addEventListener( 'selectstart', onSelectStart2 );
+    controller2.addEventListener( 'selectend', onSelectEnd2 );
+    outerscene.add( controller2 );
 }
 
 let select = false;
@@ -42,6 +43,14 @@ function onSelectEnd() {
     // console.log('select end', e)
 }
 
+function onSelectStart2() {
+    controller2.attach(maingroup);
+}
+function onSelectEnd2() {
+    outerscene.attach(maingroup);
+}
+
+
 // move in controller pointer direction
 function vrframe() {
     let panDelta = -1;
@@ -51,7 +60,6 @@ function vrframe() {
     const igp = session.inputSources[0].gamepad;
     if (!select && !igp) return;
 
-    const controller1 = renderer.xr.getController(0);
     const m = controller1.matrix.elements;
 
     let d = panDelta;
