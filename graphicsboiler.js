@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/07 13:18:54
+window.lastModified.graphicsboiler = `Last modified: 2020/12/09 15:21:26
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -10,6 +10,7 @@ import {THREE} from "./threeH.js";
 import {} from "./raycast.js";
 
 import {OrbitControls} from './jsdeps/OrbitControls.js';
+import {vrstart, vrframe} from './vrcontrols.js';
 
 
 export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene,
@@ -114,6 +115,7 @@ function init() {
 
     document.body.appendChild(VRButton.createButton(renderer));
     animate();
+    vrstart();
     // ?? Object.assign(X, {controls, orbcamera, camera, maingroup, renderer }); // mainly for debug
 }
 
@@ -133,6 +135,7 @@ var framenum = 0;
 function render() {
     framenum++;
     if (stats) stats.update();
+    vrframe();
     // if (!da tas) return; // not ready yet
 /**********/
     // If we are not presenting we don't want the VR headset camera to override nonVR navigation
