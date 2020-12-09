@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/06 20:54:56
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/09 12:32:13
 `
 var GX = {};
 GX.starttime = Date.now();
@@ -269,6 +269,7 @@ GX.starttime = Date.now();
                 GX.xyz = await import('./xyz.js');
                 GX.basic = await import('./basic.js');
                 GX.ospeech = (await import('./speech.js')).OrganicSpeech;
+                GX.xyzspeech = (await import('./xyzspeech.js'));
                 GX.lasso =  (await import('./lasso.js'));
             }, 1000);
         </script>
