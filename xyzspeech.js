@@ -1,7 +1,8 @@
 // speech input for xyz
 //
 import {OrganicSpeech} from './speech.js';
-import {orbcamera, plan, elevation, controls, maingroup, setxyzspeechupdate} from './graphicsboiler.js';
+import {orbcamera, plan, elevation, controls, maingroup, setxyzspeechupdate, renderer, camera} from './graphicsboiler.js';
+import {THREE} from './threeH.js';
 const {E} = window;
 //OrganicSpeech.commands = {};
 OrganicSpeech.replace = {4: 'for', fore: 'for', forward: 'for', forwards: 'for'};
@@ -22,15 +23,24 @@ c['go to centre'] = () => { orbcamera.position.set(0,0,0); controls.target.set(0
 c['go to outside'] = () => orbcamera.position.set(0,0,30)
 c['look at centre'] = () => controls.target.set(0,0,0)
 
+let vrmat;
+const imat = new THREE.Matrix4();
+const mat3 = new THREE.Matrix3();
+const v3 = new THREE.Vector3();
 setxyzspeechupdate( () => {
+    if (!mode) return;
+    if (renderer.xr.isPresenting && !vrmat)
+        vrmat = renderer.xr.getCamera(camera).cameras[0].matrix;
+    mat3.setFromMatrix4(renderer.xr.isPresenting ? vrmat : imat);
+    const r = rate*panrate;
     try {
         switch(mode) {
-            case 'for': orbcamera.position.z -= rate*panrate; break;
-            case 'back': controls.panForward(rate * panrate); break;
-            case 'left': controls.panLeft(rate * panrate); break;
-            case 'right': controls.panLeft(-rate * panrate); break;
-            case 'up': controls.panUp(rate * panrate); break;
-            case 'down': controls.panUp(-rate * panrate); break;
+            case 'for': controls.pan3(v3.set(0,0,-r).applyMatrix3(mat3)); break;
+            case 'back': controls.pan3(v3.set(0,0,r).applyMatrix3(mat3)); break;
+            case 'left':  controls.pan3(v3.set(-r,0,0).applyMatrix3(mat3)); break;
+            case 'right': controls.pan3(v3.set(r,0,0).applyMatrix3(mat3)); break;
+            case 'up': controls.pan3(v3.set(0,r,0).applyMatrix3(mat3)); break;
+            case 'down': controls.pan3(v3.set(0,-r,0).applyMatrix3(mat3)); break;
             case 'bigger': maingroup.scale.multiplyScalar(1 + zoomDelta); break;
             case 'smaller': maingroup.scale.multiplyScalar(1 - zoomDelta); break;
         }

@@ -53,7 +53,7 @@ function onSelectEnd2() {
 
 // various interactions for camera and object move, two controllers
 function vrframe() {
-    let panDelta = -1, zoomDelta = -0.01;
+    let panDelta = -0.3, zoomDelta = -0.01;
     const session = renderer.xr.getSession();
     if (!session || !session.inputSources || session.inputSources.length === 0) return;
     // the gamepad style information such as buttons comes (when available) from the session inputSources
@@ -67,15 +67,18 @@ function vrframe() {
     let d = panDelta;
     if (igp1 && igp1.axes && igp1.buttons[2].pressed) d *= -igp1.axes[1];  // works for Vive on Chrome
     else if (!select) d = 0;                     // plain select works with very basic three.js choices
-    controls.pan(-m[8]*d, m[9]*d, m[10]*d);     // -1 for x as controls.pan is designed for different use style?
+
+    controls.pan3(m[8]*d, m[9]*d, m[10]*d);
 
     // ~~ rotate object, second controller select botton, see onSelectStart2 and onSelectEnd2 above
     
     // ~~ scale, second controller touchpad
-    const igp2 = session.inputSources[1].gamepad;
-    if (!igp2) return;
-    if (igp2.axes && igp2.buttons[2].pressed) 
-        maingroup.scale.multiplyScalar(1 + zoomDelta * igp2.axes[1]);
+    if (session.inputSources[1]) {
+        const igp2 = session.inputSources[1].gamepad;
+        if (!igp2) return;
+        if (igp2.axes && igp2.buttons[2].pressed) 
+            maingroup.scale.multiplyScalar(1 + zoomDelta * igp2.axes[1]);
+    }
 
 }
 

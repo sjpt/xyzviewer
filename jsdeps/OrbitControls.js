@@ -709,6 +709,13 @@ const OrbitControls = function ( object, domElement ) {
 	window.addEventListener( 'keydown', onKeyDown, false );
 	window.addEventListener( 'keyup', onKeyUp, false );
 
+	this.pan3 = function(x,y,z) {
+		if (typeof x === 'object') {y = x.y; z = x.z; x = x.x; }
+		scope.panLeft(-x);
+		scope.panUp(y);
+		scope.panForward(z);
+	}
+
 };
 
 OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
