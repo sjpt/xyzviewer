@@ -1,8 +1,8 @@
 'use strict';
 export {filelist};
-window.lastModified.archstart = `Last modified: 2020/12/05 15:29:44
+window.lastModified.archstart = `Last modified: 2020/12/10 10:12:08
 `
-const {E, GX} = window;
+const {E, GG} = window;
 import {posturiasync, addToFilelist} from '../basic.js';
 import {plan} from '../graphicsboiler.js';
 import {refit} from './refit.js';
@@ -33,7 +33,7 @@ const starturi = 'StarCarr/Flint.csv';
     plan();
     refit();
     await posturiasync('StarCarr/contours.geojson');
-    E.msgbox.innerHTML = 'StarCarr load time: ' + (Date.now() - GX.starttime);
+    E.msgbox.innerHTML = 'StarCarr load time: ' + (Date.now() - GG.starttime);
 })();
 
 let archxref = 

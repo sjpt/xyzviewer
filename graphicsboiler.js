@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/09 15:21:26
+window.lastModified.graphicsboiler = `Last modified: 2020/12/10 10:19:29
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -13,7 +13,7 @@ import {OrbitControls} from './jsdeps/OrbitControls.js';
 import {vrstart, vrframe} from './vrcontrols.js';
 
 
-export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene,
+export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene, setxyzspeechupdate,
     camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls};
 const {E, log, X, Stats} = window;
 
@@ -27,6 +27,8 @@ const nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
 const nocamscene = new THREE.Scene();
 X.defaultDistance = 50;
 let autoClear = false;
+let xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
+function setxyzspeechupdate(f) {xyzspeechupdate = f;}
 
 // window.onload = init;  // do in html
 
@@ -146,7 +148,7 @@ function render() {
         controls.update(0.1);
         if (document.activeElement === document.body) controls.usekeys();  // use keys becuase of continuous mode
         orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
-        if (X.xyzspeechupdate) X.xyzspeechupdate();
+        if (xyzspeechupdate) xyzspeechupdate();
     }
 //    outerscene.matrixAutoUpdate = false;
 //    outerscene.matrix.getInverse(orbcamera.matrix);
@@ -233,12 +235,12 @@ function addvis(obj, bname, xyz) {
     obj.name = name;
     const sfid = name.split('\\').pop().split('/').pop();
     E.visibles.innerHTML += `
-        <span id="${name}_k" onclick="GX.gb.select('${name}')">${sfid}:</span>
+        <span id="${name}_k" onclick="GG.gb.select('${name}')">${sfid}:</span>
         <span class="help">click on the item to select for filter/colour etc selection</span>
-        <input type="checkbox" checked="checked" id="${name}_cb" onclick="GX.gb.addvis_clicked(event)" name="${name}"/>
+        <input type="checkbox" checked="checked" id="${name}_cb" onclick="GG.gb.addvis_clicked(event)" name="${name}"/>
         <span class="help">make item visible/invisible</span>
     `;
-    // attempt to add them later and avoid global GX.gb can sometimes create them,
+    // attempt to add them later and avoid global GG.gb can sometimes create them,
     // only to have them taken away again soon after.
     // const cbs = () => {
     //     if ((!E[`${name}_k`]) || (!E[`${name}_cb`])) return setTimeout(cbs,10);

@@ -1,41 +1,43 @@
 // speech input for xyz
 //
 import {OrganicSpeech} from './speech.js';
-import {orbcamera, plan, elevation, controls} from './graphicsboiler.js';
+import {orbcamera, plan, elevation, controls, maingroup, setxyzspeechupdate} from './graphicsboiler.js';
 const {E} = window;
 //OrganicSpeech.commands = {};
-//OrganicSpeech.replace = {};
+OrganicSpeech.replace = {4: 'for', fore: 'for', forward: 'for', forwards: 'for'};
+let zoomDelta=0.01;
 
-{
-    let mode = '';
-    let rate = 1;
-    let panrate = 0.1;
-    let o = OrganicSpeech;
-    let c = o.commands;
-    'forward back left right up down'.split(' ').forEach(k => c[k] = () => mode = k);
-    c.stop = c.newsound = () => mode = '';
-    c.faster = () => rate *= 2;
-    c.slower = () => rate /= 2;
-    c.elevation = () => elevation()
-    c.plan = () => plan()
-    c['go to centre'] = () => orbcamera.position.set(0,0,0)
-    c['go to outside'] = () => orbcamera.position.set(0,0,30)
-    c['look at centre'] = () => controls.target.set(0,0,0)
+let mode = '';
+let rate = 1;
+let panrate = 0.05;
+let o = OrganicSpeech;
+let c = o.commands;
+'for back left right up down bigger smaller'.split(' ').forEach(k => c[k] = () => mode = k);
+c.stop = c.newsound = () => mode = '';
+c.faster = () => rate *= 2;
+c.slower = () => rate /= 2;
+c.elevation = () => elevation()
+c.plan = () => plan()
+c['go to centre'] = () => { orbcamera.position.set(0,0,0); controls.target.set(0,0,-1); }
+c['go to outside'] = () => orbcamera.position.set(0,0,30)
+c['look at centre'] = () => controls.target.set(0,0,0)
 
-    window.xyzspeechupdate = () => {
-        try {
-            switch(mode) {
-                case 'forward': controls.panForward(-rate * panrate); break;
-                case 'back': controls.panForward(rate * panrate); break;
-                case 'left': controls.panLeft(rate * panrate); break;
-                case 'right': controls.panLeft(-rate * panrate); break;
-                case 'up': controls.panUp(rate * panrate); break;
-                case 'down': controls.panUp(-rate * panrate); break;
-            }
-        } catch (e) {
-            console.error('bad command', mode, e);
+setxyzspeechupdate( () => {
+    try {
+        switch(mode) {
+            case 'for': orbcamera.position.z -= rate*panrate; break;
+            case 'back': controls.panForward(rate * panrate); break;
+            case 'left': controls.panLeft(rate * panrate); break;
+            case 'right': controls.panLeft(-rate * panrate); break;
+            case 'up': controls.panUp(rate * panrate); break;
+            case 'down': controls.panUp(-rate * panrate); break;
+            case 'bigger': maingroup.scale.multiplyScalar(1 + zoomDelta); break;
+            case 'smaller': maingroup.scale.multiplyScalar(1 - zoomDelta); break;
         }
+    } catch (e) {
+        console.error('bad command', mode, e);
     }
+});
 
     E.speechhelp.innerHTML = `
 Check box for speech input.<br>
@@ -44,7 +46,6 @@ Available commands:<br>
 ${Object.keys(c).join('</li><li>')}
 </li></ul>
 `
-}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // not really speech, but to help with phones
