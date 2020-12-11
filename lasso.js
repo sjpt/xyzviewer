@@ -13,6 +13,7 @@ function mousedown(e) {
 
     renderer.domElement.addEventListener('mousemove', mousemove);
     renderer.domElement.addEventListener('mouseup', mouseup);
+    e.preventDefault();     // otherwise the double-click somehow selects msgbox text
 }
 
 function setrun(c) {c ? this.start() : this.stop() }
@@ -50,8 +51,8 @@ function mousemove(e) {
     let nowx = e.offsetX, nowy = e.offsetY;
     const r = () => 0.5; // 0.027; // Math.random;
     let v = flag, type = 'set';
-    if (e.ctrlKey) type = 'xor';
-    else if (e.altKey) v = 0;
+    if (e.ctrlKey || e.buttons === 4) type = 'xor';
+    else if (e.altKey || e.buttons === 2) v = 0;
 
     paint(nowx, nowy + r(), lastx, lasty + r(), startx, starty + r(), v, type);
     lastx = nowx; lasty = nowy;
@@ -101,8 +102,8 @@ function start(pflag = 0xff) {
     totmat.multiply(maingroup.matrixWorld);
 
     lassos.push({map, size, totmat})
-
 }
+
 function stop() {
     canvas.removeEventListener('mousemove', mousemove);
     canvas.removeEventListener('mousedown', mousedown);

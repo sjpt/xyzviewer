@@ -89,7 +89,7 @@ function pdbcol(d) {
  * It can do sensible backbone if ca option is specified in queryVariables
  * TODO: if we want to use this seriously we need to keep additional information and make sensible chains
  * */
-async function makechainlines(pfilterfun = E.filterbox.value, maxdsq = 80) {
+async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 80) {
     if (chainlines && chainlines.visible === false) return;
     if (!myxyz.namecols) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
@@ -102,7 +102,7 @@ async function makechainlines(pfilterfun = E.filterbox.value, maxdsq = 80) {
         addToMain(chainlines, 'chainlines');
     }
 
-    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'], residc = myxyz.namecols['resid'];
+    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z']; // , residc = myxyz.namecols['resid'];
 
     for (let i = 0; i < myxyz.n - 1; i++) {
         if (myxyz.val('chain', i) !== myxyz.val('chain', i+1)) continue;

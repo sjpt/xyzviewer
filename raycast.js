@@ -28,10 +28,10 @@ function onMouseMove( event ) {
     // raycaster.linePrecision = th;
 
     // calculate visible objects intersecting the picking ray
-    console.time('inter')
+    console.time('raycast')
     const visibles = []; maingroup.traverseVisible(v => visibles.push(v))
     var intersects = raycaster.intersectObjects( visibles, false );
-    console.timeEnd('inter')
+    console.timeEnd('raycast')
     const num = intersects.length;
     intersects = intersects.splice(0, 10);
 
