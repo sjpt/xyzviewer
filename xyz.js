@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/08 12:32:30
+window.lastModified.xyz = `Last modified: 2020/12/11 12:06:23
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -34,6 +34,8 @@ const spotsizeset = (a, b) => { if (X.currentXyz) X.currentXyz.spotsizeset(a, b)
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
 const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
 const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
+const badfun = () => -9999;
+
 //X.centrerange
 
 /***/
@@ -63,14 +65,14 @@ class XYZ {
 constructor(data, fid) {
     X.currentXyz = X.currentThreeObj = this.xyz = this;
     this.fid = fid;
+    this._col = new THREE.Color(1,1,1);
+    this.makechainlines = undefined;
+    this.guiset = baseguiset;
+
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
     // colourby is dropdown, colourpick is colour picker
-    this.guiset = baseguiset;
     select(fid, this);
-    this._col = new THREE.Color(1,1,1);
-
-    this.makechainlines = undefined;
 }
 
 /** load data based on gui values */
@@ -95,6 +97,7 @@ async dataToMarkers(pfilterfun) {
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
     const l = xc.length;
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
+    if (filterfun === badfun) return;
     let vert = this._svert = this._svert || new Float32Array(l*3);
     let col = this._scol = this._scol || new Float32Array(l*3);
     const geometry = this.geometry = this.geometry || new THREE.BufferGeometry();
@@ -144,6 +147,8 @@ async dataToMarkers(pfilterfun) {
     const dt = Math.round(performance.now() - st);
     if (filterfun)
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}ms`;
+    else if (pfilterfun)
+        E.filtcount.innerHTML = `bad filter not applied`;        // already been marked as error                  
     else 
         E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
@@ -239,15 +244,16 @@ async makefilterfun(filtin, box, mode='') {
             ` + filt;
             this.lastCodeGenerated = filt;
 
+            this.lastFunction = undefined;
             filtfun = new Function('xyz', 'i', filt);
             this.lastFunction = filtfun;
         } catch (e) {
             msg('invalid function: ' + e.message, '#ffd0d0');
-            return undefined;
+            return badfun;
         }
     } else {
         msg('unexpected filter type', '#ff4040');
-    return undefined;
+        return badfun;
     }
 
     try {
@@ -255,7 +261,7 @@ async makefilterfun(filtin, box, mode='') {
         const r = filtfun(this, 0);
     } catch(e) {
         msg('function throws exception: ' + e.message, '#d0d0ff');
-        return undefined;
+        return badfun;
     }
     msg('OK: ctrl-enter to apply filter', '#d0ffd0');
     return filtfun;
@@ -287,6 +293,8 @@ async lazyLoadCol(id) {
     let fblob;
     if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test!
         const resp = await fetch(fid);
+        if (resp.status !== 200)
+            throw new Error(`Column data ${id} not available: rc=${resp.status}<br>${fid}`)
         fblob = await resp.blob();
     } else if (readyFiles[fid]) {
         fblob = readyFiles[fid];
@@ -621,7 +629,7 @@ async filtergui(evt = {}) {
     const boxv = box.value.trim();
     try {
         const fun = await this.makefilterfun(boxv, box);
-        if (!fun && boxv !== '') return;
+        if (fun === badfun) return;
         if (evt.keyCode === 13) {
             this.dataToMarkersGui();
         }

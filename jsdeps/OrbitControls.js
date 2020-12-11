@@ -709,6 +709,7 @@ const OrbitControls = function ( object, domElement ) {
 	window.addEventListener( 'keydown', onKeyDown, false );
 	window.addEventListener( 'keyup', onKeyUp, false );
 
+	// pan not connected to screen (should it be translate or ...???)
 	this.pan3 = function(x,y,z) {
 		if (typeof x === 'object') {y = x.y; z = x.z; x = x.x; }
 		scope.panLeft(-x);

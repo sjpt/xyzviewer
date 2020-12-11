@@ -44,7 +44,7 @@ function onMouseMove( event ) {
     // colour picked face (eg but not necessarily virus polygon)
     let int0 = intersects[0];
     let newface = int0 && int0.face;
-    if (newface !== lastface) {
+    if (newface != lastface) {          // n.b NOT !==, sometimes mix of null and undefined
         if (lastface) {
             lastface.color.copy(lastcol);
             lastint0.object.geometry.colorsNeedUpdate = true;
