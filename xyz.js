@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/11 12:06:23
+window.lastModified.xyz = `Last modified: 2020/12/11 16:51:17
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -23,9 +23,7 @@ export {
 };
 
 const {E, X} = window;
-import {addscript} from './basic.js';
-// const xyzs = {};
-const {log} = window;
+import {addscript, log} from './basic.js';
 
 var XLSX;
 

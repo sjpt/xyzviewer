@@ -1,8 +1,8 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/11 09:41:12
+window.lastModified.graphicsboiler = `Last modified: 2020/12/11 16:50:39
 `; console.log('>>>>graphicsboiler.js');
-import {showfirstdata} from './basic.js';
+import {showfirstdata, log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
 import {spotsizeset, col3} from './xyz.js';
 //const  {THREE} = window; // 
@@ -15,7 +15,7 @@ import {vrstart, vrframe} from './vrcontrols.js';
 
 export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene, setxyzspeechupdate,
     camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls};
-const {E, log, X, Stats} = window;
+const {E, X, Stats} = window;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 

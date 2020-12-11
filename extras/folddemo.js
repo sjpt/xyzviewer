@@ -3,13 +3,13 @@
 // export {makevirchains, virchaindists};
 /** dynamic expansion, todo add easier scripting */
 import {centrerange, col3, dataToMarkersGui, spotsizeset} from '../xyz.js';
-import {posturiasync} from '../basic.js';
+import {posturiasync, log} from '../basic.js';
 
 import {pdbReader} from '../plugins/pdbreader.js';
 import {addToMain, fullcanvas, orbcamera, renderer, usePhotoShader} from '../graphicsboiler.js';
 import {COLS} from '../cols.js';
 import {THREE} from '../threeH.js';
-const {E, log} = window;
+const {E} = window;
 
 let folddemo_st;  // folddemo start time to help script
 let virchains = [];

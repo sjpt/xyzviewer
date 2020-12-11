@@ -1,7 +1,7 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
-    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop};
-const {E, X, log} = window;
-window.lastModified.basic = `Last modified: 2020/12/09 19:31:31
+    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log};
+const {E, X} = window;
+window.lastModified.basic = `Last modified: 2020/12/11 16:55:15
 `
 const queryVariables = {};
 var readyFiles = {};
@@ -12,6 +12,14 @@ function addFileTypeHandler(ftype, fun) {
     if (!fileTypeHandlers) fileTypeHandlers = {};
     fileTypeHandlers[ftype] = fun;
 }
+
+/** log function shared for shorthand, also allows console.log to change as Edge brings up/closes developer tools */
+var log;
+log = function() {
+    console.log.apply(console, arguments);
+}
+log('main.js initial log established');
+
 
 
 /** get query variables from search string */
@@ -291,7 +299,6 @@ function getFileExtension(fid) {
 /** code for streaming input from http  */
 function streamReader(url, chunkProcess, endProcess) {
     const td = new TextDecoder("ascii")
-    const log = console.log
     let n = 0, len, reader;
     function processText({done, value}) {
         if (done) {
@@ -305,7 +312,7 @@ function streamReader(url, chunkProcess, endProcess) {
     }
 
     fetch(url).then(resp => {
-        resp.headers.forEach((...x) => console.log(x));
+        resp.headers.forEach((...x) => log(x));
         len = +resp.headers.get('content-length');
         reader = resp.body.getReader()
         reader.read().then(processText);
