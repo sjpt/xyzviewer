@@ -2,7 +2,7 @@
 export {pdbReader};
 import {addToMain} from '../graphicsboiler.js';
 import {dataToMarkersGui, XYZ} from '../xyz.js';
-import {addFileTypeHandler} from '../basic.js';
+import {addFileTypeHandler, queryVariables} from '../basic.js';
 const {E} = window;
 import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
 
@@ -18,7 +18,7 @@ function pdbReader(data, fid) {
     myxyz.makechainlines = makechainlines;
     const lines = data.split('\n');
     const format = [
-    [1,4, 'atom'], //    “ATOM”        character
+    // [1,4, 'atom'], //    “ATOM”        character
     [7,11, 'atid'], //    Atom serial number    right    integer
     [13,16, 'atname'], //    Atom name    left*    character
     [17,17, 'altloc'], //    Alternate location indicator        character
@@ -48,7 +48,8 @@ function pdbReader(data, fid) {
             let v = l.substring(+f[0] - 1, f[1]).trim();
             d.push(v);
         });
-        myxyz.addRow(d);
+        if (!(queryVariables.ca && d[1] !== 'CA'))
+            myxyz.addRow(d);
     });
 
     // process the format and data to get the ranges
@@ -84,11 +85,11 @@ function pdbcol(d) {
 }
 ******/
 
-/** make graphics for chain as lines; this joins atoms in the order of the pdb file, 
- * NOT backbone or full pairs  
+/** make graphics for chain as lines; this joins atoms in the order of the pdb file,  * NOT full pairs  
+ * It can do sensible backbone if ca option is specified in queryVariables
  * TODO: if we want to use this seriously we need to keep additional information and make sensible chains
  * */
-async function makechainlines(pfilterfun = E.filterbox.value) {
+async function makechainlines(pfilterfun = E.filterbox.value, maxdsq = 80) {
     if (chainlines && chainlines.visible === false) return;
     if (!myxyz.namecols) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
@@ -101,10 +102,14 @@ async function makechainlines(pfilterfun = E.filterbox.value) {
         addToMain(chainlines, 'chainlines');
     }
 
-    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'];
+    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'], residc = myxyz.namecols['resid'];
 
-    for (let i = 0; i < myxyz.n - 2; i++) {
+    for (let i = 0; i < myxyz.n - 1; i++) {
         if (myxyz.val('chain', i) !== myxyz.val('chain', i+1)) continue;
+        // patch missing data ... maybe clearer not to
+        // if (residc[i] !== residc[i+1] && residc[i]+1 !== residc[i+1]) continue;
+        // if ((xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 > maxdsq) continue;
+
         myxyz._col.setRGB(0.3, 0.3, 0.3);
         if (filterfun) if (!filterfun(myxyz, i)) continue;
         const col1 = myxyz._col.clone();

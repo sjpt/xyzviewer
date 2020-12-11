@@ -1,7 +1,7 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log};
 const {E, X} = window;
-window.lastModified.basic = `Last modified: 2020/12/11 16:55:15
+window.lastModified.basic = `Last modified: 2020/12/11 17:17:47
 `
 const queryVariables = {};
 var readyFiles = {};
@@ -29,7 +29,7 @@ function getQueryVariables() {
 
     for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
-        queryVariables[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+        queryVariables[decodeURIComponent(pair[0])] = pair[1] ? decodeURIComponent(pair[1]) : true;
     }
 }
 getQueryVariables();
