@@ -4,7 +4,7 @@
 export {photoShader_clicked};
 
 const {E, X} = window;
-import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "./threeH.js";
 
 var photos;
 /*********** */

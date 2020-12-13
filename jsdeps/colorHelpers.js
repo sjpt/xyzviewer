@@ -1,5 +1,5 @@
 // Various colour helper functions not specific to xyzviewer.
-window.lastModified.xyz = `Last modified: 2020/12/05 09:56:02
+window.lastModified.xyz = `Last modified: 2020/12/13 12:57:09
 `; console.log('>>>>colorHelpers.js');
 
 // CIElab code drom https://raw.githubusercontent.com/antimatter15/rgb-lab/master/color.js
@@ -7,7 +7,7 @@ window.lastModified.xyz = `Last modified: 2020/12/05 09:56:02
 // found on www.easyrgb.com
 export {eqcols};
 
-import {THREE} from "../threeH.js"; // import * as THREE from "./three121.module.js";
+import {THREE} from "../threeH.js";
 
 
 // eslint-disable-next-line no-unused-vars

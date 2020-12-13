@@ -3,7 +3,7 @@ export {start, stop, map, paint, lassoGet, setrun};
 import {camera, renderer, addToMain, controls, nocamscene, maingroup} from './graphicsboiler.js';
 import {dataToMarkersGui} from './xyz.js';
 const {E} = window;
-import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "./threeH.js";
 
 let map, mapt, size = new THREE.Vector2(), startx, starty, lastx, lasty, flag, canvas;
 const lassos = [];  // array of saved lassos, with camera. map etc

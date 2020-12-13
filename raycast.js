@@ -3,7 +3,7 @@ export {};
 import {maingroup, camera} from './graphicsboiler.js';
 import {dataToMarkersGui} from './xyz.js';
 const {E, X} = window;
-import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "./threeH.js";
 
 /** raycasting */
 var raycaster = new THREE.Raycaster();

@@ -1,12 +1,11 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/11 16:51:17
+window.lastModified.xyz = `Last modified: 2020/12/13 12:56:27
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
 import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
 import {COLS} from './cols.js';
-// import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
 import {THREE} from "./threeH.js";
 import {lassoGet} from "./lasso.js";
 

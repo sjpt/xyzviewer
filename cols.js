@@ -1,14 +1,14 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2020/12/08 12:41:57
+window.lastModified.basic = `Last modified: 2020/12/13 12:53:50
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
 import {dataToMarkersGui} from './xyz.js';
 
 const {jsyaml, X, E} = window;
-import {THREE} from "./threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "./threeH.js";
 
 var COLS = {};
 X.COLS = COLS;  // still needed in global scope for filters 

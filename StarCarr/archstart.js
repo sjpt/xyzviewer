@@ -1,6 +1,6 @@
 'use strict';
 export {filelist};
-window.lastModified.archstart = `Last modified: 2020/12/10 10:12:08
+window.lastModified.archstart = `Last modified: 2020/12/13 16:11:10
 `
 const {E, GG} = window;
 import {posturiasync, addToFilelist} from '../basic.js';
@@ -22,6 +22,7 @@ trenches.geojson
 woodplanned.geojson
 sample.cols
 vp10_dr004.dxf
+ta02801_DSM_2M.asc
 ta0280_DSM_2M.asc
 ta0281_DSM_2M.asc`.trim().split('\n');
 filelist.forEach(n => addToFilelist('StarCarr/'+n, 'StarCarr/'+n, n));

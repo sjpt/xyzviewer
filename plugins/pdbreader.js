@@ -4,7 +4,7 @@ import {addToMain} from '../graphicsboiler.js';
 import {dataToMarkersGui, XYZ} from '../xyz.js';
 import {addFileTypeHandler, queryVariables} from '../basic.js';
 const {E} = window;
-import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "../threeH.js";
 
 
 addFileTypeHandler('.pdb', pdbReader);

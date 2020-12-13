@@ -26,8 +26,7 @@
 var defaultDistance;
 
 export {OrbitControls};
-// const {X} = window, {THREE} = X; // import * as THREE from "./three121.module.js";
-import {THREE} from "../threeH.js"; // import * as THREE from "./three121.module.js";
+import {THREE} from "../threeH.js";
 
 
 const OrbitControls = function ( object, domElement ) {

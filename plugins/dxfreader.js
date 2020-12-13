@@ -2,7 +2,7 @@ export {dxfReader};
 import {addToMain} from '../graphicsboiler.js';
 import {centrerange} from '../xyz.js';
 
-import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "../threeH.js";
 import {addFileTypeHandler, addscript} from '../basic.js';
 
 addFileTypeHandler('.dxf', dxfReader);

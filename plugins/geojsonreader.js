@@ -1,12 +1,12 @@
 'use strict';
-window.lastModified.geojson = `Last modified: 2020/12/11 16:51:34
+window.lastModified.geojson = `Last modified: 2020/12/13 12:58:17
 `
 // code for display of geojson data
 export  {geojsonReader};
 import {addToMain} from '../graphicsboiler.js';
 import {centrerange} from '../xyz.js';
 import {addFileTypeHandler, log} from '../basic.js';
-import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "../threeH.js";
 
 addFileTypeHandler('.geojson', geojsonReader);
 

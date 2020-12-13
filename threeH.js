@@ -1,13 +1,22 @@
-window.lastModified.xyz = `Last modified: 2020/12/05 09:55:44
-`; console.log('>>>>threeH.js');
-// everyone can import THREE from here,
-// which helps ensure everyone is using the same THREE as we swhitch to modules
-
-// import * as THREE from "./jsdeps/three121.module.js";
-// / / <reference path="node_modules/three/src/Three.d.ts" />
-//import * as THREE from "./node_modules/three/src/Three";
-
+window.lastModified.xyz = `Last modified: 2020/12/13 15:19:17
+`;
+// everyone can import THREE from here using  'import {THREE} from "./threeH.js";'
+// which helps ensure everyone is using the same THREE as we switch to modules
+// and that we can switch all THREE references at this single point.
+//
+// The main issue with importing three as a module is that the module version
+// does not contain complete THREE type information because of the way it is built,
+// and so gives a huge number of extraneous error messages.
+//
+// I haven't found a way to arrange 'import' at runtime 
+// but use other source for type information within VSCode.
+//
 export {THREE};
-const  {THREE} = window; // 
+const {THREE} = window; console.log('>>>>threeH.js global');// this behaves best for now, 13/12/2020
+//import * as THREE from "./jsdeps/three121.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
+//import * as THREE from "./node_modules/three/build/three.module.js";  // gives lots of compiler errors as above
+/// <reference path="node_modules/three/src/Three.d.ts" /> // this seems to be there anyway for THREE from window.
+//import * as THREE from "./node_modules/three/src/Three";  // compiles ok but no THREE at runtime
 
-// var x = new THREE.Scene(); x.add(); // x.fred(); // test only 
+// var xx = new THREE.Scene(); xx.add(); // x.fred(); // test only
+

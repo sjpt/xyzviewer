@@ -5,7 +5,7 @@ import {addToMain} from '../graphicsboiler.js';
 import {addFileTypeHandler} from '../basic.js';
 import {centrerange} from '../xyz.js';
 
-import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "../threeH.js";
 
 addFileTypeHandler('.asc', ascReader);
 
@@ -13,7 +13,7 @@ function ascReader(rawdata, fid) {
     let geom;
     const rows = rawdata.split('\n');
     if (rows[rows.length-1] === "") rows.pop();
-    const n = rows.length - 6;
+    const ntest = rows.length - 6;
 
     const ncols = +rows[0].split(/\s+/)[1];
     const nrows = +rows[1].split(/\s+/)[1];
@@ -21,31 +21,38 @@ function ascReader(rawdata, fid) {
     const yllcorner = +rows[3].split(/\s+/)[1];
     const cellsize = +rows[4].split(/\s+/)[1];
     const NODATA_value = +rows[5].split(/\s+/)[1];
-    if (nrows !== n || ncols !== n)
-        console.error('unexpected lidar data', n, ncols, nrows);
-    const cenx = xllcorner + nrows*cellsize/2 - centrerange.x;
-    const ceny = yllcorner + ncols*cellsize/2 - centrerange.y;
+    if (nrows !== ntest)
+        console.error('unexpected lidar data', ntest, nrows);
+    const cenx = xllcorner + ncols*cellsize/2 - centrerange.x;
+    const ceny = yllcorner + nrows*cellsize/2 - centrerange.y;
     const cenz = 0; // - centrerange.z;
     console.log('grid', fid, 'centre', cenx, ceny, cenz);
 
 
     // for now use standard vertex, would be much better to have just height map and custom shader
-    geom = new THREE.PlaneBufferGeometry(1000,1000,n-1,n-1);
+    geom = new THREE.PlaneBufferGeometry(1000,1000,ncols,nrows);
     const verts = geom.attributes.position.array; // new Float32Array(n*n*3);
     let p = 0;
-    for (let i = 0; i < n; i++) {
-        const r = rows[i+6].split(' ');
-        for (let j = 0; j < n; j++) {
-            verts[p++] = j - n/2;
-            verts[p++] = -(i - n/2);
+    for (let i = 0; i <= nrows; i++) {
+        let r;
+        if (i === nrows) {
+            r = rows[i+5].split(' ');
+            const r2 = rows[i+4].split(' ');
+            r.forEach((v,i) => r[i] = 2*v - r2[i]);
+        } else {
+            r = rows[i+6].split(' ');
+        }
+        r[ncols] = 2*r[ncols-1] - r[ncols-2];
+
+        for (let j = 0; j <= ncols; j++) {
+            verts[p++] = j - ncols/2 - 1/2;
+            verts[p++] = -(i - nrows/2 - 1/2);
             let rj = +r[j];
-            if (rj === NODATA_value) rj = 0;
+            if (rj === NODATA_value) rj = 0;  // << not correct at extrapolated boundary
             verts[p++] = rj;
         }
     }
-    // geom.attributes.position.array = verts;
-    // geom.computeFaceNormals(); // obsolete
-    geom.computeVertexNormals();
+    geom.computeVertexNormals();    // ?? we could do a little better a edges???
 
     const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
     mesh.position.set(cenx, ceny, cenz);

@@ -1,11 +1,10 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/11 16:50:39
+window.lastModified.graphicsboiler = `Last modified: 2020/12/13 13:50:32
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata, log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
 import {spotsizeset, col3} from './xyz.js';
-//const  {THREE} = window; // 
 import {THREE} from "./threeH.js";
 import {} from "./raycast.js";
 
@@ -118,8 +117,7 @@ function init() {
     document.body.appendChild(VRButton.createButton(renderer));
     animate();
     vrstart();
-    // ?? Object.assign(X, {controls, orbcamera, camera, maingroup, renderer }); // mainly for debug
-}
+}   // init
 
 // add an object to parent, default maingroup, and add a selection/visibility icon
 function addToMain(obj, name, parent = maingroup, xyz) {
@@ -138,8 +136,7 @@ function render() {
     framenum++;
     if (stats) stats.update();
     vrframe();
-    // if (!da tas) return; // not ready yet
-/**********/
+    /**********/
     // If we are not presenting we don't want the VR headset camera to override nonVR navigation
     // We still need more navigation for VR, and smooth handover between nonVR and VR.
     // renderer.xr.enabled = renderer.xr.getDevice() && renderer.xr.getDevice().isPresenting;
@@ -150,15 +147,15 @@ function render() {
         orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
         if (xyzspeechupdate) xyzspeechupdate();
     }
-//    outerscene.matrixAutoUpdate = false;
-//    outerscene.matrix.getInverse(orbcamera.matrix);
-//    outerscene.matrixWorldNeedsUpdate = true;
-camscene.matrixAutoUpdate = false;
-camscene.matrix.fromArray(orbcamera.matrix.elements);
-camscene.matrixWorldNeedsUpdate = true;
-camscene.updateMatrixWorld(true);
-/***********/
-//if (outerscene.children.length) {
+    //    outerscene.matrixAutoUpdate = false;
+    //    outerscene.matrix.getInverse(orbcamera.matrix);
+    //    outerscene.matrixWorldNeedsUpdate = true;
+    camscene.matrixAutoUpdate = false;
+    camscene.matrix.fromArray(orbcamera.matrix.elements);
+    camscene.matrixWorldNeedsUpdate = true;
+    camscene.updateMatrixWorld(true);
+
+    /***********/
     renderer.clear();   // if three.js does not see anything it doesn't clear???
     renderer.render( outerscene, camera );
     if (nocamscene.children.length !== 0) {  // ??? TODO, do this on resize() ?
@@ -167,12 +164,7 @@ camscene.updateMatrixWorld(true);
         nocamcamera.updateProjectionMatrix();
         renderer.render(nocamscene, nocamcamera);
     }
-// } else {  // temporary alternative for performance debug
-//     if (renderer.autoClear) renderer.clear();
-//     display.submitFrame();
-// }
-// renderer.context.viewport(0, 0, 3024, 1680);
-}
+}   // render
 
 /** onkyedown only used so far to support 'Q' for toggling gui information */
 function onDocumentKeyDown(evt) {

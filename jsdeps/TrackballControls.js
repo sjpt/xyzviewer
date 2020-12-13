@@ -4,6 +4,8 @@
 
 // use indirection to THREEX, otherwise can confuse typescript management of cross-file references
 var {THREE: THREEX} = window;
+// import {THREE as THREEX} from '../threeH.js'; //  nb only used in Persp, which is still not even trying to use modules
+
 
 THREEX.TrackballControls = function ( object, domElement ) {
 

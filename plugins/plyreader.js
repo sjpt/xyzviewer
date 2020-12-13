@@ -3,7 +3,7 @@ import {addToMain} from '../graphicsboiler.js';
 import {addFileTypeHandler} from '../basic.js';
 
 const {X, E} = window;
-import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "../threeH.js";
 import {PLYLoader} from '../jsdeps/PLYLoader.js';
 
 addFileTypeHandler('.ply', plyReader);

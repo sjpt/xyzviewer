@@ -4,7 +4,7 @@ export {refit};
 import {addToMain} from '../graphicsboiler.js';
 import {col3} from '../xyz.js';
 const { X} = window;
-import {THREE} from "../threeH.js"; // import * as THREE from "./jsdeps/three121.module.js";
+import {THREE} from "../threeH.js";
 
 let rgroups, rlines;
 
