@@ -1,8 +1,9 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
-    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log};
-const {E, X} = window;
-window.lastModified.basic = `Last modified: 2020/12/11 17:17:47
+    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, fireev};
+window.lastModified.basic = `Last modified: 2020/12/14 20:19:21
 `
+const {E, X} = window;
+import {THREE} from './threeH.js';
 const queryVariables = {};
 var readyFiles = {};
 
@@ -366,6 +367,17 @@ function saveData(fileName, ...data) { // does the same as FileSaver.js
 
 // permit await sleep(xxx)
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/////
+const xx = new THREE.EventDispatcher();
+function waitev(type) { return new Promise(resolve => {
+    var r = (s) => {
+        xx.removeEventListener(type, r); 
+        resolve(s.data)
+    }; 
+    xx.addEventListener(type, r) });
+}
+function fireev(type, data) {xx.dispatchEvent({type, data})}
 
 /** add a script dynamically */
 // eslint-disable-next-line no-unused-vars

@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/13 12:56:27
+window.lastModified.xyz = `Last modified: 2020/12/17 20:30:14
 `; console.log('>>>>xyz.js');
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
@@ -730,6 +730,7 @@ async savefiles() {
     delete obj.cols;
     delete obj.namecols;
     delete obj.xyz;
+    for (const k in obj) if (k[0] === '_') delete obj[k];
 //     delete obj.namevset;
 //     delete obj.namevsetlen;
     delete obj.namevseti;    
