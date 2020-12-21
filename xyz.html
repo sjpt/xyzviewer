@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/21 17:58:31
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/21 18:05:30
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -23,9 +23,9 @@ GG.starttime = Date.now();
                 top: 10px;
                 z-index: 100;
                 pointer-events: none;
-                background: #2226;
             }
             .gui * { pointer-events: all;}
+            .gui >* { background: #2226;}  /* not .gui *, as that can give multiple layers of transparency */
             #msgbox { pointer-events: none; }
             #narrow { width: 25em }
             #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
