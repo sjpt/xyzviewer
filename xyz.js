@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/18 15:16:49
+window.lastModified.xyz = `Last modified: 2020/12/21 17:29:14
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -189,8 +189,8 @@ async makefilterfun(filtin, box, mode='') {
     let filt = filtin;
     const msg = (m, col) => {
         E.filterr.innerHTML = `${m} <br><code> ${filt.split('\n').join('<br>')}<code>`;
-        if (box) box.style.background = col;
-        E.filterr.style.color = col;
+        if (box) box.classList = [col];
+        E.filterr.classList = [col];
     }
     if (mode === 'force') this.lastInputApplied = undefined;    // invalidate so force recompilation
 
@@ -199,13 +199,13 @@ async makefilterfun(filtin, box, mode='') {
         if (applied) this.lastCodeApplied = this.lastCodeGenerated;
         this.lastInputApplied = filtin;
         filt = this.lastCodeApplied || '';   // so msg comes right
-        msg('filter applied', 'white');
+        msg('filter applied', '_applied');
         return this.lastFunction;
     }
     this.lastInputTested = filtin;
-    msg('testing', '#101010');
+    msg('testing', '_testing');
     if (!filt) { 
-        msg('empty filter', '#d0ffd0');
+        msg('empty filter, ctrl-enter to apply', '_empty');
         return undefined;
     }
     let filtfun;
@@ -247,11 +247,11 @@ async makefilterfun(filtin, box, mode='') {
             filtfun = new Function('xyz', 'i', filt);
             this.lastFunction = filtfun;
         } catch (e) {
-            msg('invalid function: ' + e.message, '#ffd0d0');
+            msg('invalid function: ' + e.message, '_invalid');
             return badfun;
         }
     } else {
-        msg('unexpected filter type', '#ff4040');
+        msg('unexpected filter type', '_unexpected');
         return badfun;
     }
 
@@ -259,10 +259,10 @@ async makefilterfun(filtin, box, mode='') {
         // eslint-disable-next-line no-unused-vars
         const r = filtfun(this, 0);
     } catch(e) {
-        msg('function throws exception: ' + e.message, '#d0d0ff');
+        msg('function throws exception: ' + e.message, '_exception');
         return badfun;
     }
-    msg('OK: ctrl-enter to apply filter', '#d0ffd0');
+    msg('OK: ctrl-enter to apply filter', '_OK');
     return filtfun;
 }
 

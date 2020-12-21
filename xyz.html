@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/21 10:59:12
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/21 17:58:31
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -23,21 +23,32 @@ GG.starttime = Date.now();
                 top: 10px;
                 z-index: 100;
                 pointer-events: none;
+                background: #2226;
             }
-            #gui * { pointer-events: all; background: #2226 }
+            .gui * { pointer-events: all;}
             #msgbox { pointer-events: none; }
             #narrow { width: 25em }
             #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
             #ack { z-index: 100; }
             input[type='checkbox'] { margin-left: -0.5em; }
-            select, button {color: white}
+            /* select, button {color: white} */
+
+            #filterbox {color: white; opacity: 0.8; }
+            #filterr {color: white; opacity: 0.6; }
+            ._applied {background: #000;}
+            ._testing {background: #002;}
+            ._empty {background: #020;}
+            ._invalid {background: #200;}
+            ._unexpected {background: #200;}
+            ._exception {background: #200;}
+            ._OK {background: #020;}
 
             .help, .helpabove {
                 display: none;  /* overridden on :hover on previous element */
-                background-color: #2f2f2f;
-                border-color: rgb(255, 72, 89);
+                background-color: #333e;
+                border-color: lightgreen;
                 border-style: solid;
-                color: rgb(255, 72, 89);
+                color: lightgreen;
                 border-radius: 5px;
                 opacity: 1.0;
                 border-width: 1px 1px 1px 1px;
@@ -140,7 +151,7 @@ GG.starttime = Date.now();
         </div>
 
         <div id='container'>
-            <div id='gui'>
+            <div id="gui" class="gui">
                 <span>
                     <b>speech: </b>
                     <input type="checkbox" id="speechbox" onchange="GG.ospeech.isRunning=this.checked"/>
