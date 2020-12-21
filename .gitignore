@@ -1,3 +1,7 @@
 # package-lock.json *** SHOULD be in version control ***
 data/mesh.ply
 node_modules
+graphicsboilerSS.js
+jsdeps/three121await.js
+jsdeps/three121s.js
+xyzes.html

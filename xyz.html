@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/10 11:24:16
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/21 10:59:12
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -64,6 +64,41 @@ GG.starttime = Date.now();
 
             code {color: greenyellow}
 
+            /** below for fold/unfold ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+            .hidebelow > :not(:first-child) { display : none; } /* hidden, simple version no hover */
+
+            legend:before { content : "-"; }
+            .hidebelow > *:first-child:before, .hidebelow legend:before { content : "+"; }
+
+            legend, .genehide {
+                margin-bottom: 0px;
+                font-weight: bold;
+            }  /* when expanded */
+
+            /** below extra details if we want hover flyout * /
+            /* .hidebelow > :first-child {/* color: red; *-/}  /* when collapsed *-/ */
+            /* :hover.hidebelow > legend { color: green; }  /* when flyout */
+
+            /* hidden except for legend, until hover flyot * /
+            .hidebelow:not(:hover) > :not(:first-child) { display : none; } 
+
+            /* flyout of single * /
+            .hidebelow:hover > legend:first-child +* { 
+                display: block;
+                left: 10em;
+                top: 1em;
+                position:absolute;
+                border: 1px solid #080;
+                margin: 0 -4004px 0 4px;
+                padding: 12px;
+                z-index: 2000;
+                background-color: #2f2f2f;
+                border-radius: 6px;
+                min-width: 360px;
+                width: 360px;
+            }
+            /* flyout */
         </style>
         <script>
             function globalPollution() {return Object.keys(window).filter(x => !globalPollution.init.includes(x))};
@@ -145,22 +180,6 @@ GG.starttime = Date.now();
                     In future we also hope to be able to drag/drop or copy/paste URLs from the Star Carr archive.
                 </span></span>
 
-                <br>
-                <span>
-                    <b>Z scale:</b>
-                    1<input type="radio" id="zsc1" name="zscale" onclick="GG.gb.scale(1,1,1);"/>
-                    2<input type="radio" id="zsc2" name="zscale" onclick="GG.gb.scale(1,1,2);"/>
-                    5<input type="radio" id="zsc5" name="zscale" onclick="GG.gb.scale(1,1,5);"/>
-                    10<input type="radio" id="zsc10" name="zscale" onclick="GG.gb.scale(1,1,10);"/>
-                </span>
-                <span class="help">select amount to exaggerate depth</span>
-                <br>
-                <b>View:</b>
-                elevation:<input type="radio" id="elev" name="zscale" onclick="GG.gb.elevation()"/>
-                <span class="help">jump to elevation view</span>
-                plan:<input type="radio" id="plan" name="zscale" onclick="GG.gb.plan()"/>
-                <span class="help">jump to plan view</span>
-                <br>
                 <span>
                     <b>Colour by:</b>
                     <select onchange="GG.cols.set(event.srcElement.value)" id="colourby">
@@ -187,45 +206,68 @@ GG.starttime = Date.now();
                     10<input type="radio" name="spotsize" id="spot10"/>
                 </span>
                 <span class="help">Choose size of each point.<br>Hover to preview, click to select.</span>
-                <br>
-                <span><span><b>photos:</b> <input id="photoscheck" type="checkbox" onclick="GG.ps.photoShader_clicked(event)"/></br>
-                </span>
-                <span class="help">Select to impose photographs on each data point.<br>
-                Experimental, no sensible photos currently available in this demo.</span>
-                </span>
-                <br>
-                <span><button onclick="currentXyz.savefiles()">save columns</button></span>
-                <span class="help">Save the columns files for current xys object.<br>
-                    These can be loaded by drag-drop from Explorer or equivalent.
-                </span>
-                <br>
-                <div id="narrow">
-                    <p id="filtcount"></p>
-                    <span>
-                        <b>Control:</b><br>
-                        <textarea id="filterbox" rows="1" cols="40" onkeyup="GG.xyz.filtergui(event);"></textarea>
-                    </span>
-                    <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
-                        <ul style="margin:0">
-                            <li>ctrl-enter to apply.</li>
-                            <li>green background indicates correct javascript but is pending application.</li>
-                            <li>white background indicates javascript has been applied.</li>
-                            <li>pink background indicates incorrect javascript.</li>
-                            <li>blusih background indicates javascript inappropriate for this context.</li>
-                            <li></li>
-                            <li>The control box may have 'special format lines based on a prefix:</li>
-                            <li><b>'?'</b>: filter the data set according to the filter in the rest of the line</li>
-                            <li><b>'COL:'</b>: choose a column or three.js (css) colour value for colouring the data set</li>
-                            <li><b>'X:', 'Y:', 'Z:'</b>: choose an expression to override the default x,y,z columns for position</li>
-                        </ul>
-                    </span>
 
-                    <br>
-                    <p id="filterr"></p>
-                    <br>
-                    <p id="msgbox"></p>
-                    <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
-                </div>
+                <fieldset style="width:20em">
+                    <legend onclick="toggleFold(this)">details...</legend>
+                    <div>
+                        <span>
+                            <b>Z scale:</b>
+                            1<input type="radio" id="zsc1" name="zscale" onclick="GG.gb.scale(1,1,1);"/>
+                            2<input type="radio" id="zsc2" name="zscale" onclick="GG.gb.scale(1,1,2);"/>
+                            5<input type="radio" id="zsc5" name="zscale" onclick="GG.gb.scale(1,1,5);"/>
+                            10<input type="radio" id="zsc10" name="zscale" onclick="GG.gb.scale(1,1,10);"/>
+                        </span>
+                        <span class="help">select amount to exaggerate depth</span>
+                        <br>
+                        <b>View:</b>
+                        elevation:<input type="radio" id="elev" name="zscale" onclick="GG.gb.elevation()"/>
+                        <span class="help">jump to elevation view</span>
+                        plan:<input type="radio" id="plan" name="zscale" onclick="GG.gb.plan()"/>
+                        <span class="help">jump to plan view</span>
+                        <br>
+
+                        <br>
+                        <span><span><b>photos:</b> <input id="photoscheck" type="checkbox" onclick="GG.ps.photoShader_clicked(event)"/></br>
+                        </span>
+                        <span class="help">Select to impose photographs on each data point.<br>
+                        Experimental, no sensible photos currently available in this demo.</span>
+                        </span>
+                        <br>
+                        <span><button onclick="currentXyz.savefiles()">save columns</button></span>
+                        <span class="help">Save the columns files for current xys object.<br>
+                            These can be loaded by drag-drop from Explorer or equivalent.
+                        </span>
+                        <br>
+                        <div id="narrow">
+                            <p id="filtcount"></p>
+                            <span>
+                                <b>Control:</b><br>
+                                <textarea id="filterbox" rows="4" cols="40" onkeyup="GG.xyz.filtergui(event);"></textarea>
+                            </span>
+                            <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
+                                <ul style="margin:0">
+                                    <li>ctrl-enter to apply.</li>
+                                    <li>green background indicates correct javascript but is pending application.</li>
+                                    <li>white background indicates javascript has been applied.</li>
+                                    <li>pink background indicates incorrect javascript.</li>
+                                    <li>blusih background indicates javascript inappropriate for this context.</li>
+                                    <li></li>
+                                    <li>The control box may have 'special format lines based on a prefix:</li>
+                                    <li><b>'?'</b>: filter the data set according to the filter in the rest of the line</li>
+                                    <li><b>'COL:'</b>: choose a column or three.js (css) colour value for colouring the data set</li>
+                                    <li><b>'X:', 'Y:', 'Z:'</b>: choose an expression to override the default x,y,z columns for position</li>
+                                </ul>
+                            </span>
+
+                            <br>
+                            <p id="filterr"></p>
+                            <br>
+                            <p id="msgbox"></p>
+                            <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
+                        </div>
+                    </div>
+                </fieldset>
+
                 <p id="colkey"></p>
 
             </div>
@@ -259,21 +301,6 @@ GG.starttime = Date.now();
         <script type="module" src="pdbreader.js"></script> -->
         <script>console.log('last module read, window=', window)</script>
 
-        <script>
-            // GG gives the handlers in this file access to necessary functions
-            // while limiting pollution to the global scope.
-            setTimeout(async function() {
-                GG.gb = await import('./graphicsboiler.js');
-                GG.cols = (await import('./cols.js')).COLS;
-                GG.ps = await import('./photoshader.js');
-                GG.xyz = await import('./xyz.js');
-                GG.basic = await import('./basic.js');
-                GG.ospeech = (await import('./speech.js')).OrganicSpeech;
-                GG.xyzspeech = (await import('./xyzspeech.js'));
-                GG.lasso =  (await import('./lasso.js'));
-                GG.expose = () => { for (f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
-            }, 1000);
-        </script>
 
 		<!-- <script src="js/Detector.js"></script> -->
 	</body>

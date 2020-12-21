@@ -1,7 +1,8 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/17 20:30:14
+window.lastModified.xyz = `Last modified: 2020/12/18 15:16:49
 `; console.log('>>>>xyz.js');
+
 import {addToMain, select} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
 import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
@@ -161,7 +162,8 @@ async dataToMarkers(pfilterfun) {
 val(name, i) {
     const rv = this.namecols[name][i];
     if (!isNaN(rv)) return rv;
-    const k = NaN2i(rv);
+    // const k = NaN2i(rv);
+    const k = this.namevcols[name][i] - _baseiNaN;
     if (k === -15) return '';
     return this.namevseti[name][k];
 }
@@ -305,6 +307,7 @@ async lazyLoadCol(id) {
         throw new Error('no ready file ' + fid);
     }
     const buff = await fblob.arrayBuffer();
+    this.namevcols[id] = new Uint32Array(buff);
     return this.namecols[id] = new Float32Array(buff);
 }
 
@@ -318,6 +321,7 @@ async yamlReader(raw, fid) {
     // and synthesize some more
     const {namevset, namevseti, header} = this;
     this.namecols = {};
+    this.namevcols = {};
     for (const n in namevset)
         namevseti[n] = Object.keys(namevset[n]);
     this.gencolby();  
@@ -437,6 +441,7 @@ async csvReader(raw, fid) {
 // prepare to add header/data
 prep() {
     this.cols = [],
+    this.colsv = [],
     this.namecols = {}, 
     this.vset = [], 
     this.namevset = {};
@@ -460,7 +465,8 @@ addHeader(header) {
     this.yi = header.indexOf('y');
     this.zi = header.indexOf('z');
     for (let i = 0; i < header.length; i++) {
-        this.cols[i] = new Float32Array(1000);
+        this.colsv[i] = new Uint32Array(1000);
+        this.cols[i] = new Float32Array(this.colsv[i].buffer);
         this.vset[i] = {};
         this.vsetlen[i] = 0;
         this.colnstrs[i] = 0;
@@ -472,7 +478,7 @@ addHeader(header) {
 
 // add a row, array of values, return new n
 addRow(rowa) {
-    const cols = this.cols, header = this.header;
+    const {cols, header, colsv} = this;
     if (!this.header) {
         this.addHeader(rowa);
         return 0;
@@ -491,9 +497,10 @@ addRow(rowa) {
         const ll = cols[0].length;
         if (n >= ll) {
             for (let i = 0; i < header.length; i++) {
-                const na = new Float32Array(ll*2);
-                na.set(cols[i]);
-                cols[i] = na;
+                const na = new Uint32Array(ll*2);
+                na.set(colsv[i]);
+                colsv[i] = na;
+                cols[i] = new Float32Array(na.buffer);
             }
         }
 
@@ -502,20 +509,20 @@ addRow(rowa) {
             let v = rowa[i];
             if (v === '') {          // '' value
                 this.colnnull[i]++;
-                v = NaN4null;
+                colsv[i][n] = NaN4null;
             } else if (isNaN(v)) {   // text value
                 let k = this.vset[i][v];
                 if (k === undefined) {
                     k = this.vset[i][v] = this.vsetlen[i];
                     this.vsetlen[i]++;
                 }
-                v = i2NaN(k);
                 this.colnstrs[i]++;
+                colsv[i][n] = k + _baseiNaN;
             } else {                 // number value
                 v = +v;
                 this.colnnum[i]++;
+                cols[i][n] = v;
             }
-            cols[i][n] = v;
         }
         this.n++;
     }
@@ -528,11 +535,13 @@ finalize(fid, partial = false) {
     const {header, cols, namecols, vset, namevset, vsetlen, namevsetlen} = this;
 
     this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
+    this.namevcols = {};
 
     // now we have collected the data trim the columns and prepare helper derived data
     for (let i = 0; i < header.length; i++) {
         cols[i] = cols[i].slice(0, this.n);
         namecols[header[i]] = cols[i];
+        this.namevcols[header[i]] = new Uint32Array(cols[i].buffer);
         namevset[header[i]] = vset[i];
         namevsetlen[header[i]] = vsetlen[i];
         this.namevseti[header[i]] = Object.keys(vset[i]);
@@ -755,10 +764,10 @@ async savefiles() {
 }  // savefiles
 
 enumI(f,i) {
-    return NaN2i(this.namecols[f][i]);
+    return this.namevcols[f][i] - _baseiNaN;
 }
 enumF(f,i) {
-    return NaN2i(this.namecols[f][i]) / this.namevsetlen[f];
+    return (this.namevcols[f][i] - _baseiNaN) / this.namevsetlen[f];
 }
 // X.en umI = en umI; X.en umF = en umF; 
 
@@ -779,26 +788,31 @@ _lasso(x,y,z,id) {
 
 //const sv3 = new THREE.Vector3();
 
-// for now these are intentionally INSIDE the xyz moduke but OUTSIDE the XYZ class.
+// for now these are intentionally INSIDE the xyz module but OUTSIDE the XYZ class.
 /** code for encoding integers with NaNs, first 16 reserved */
-var _kkk = new Float32Array([NaN]);
-var _iii = new Uint32Array(_kkk.buffer);
+const _kkk = new Float32Array([NaN]);
+const _iii = new Uint32Array(_kkk.buffer);
 // eslint-disable-next-line no-unused-vars
-var _bbb = new Uint8Array(_kkk.buffer)
-var iNaN = _iii[0];
-function i2NaN(i) {
-    _kkk[0] = NaN;
-    _iii[0] += i+16;
-    return _kkk[0];
-}
-// eslint-disable-next-line no-unused-vars
-function NaN2i(f) {
-    _kkk[0] = f;
-    return _iii[0] - iNaN - 16;
-}
+const _bbb = new Uint8Array(_kkk.buffer)
+const iNaN = _iii[0];
+const _baseiNaN = iNaN + 16;
+const NaN4null = iNaN + 1;
 
-// eslint-disable-next-line no-unused-vars
-var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null
+// The functions below did not work with Firefox,
+// so we are using the parallel Unit32Array/Float32Array views instead.
+// function i2NaN(i) {
+//     _kkk[0] = NaN;
+//     _iii[0] += i+16;
+//     return _kkk[0];
+// }
+// // eslint-disable-next-line no-unused-vars
+// function NaN2i(f) {
+//     _kkk[0] = f;
+//     return _iii[0] - iNaN - 16;
+// }
+
+// // eslint-disable-next-line no-unused-vars
+// var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null
 
 /** convenience function for rgb colour */
 function col3(r, g=r, b=g) { return new THREE.Color().setRGB(r, g, b); }

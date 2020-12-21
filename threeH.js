@@ -1,11 +1,11 @@
-window.lastModified.xyz = `Last modified: 2020/12/13 15:19:17
+window.lastModified.xyz = `Last modified: 2020/12/19 11:47:18
 `;
 // everyone can import THREE from here using  'import {THREE} from "./threeH.js";'
 // which helps ensure everyone is using the same THREE as we switch to modules
 // and that we can switch all THREE references at this single point.
 //
 // The main issue with importing three as a module is that the module version
-// does not contain complete THREE type information because of the way it is built,
+// does not contain complete THREE type information because of the way it is built,npm 
 // and so gives a huge number of extraneous error messages.
 //
 // I haven't found a way to arrange 'import' at runtime 
@@ -13,6 +13,7 @@ window.lastModified.xyz = `Last modified: 2020/12/13 15:19:17
 //
 export {THREE};
 const {THREE} = window; console.log('>>>>threeH.js global');// this behaves best for now, 13/12/2020
+//import * as THREE from "three";
 //import * as THREE from "./jsdeps/three121.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
 //import * as THREE from "./node_modules/three/build/three.module.js";  // gives lots of compiler errors as above
 /// <reference path="node_modules/three/src/Three.d.ts" /> // this seems to be there anyway for THREE from window.

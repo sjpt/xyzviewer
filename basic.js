@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, fireev};
-window.lastModified.basic = `Last modified: 2020/12/14 20:19:21
+window.lastModified.basic = `Last modified: 2020/12/19 18:02:20
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
@@ -37,13 +37,20 @@ getQueryVariables();
 
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 function showfirstdata() {
-    if (window.location.search.startsWith('?arch')) import("./StarCarr/archstart.js");
-    if (window.location.search.startsWith('?fold')) import('./extras/folddemo.js');
-    if (window.location.search.startsWith('?ox')) {
-        if (location.host.startsWith('csynth')) 
-            queryVariables.startdata='../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
+    const wls = window.location.search;
+    if (wls.startsWith('?arch')) import("./StarCarr/archstart.js");
+    if (wls.startsWith('?fold')) import('./extras/folddemo.js');
+    if (wls.startsWith('?ox')) {
+        if (location.host.startsWith('csynth'))
+            if (wls.startsWith('?ox7m'))
+                queryVariables.startdata='../xyzdata/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml"';
+            else
+                queryVariables.startdata='../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
         if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) 
-            queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
+            if (wls.startsWith('?ox7m'))
+                queryVariables.startdata=',,/,,/,,/,,/BigPointData/t1-data/user/erepapi/Fellowship/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml"';
+            else
+                queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
         setTimeout(async () => {
             (await import('./cols.js')).COLS.set('batch');
             X.currentXyz.spotsizeset(0.02);
@@ -401,3 +408,20 @@ function killev(event) {
 	event.preventDefault();
 	return true;
 }
+
+
+            // GG gives the handlers in this file access to necessary functions
+            // while limiting pollution to the global scope.
+            var {GG} = window;
+            setTimeout(async function() {
+                GG.gb = await import('./graphicsboiler.js');
+                GG.cols = (await import('./cols.js')).COLS;
+                GG.ps = await import('./photoshader.js');
+                GG.xyz = await import('./xyz.js');
+                GG.basic = await import('./basic.js');
+                GG.lasso =  (await import('./lasso.js'));
+                GG.expose = () => { for (f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
+                // put off speech till last, Firefox does not support it
+                GG.ospeech = (await import('./speech.js')).OrganicSpeech;
+                GG.xyzspeech = (await import('./xyzspeech.js'));
+            }, 1000);

@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/13 13:50:32
+window.lastModified.graphicsboiler = `Last modified: 2020/12/19 18:28:12
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata, log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -114,9 +114,12 @@ function init() {
     if (renderer.xr.setReferenceSpaceType)
         renderer.xr.setReferenceSpaceType('local'); // ('bounded-floor');
 
-    document.body.appendChild(VRButton.createButton(renderer));
-    animate();
-    vrstart();
+    
+//    setTimeout(() => {  // temp test for startup with esbuild
+        document.body.appendChild(VRButton.createButton(renderer));
+        animate();
+        vrstart();
+//    }, 100);
 }   // init
 
 // add an object to parent, default maingroup, and add a selection/visibility icon
@@ -307,6 +310,7 @@ const start = ()=>{
     console.log('document loaded');
     E.lastmod.textContent = window.lastModified.xyzhtml;
     init();
+    // setTimeout(init, 1000); // temp test for esbuild
 };
 if (document.readyState === 'complete' || document.readyState === 'interactive')
     start(); 

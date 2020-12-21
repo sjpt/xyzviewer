@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "csv-parser": "^2.3.3",
+    "esbuild": "^0.8.24",
     "three": "^0.123.0"
   },
   "keywords": []
