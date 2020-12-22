@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/22 15:54:20
+window.lastModified.xyz = `Last modified: 2020/12/22 17:53:51
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -16,7 +16,7 @@ export {
     centrerange, // for draw centre consistency
     spotsizeset,
     dataToMarkersGui,
-    filtergui, filterAdd, filterRemove,
+    filtergui, filterAdd, filterRemove, applyurl,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
     col3
@@ -30,7 +30,7 @@ var XLSX;
 // ??? to engineer below more cleanly
 const spotsizeset = (a, b) => { if (X.currentXyz) X.currentXyz.spotsizeset(a, b); }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
-const dataToMarkersGui = (type, popping) => X.currentXyz.dataToMarkersGui(type, popping);
+const dataToMarkersGui = (type, popping) => { if (X.currentXyz) X.currentXyz.dataToMarkersGui(type, popping); }
 const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
 const badfun = () => -9999;
 
@@ -60,17 +60,23 @@ class XYZ {
 //var ranges; // data ranges, as structure of min/max
 // let particles, material;
 
+static xyzs = {};
+
 constructor(data, fid) {
     X.currentXyz = X.currentThreeObj = this.xyz = this;
     this.fid = fid;
     this._col = new THREE.Color(1,1,1);
     this.makechainlines = undefined;
     this.guiset = baseguiset;
+    // make sure control= values in URL get respected
+    if (Object.keys(XYZ.xyzs).length === 0)
+        this.guiset.filterbox = E.filterbox.value;
 
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
     // colourby is dropdown, colourpick is colour picker
     select(fid, this);
+    XYZ.xyzs[fid] = this;
 }
 
 /** load data based on gui values */
@@ -848,12 +854,13 @@ function filterRemove(s) {
     dataToMarkersGui();
 }
 
-window.onpopstate = () => {
+function applyurl() {
     const con = decodeURI(location.search).split('&control=')[1] || '';
     E.filterbox.value = con.split('!!!').join('\n');
     dataToMarkersGui(undefined, true);
 }
 
+window.onpopstate = applyurl;
 //const sv3 = new THREE.Vector3();
 
 // for now these are intentionally INSIDE the xyz module but OUTSIDE the XYZ class.

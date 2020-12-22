@@ -1,9 +1,10 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, fireev};
-window.lastModified.basic = `Last modified: 2020/12/19 18:02:20
+window.lastModified.basic = `Last modified: 2020/12/22 17:58:16
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
+import {applyurl} from './xyz.js';
 const queryVariables = {};
 var readyFiles = {};
 
@@ -36,10 +37,11 @@ function getQueryVariables() {
 getQueryVariables();
 
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
-function showfirstdata() {
+async function showfirstdata() {
     const wls = window.location.search;
-    if (wls.startsWith('?arch')) import("./StarCarr/archstart.js");
-    if (wls.startsWith('?fold')) import('./extras/folddemo.js');
+    applyurl();
+    if (wls.startsWith('?arch')) await import("./StarCarr/archstart.js");
+    if (wls.startsWith('?fold')) await import('./extras/folddemo.js');
     if (wls.startsWith('?ox')) {
         if (location.host.startsWith('csynth'))
             if (wls.startsWith('?ox7m'))
@@ -52,7 +54,7 @@ function showfirstdata() {
             else
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
         setTimeout(async () => {
-            (await import('./cols.js')).COLS.set('batch');
+            // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
             X.currentXyz.spotsizeset(0.02);
         }, 1000);
     } 
@@ -60,16 +62,17 @@ function showfirstdata() {
     const {startcode, startdata, pdb} = queryVariables;
     if (startcode) eval(startcode);
     if (pdb) posturiasync('https://files.rcsb.org/download/' + pdb + '.pdb');
-    if (!startdata) return;
-    const startlist = startdata
-        .split("'").join('').split('"').join('')  // in case of old style interpret usage
-        .split(';');
-    startlist.forEach(s => {
-        // this is special case to get around some CORS issues
-        if (s.startsWith('http') && location.hostname === 'localhost')
-            s = X.proxy + s;
-        posturiasync(s);  // <<< WRONG, they get processed async so maybe wrong order
-    });
+    if (startdata) {
+        const startlist = startdata
+            .split("'").join('').split('"').join('')  // in case of old style interpret usage
+            .split(';');
+        startlist.forEach(s => {
+            // this is special case to get around some CORS issues
+            if (s.startsWith('http') && location.hostname === 'localhost')
+                s = X.proxy + s;
+            posturiasync(s);  // <<< WRONG, they get processed async so maybe wrong order
+        });
+    }
 }
 
 document.ondragover = docdragover;
@@ -420,7 +423,7 @@ function killev(event) {
                 GG.xyz = await import('./xyz.js');
                 GG.basic = await import('./basic.js');
                 GG.lasso =  (await import('./lasso.js'));
-                GG.expose = () => { for (f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
+                GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
                 // put off speech till last, Firefox does not support it
                 GG.ospeech = (await import('./speech.js')).OrganicSpeech;
                 GG.xyzspeech = (await import('./xyzspeech.js'));
