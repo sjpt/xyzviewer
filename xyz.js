@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/22 17:53:51
+window.lastModified.xyz = `Last modified: 2020/12/22 18:19:23
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -68,12 +68,14 @@ constructor(data, fid) {
     this._col = new THREE.Color(1,1,1);
     this.makechainlines = undefined;
     this.guiset = baseguiset;
-    // make sure control= values in URL get respected
-    if (Object.keys(XYZ.xyzs).length === 0)
-        this.guiset.filterbox = E.filterbox.value;
 
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
+
+    // make sure control= values in URL get respected (after csvReader in case yamlReader has other ideas)
+    if (Object.keys(XYZ.xyzs).length === 0)
+        this.guiset.filterbox = E.filterbox.value;
+        
     // colourby is dropdown, colourpick is colour picker
     select(fid, this);
     XYZ.xyzs[fid] = this;
