@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/21 17:29:14
+window.lastModified.xyz = `Last modified: 2020/12/22 14:37:55
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -16,7 +16,7 @@ export {
     centrerange, // for draw centre consistency
     spotsizeset,
     dataToMarkersGui,
-    filtergui,
+    filtergui, filterAdd, filterRemove,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
     col3
@@ -177,9 +177,9 @@ val(name, i) {
  * Filter understands special cases of X,Y,Z and COL
  * X,Y,Z refer to _x,_y,_z are local variables in the filter
  * 
- * COL: refers to xyz._col, a prepared THREE.Colour() object 
+ * COL: refers to xyz._col, a prepared THREE.Colour() object . _C also used
  * This is set to a default before executing the filter
- * and may be set (eg xyz._col.setRGB(1,0,0)) during execution of the filter
+ * and may be set (eg _C.setRGB(1,0,0), or even RGB(1,0,0)) during execution of the filter
  * Handling colour this way 
  *  * reduces the need for generating new color object for each filter execution
  *  * reduces the risk of overriding contributing COLS object in complex filters
@@ -213,18 +213,44 @@ async makefilterfun(filtin, box, mode='') {
         filtfun = filt;
     else if (typeof filt === 'string') {
         try {
-            const used = [];
-            filt = filt.replace(/\blasso\b/g, 'xyz._lasso(x,y,z)');
-            for (let fn in this.ranges) // find used fields and assign (saves risk of accidental override of d.<fn>)
+            if (filt.match(/\b_L\b/)) filt = `const _L = xyz._lasso(x,y,z)\n${filt}`
+            if (filt.match(/\b_L[0-9]\b/)) {
+                for (let i=0; i<=9; i++)
+                    if (filt.match(new RegExp('\\b_L' + i + '\\b', 'g'))) filt = `const _L${i} = xyz._lasso(x,y,z, ${i})\n${filt}`
+            }
+            
+            for (let fn in this.ranges) { // find used fields and assign (saves risk of accidental override of d.<fn>)
                 if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
-                    used.push(fn);
+                    // used.push(fn);
+                    filt = `const ${fn} = xyz.val('${fn}', i);\n${filt}`;
                     await this.lazyLoadCol(fn);
                 }
+                if (filt.match( new RegExp('\\b' + fn + '_N\\b', 'g'))) {
+                    filt = `const ${fn}_N = xyz.valN('${fn}', i, 1.5);\n${filt}`;
+                    await this.lazyLoadCol(fn);
+                }
+                if (filt.match( new RegExp('\\b' + fn + '_E\\b', 'g'))) {
+                    filt = `const ${fn}_E = xyz.valE('${fn}', i);\n${filt}`;
+                    await this.lazyLoadCol(fn);
+                }
+                if (filt.match( new RegExp('\\b' + fn + '_EN\\b', 'g'))) {
+                    filt = `const ${fn}_EN = xyz.valEN('${fn}', i);\n${filt}`;
+                    await this.lazyLoadCol(fn);
+                }
+            }
+
+            filt = filt.replace(/\bVX\((.*?)\)/g, "{const k = $1; _R*=k; _G*=k; _B*=k;}");            
+            filt = filt.replace(/\bRGB\(/g, "_C.setRGB(");
+            filt = filt.replace(/\b_R\b/g, "_C.r");
+            filt = filt.replace(/\b_G\b/g, "_C.g");
+            filt = filt.replace(/\b_B\b/g, "_C.b");
+            // RGB(cd3_N, cd4_N, cd16_N)
+            
 
             filt = filt.split('\n').map(l => {
                 if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
-                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = 'xyz._col.' + COLS.gencol(this, ll)}
-                else if (l.startsWith('COLX:')) {const ll = l.substring(5).trim(); l = 'xyz._col.set(' + ll + ')'}
+                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_C.' + COLS.gencol(this, ll)}
+                else if (l.startsWith('COLX:')) {const ll = l.substring(5).trim(); l = '_C.set(' + ll + ')'}
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
                 else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;
@@ -234,12 +260,10 @@ async makefilterfun(filtin, box, mode='') {
 
             // generate filter
             // if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
-            filt += '\nreturn {_x, _y, _z};'        // note, xyz._col is implicit output
+            filt += '\nreturn {_x, _y, _z};'        // note, xyz._col === _C is implicit output
             // todo: make special case filters for pure number/pure alpha columns???
-            const uu = used.map(u => `var ${u} = xyz.val('${u}', i);`).join('\n');
             filt = `"use strict";
-                var _x, _y, _z;
-                ${uu}\n
+                var _x, _y, _z, _C = xyz._col;
             ` + filt;
             this.lastCodeGenerated = filt;
 
@@ -763,10 +787,19 @@ async savefiles() {
     log('saves done');
 }  // savefiles
 
-enumI(f,i) {
+/** normalized values to sds (assumed numeric values) */
+valN(f, i, sds=1.5) {
+    const r = this.ranges[f];
+    return (this.namecols[f][i] - r.mean) / (r.sd * sds * 2) + 0.5;
+}
+
+/** enum value (assumed alpha values) */
+valE(f,i) {
     return this.namevcols[f][i] - _baseiNaN;
 }
-enumF(f,i) {
+
+/** normalized enum value (assumed alpha values) */
+valEN(f,i) {
     return (this.namevcols[f][i] - _baseiNaN) / this.namevsetlen[f];
 }
 // X.en umI = en umI; X.en umF = en umF; 
@@ -783,8 +816,27 @@ _lasso(x,y,z,id) {
     return lassoGet(x,y,z,id);
 }
 
-
 } // end class XYZ
+
+function filterAdd(s, end=false) {
+    const l = E.filterbox.value.split('\n');
+    if (l.includes(s)) return;
+    if (end)
+        l.push(s);
+    else
+        l.unshift(s);
+    E.filterbox.value = l.join('\n');
+    //filtergui();
+    dataToMarkersGui();
+}
+
+function filterRemove(s) {
+    let l = E.filterbox.value.split('\n');
+    l = l.filter(ll => ll !== s);
+    E.filterbox.value = l.join('\n');
+    //filtergui();
+    dataToMarkersGui();
+}
 
 //const sv3 = new THREE.Vector3();
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/21 18:05:30
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/22 15:04:48
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -30,7 +30,7 @@ GG.starttime = Date.now();
             #narrow { width: 25em }
             #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
             #ack { z-index: 100; }
-            input[type='checkbox'] { margin-left: -0.5em; }
+            input[type="checkbox"] { margin-left: -0.5em; }
             /* select, button {color: white} */
 
             #filterbox {color: white; opacity: 0.8; }
@@ -150,7 +150,7 @@ GG.starttime = Date.now();
         </p>
         </div>
 
-        <div id='container'>
+        <div id="container">
             <div id="gui" class="gui">
                 <span>
                     <b>speech: </b>
@@ -158,22 +158,37 @@ GG.starttime = Date.now();
                 </span>
                 <span class="help" id="speechhelp">check for speech input</span>
                 <br>
+
                 <span>
                     <b>lasso: </b>
                     <input type="checkbox" id="lassobox" onchange="GG.lasso.setrun(this.checked)"/>
                 </span>
-                <span class="help" id="speechhelp">check for lasso creation
+                <span class="help">check for lasso creation
                     <br>normal mode is additive
                     <br>alt key for subtractive
                     <br>ctrl key for xor
                 </span>
+
+                <span>
+                    <b>filter: </b>
+                    <input type="checkbox" id="lassofilterbox" onchange="GG.lasso.setFilter(this.checked)"/>
+                </span>
+                <span class="help">check lasso to work as filter on points
+                </span>
+
+                <span>
+                    <b>colour: </b>
+                    <input type="checkbox" id="lassocolourbox" onchange="GG.lasso.setColour(this.checked)"/>
+                </span>
+                <span class="help">check for lasso to apply colouring
+                </span>
                 <br>
                 <b>loaded files: </b>
-                <span id='visibles'></span>
+                <span id="visibles"></span>
 
                 <span><span><br><b>available files: </b>
                     <select onchange="GG.basic.loaddrop(event);" id="filedropbox">
-                        <option value='!none!'>none available</option>
+                        <option value="!none!">none available</option>
                     </select></span>
                     <span class="help">Load additional datasets from those available at our host.
                     <br>
@@ -253,7 +268,7 @@ GG.starttime = Date.now();
                             <p id="filtcount"></p>
                             <span>
                                 <b>Control:</b><br>
-                                <textarea id="filterbox" rows="4" cols="40" onkeyup="GG.xyz.filtergui(event);"></textarea>
+                                <textarea id="filterbox" rows="4" cols="40" onkeyup="GG.xyz.filtergui(event);" onchange="GG.xyz.filtergui();"></textarea>
                             </span>
                             <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
                                 <ul style="margin:0">

@@ -16,6 +16,7 @@ interface MyExternals {
     raywidth,           // tweak, only instanced if set eg in dev tools
     xyzspeechupdate,    // should be moved and clarified
     jsyaml,  // from dependencies
+    THREE,
     webkitSpeechRecognition
 }
 interface Window {lastModified; DxfParser; Stats; GG};

@@ -1,4 +1,4 @@
-window.lastModified.xyz = `Last modified: 2020/12/19 11:47:18
+window.lastModified.xyz = `Last modified: 2020/12/22 10:11:20
 `;
 // everyone can import THREE from here using  'import {THREE} from "./threeH.js";'
 // which helps ensure everyone is using the same THREE as we switch to modules
@@ -12,7 +12,7 @@ window.lastModified.xyz = `Last modified: 2020/12/19 11:47:18
 // but use other source for type information within VSCode.
 //
 export {THREE};
-const {THREE} = window; console.log('>>>>threeH.js global');// this behaves best for now, 13/12/2020
+const {X} = window, {THREE} = X; console.log('>>>>threeH.js global');// this behaves best for now, 13/12/2020
 //import * as THREE from "three";
 //import * as THREE from "./jsdeps/three121.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
 //import * as THREE from "./node_modules/three/build/three.module.js";  // gives lots of compiler errors as above

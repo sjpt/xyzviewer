@@ -1,7 +1,7 @@
 'use strict';
-export {start, stop, map, paint, lassoGet, setrun};
+export {start, stop, map, paint, lassoGet, setrun, setColour, setFilter};
 import {camera, renderer, addToMain, controls, nocamscene, maingroup} from './graphicsboiler.js';
-import {dataToMarkersGui} from './xyz.js';
+import {dataToMarkersGui, filterAdd, filterRemove} from './xyz.js';
 const {E} = window;
 import {THREE} from "./threeH.js";
 
@@ -130,6 +130,15 @@ function lassoGet(x,y,z, id=lassos.length-1) {
     if (sv3.x < 0 || sv3.x >= size.x || sv3.y < 0 || sv3.y >= size.y) return 0;
     return map[sv3.x + sv3.y * size.x];
 }
+
+function setColour(bool) {
+    (bool ? filterAdd : filterRemove)('VX(0.5 + _L * 0.5);', true);
+}
+
+function setFilter(bool) {
+    (bool ? filterAdd : filterRemove)('?_L');    
+}
+
 /*
 l = await import('./lasso.js'); l.start()
 map = l.map

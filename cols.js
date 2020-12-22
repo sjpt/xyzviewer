@@ -1,13 +1,13 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2020/12/13 12:53:50
+window.lastModified.basic = `Last modified: 2020/12/22 10:10:05
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
 import {dataToMarkersGui} from './xyz.js';
 
-const {jsyaml, X, E} = window;
+const {X, E} = window, {jsyaml} = X;
 import {THREE} from "./threeH.js";
 
 var COLS = {};
@@ -61,7 +61,7 @@ COLS.gencol = function(xyz, field) {
         if (COLS[field]) return `set(COLS["${field}"][${field}])`;       // field with defined colours
 
         // below no longer needed, colours defined above instead
-        //if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `stdcol(xyz.enumI("${field}", i))`; // mainly character field, no defined colours
+        //if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `stdcol(xyz.valE("${field}", i))`; // mainly character field, no defined colours
 
 
         const r = xyz.ranges[field];
