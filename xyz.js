@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/22 14:37:55
+window.lastModified.xyz = `Last modified: 2020/12/22 15:54:20
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -30,7 +30,7 @@ var XLSX;
 // ??? to engineer below more cleanly
 const spotsizeset = (a, b) => { if (X.currentXyz) X.currentXyz.spotsizeset(a, b); }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
-const dataToMarkersGui = type => X.currentXyz.dataToMarkersGui(type);
+const dataToMarkersGui = (type, popping) => X.currentXyz.dataToMarkersGui(type, popping);
 const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
 const badfun = () => -9999;
 
@@ -74,14 +74,14 @@ constructor(data, fid) {
 }
 
 /** load data based on gui values */
-dataToMarkersGui(type) {
+dataToMarkersGui(type, popping) {
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
         if (!this.guiset) this.guiset = baseguiset;   // in case of pdbreader ... todo proper subclass
         Object.assign(this.guiset, {colourby: E.colourby.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
         if (this.makechainlines)
             this.makechainlines(E.filterbox.value);
-        return this.dataToMarkers(E.filterbox.value)
+        return this.dataToMarkers(E.filterbox.value, popping)
     } else if (X.currentThreeObj.material ) {
         X.currentThreeObj.material.color.set(E.colourpick.value);
     }
@@ -89,7 +89,7 @@ dataToMarkersGui(type) {
 
 
 /** load the data with given filter and colour functions if required, and display as markers */
-async dataToMarkers(pfilterfun) {
+async dataToMarkers(pfilterfun, popping) {
     const st = performance.now();
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
     const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
@@ -143,12 +143,22 @@ async dataToMarkers(pfilterfun) {
     // @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
     this.particles.geometry = geometry;
     const dt = Math.round(performance.now() - st);
-    if (filterfun)
+    let ok = true;
+    if (filterfun) {
         E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}ms`;
-    else if (pfilterfun)
+    } else if (pfilterfun) {
         E.filtcount.innerHTML = `bad filter not applied`;        // already been marked as error                  
-    else 
+        ok = false;
+    } else {
         E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
+    }
+    if (ok && !popping) {
+        let ll = location.href.split('&control=')[0];
+        if (ll.indexOf('?') === -1) ll += '?';
+        if (pfilterfun)
+            ll += '&control=' + pfilterfun.split('\n').join('!!!');
+        history.pushState({}, undefined, ll)
+    }
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
 
     return [ll,l];
@@ -836,6 +846,12 @@ function filterRemove(s) {
     E.filterbox.value = l.join('\n');
     //filtergui();
     dataToMarkersGui();
+}
+
+window.onpopstate = () => {
+    const con = decodeURI(location.search).split('&control=')[1] || '';
+    E.filterbox.value = con.split('!!!').join('\n');
+    dataToMarkersGui(undefined, true);
 }
 
 //const sv3 = new THREE.Vector3();
