@@ -2,7 +2,6 @@
 export {start, stop, map, paint, lassoGet, setrun, setColour, setFilter};
 import {camera, renderer, addToMain, controls, nocamscene, maingroup} from './graphicsboiler.js';
 import {dataToMarkersGui, filterAdd, filterRemove} from './xyz.js';
-const {E} = window;
 import {THREE} from "./threeH.js";
 
 let map, mapt, size = new THREE.Vector2(), startx, starty, lastx, lasty, flag, canvas;
@@ -58,12 +57,12 @@ function mousemove(e) {
     lastx = nowx; lasty = nowy;
     if (e.shiftKey) {
         dataToMarkersGui();
-        E.filterbox.value = E.filterbox.value = "COLX: lasso ? 'white' : 'green'";
     }
 }
 
 function mouseup() {
     canvas.removeEventListener('mousemove', mousemove);
+    dataToMarkersGui();
     // stop();
 }
 
@@ -111,8 +110,6 @@ function stop() {
     canvas.removeEventListener('mouseup', dblclick);
     
     controls.enabled = true;
-    if (E.filterbox.value.indexOf('lasso') === -1) 
-        E.filterbox.value = '?lasso\n' + E.filterbox.value;
     dataToMarkersGui();
 
 }
