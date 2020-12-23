@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/22 18:19:23
+window.lastModified.xyz = `Last modified: 2020/12/22 19:01:59
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -54,13 +54,8 @@ csvReader.rawhandler = true;
 const baseguiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
 
 class XYZ {
-    // comment in line below for typescript checking, comment out for js runtime
-    // header, da tas, ranges, particles, material;
-//var header; // header, as array
-//var ranges; // data ranges, as structure of min/max
-// let particles, material;
 
-static xyzs = {};
+static xyzs = {};       // why is eslint complaining here?
 
 constructor(data, fid) {
     X.currentXyz = X.currentThreeObj = this.xyz = this;

@@ -1,5 +1,5 @@
 'use strict';
-export {start, stop, map, paint, lassoGet, setrun, setColour, setFilter};
+export {start, stop, map, paint, lassoGet, setrun, setColour, setFilter, lassos};
 import {camera, renderer, addToMain, controls, nocamscene, maingroup} from './graphicsboiler.js';
 import {dataToMarkersGui, filterAdd, filterRemove} from './xyz.js';
 import {THREE} from "./threeH.js";
@@ -100,7 +100,7 @@ function start(pflag = 0xff) {
     totmat.multiply(camera.matrixWorldInverse);
     totmat.multiply(maingroup.matrixWorld);
 
-    lassos.push({map, size, totmat})
+    lassos.push({map, size, totmat, mapt})
 }
 
 function stop() {

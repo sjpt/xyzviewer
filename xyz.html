@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/22 15:04:48
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/23 14:20:30
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -182,6 +182,14 @@ GG.starttime = Date.now();
                 </span>
                 <span class="help">check for lasso to apply colouring
                 </span>
+
+                <span>
+                    <b>use shader (w..i.p.): </b>
+                    <input type="checkbox" id="lassoshaderbox" onchange="GG.lassoshader.useLassoShader(this.checked)"/>
+                </span>
+                <span class="help">use lasso shader for lasso implementation
+                </span>
+
                 <br>
                 <b>loaded files: </b>
                 <span id="visibles"></span>

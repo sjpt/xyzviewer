@@ -9,7 +9,7 @@ import {THREE} from "./threeH.js";
 var photos;
 /*********** */
 function photoShader(fid = "../xyz/sprites/mut-64-64-r90.jpg", xres=undefined, yres=undefined) {
-    const vertexShader = `
+    const vertexShader = /*glsl*/`
 /*
 precision highp float;
 precision highp int;
@@ -36,7 +36,7 @@ void main() {
 }
 `;
 
-    const fragmentShader = `
+    const fragmentShader = /*glsl*/`
 /*
 precision highp float;
 precision highp int;
