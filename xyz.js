@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/22 19:01:59
+window.lastModified.xyz = `Last modified: 2020/12/23 18:27:52
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -19,7 +19,7 @@ export {
     filtergui, filterAdd, filterRemove, applyurl,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
-    col3
+    col3, _baseiNaN
 };
 
 const {E, X} = window;
@@ -477,19 +477,20 @@ async csvReader(raw, fid) {
 
 // prepare to add header/data
 prep() {
-    this.cols = [],
-    this.colsv = [],
-    this.namecols = {}, 
-    this.vset = [], 
-    this.namevset = {};
-    this.vsetlen = [];
-    this.namevsetlen = {};
-    this.colnstrs = [];
-    this.colnnull = [];
-    this.colnnum = [];
-    this.namevseti = {};
-    this.n = 0;
-    this.tellUpdateInterval = 10000;
+    this.cols = [],         // column arrays (Float32), by number
+    this.colsv = [],        // column arrays (Uint32), by number    
+    this.namecols = {},     // columns arrays (Float32), by name
+    this.nameattcols = {};  // column buffer attributes
+    this.vset = [],         // value set, by number
+    this.namevset = {};     // value set, by name, string => value set id 
+    this.vsetlen = [];      // size of value set, by number
+    this.namevsetlen = {};  // size of value set (# discrete string values), by name
+    this.colnstrs = [];     // number of string value instances in each column
+    this.colnnull = [];     // number of null string instances in each column
+    this.colnnum = [];      // number of numeric values in each column
+    this.namevseti = {};    // value set, value set id => string
+    this.n = 0;             // count
+    this.tellUpdateInterval = 10000;    // inform update insterval during long load
     this.firstUpdate = 10000;
     this.graphicsUpdateInterval = 250000;
 }
@@ -782,6 +783,7 @@ async savefiles() {
     delete obj.namevseti;    
     delete obj.vset;
     delete obj.vsetlen;
+    delete obj.nameattcols;
 //    delete obj.vseti;       // ???
        
     delete obj.material;
@@ -852,7 +854,7 @@ function filterRemove(s) {
 }
 
 function applyurl() {
-    const con = decodeURI(location.search).split('&control=')[1] || '';
+    const con = decodeURI(location.href).split('&control=')[1] || ''; // location.search is terminated by '#' character
     E.filterbox.value = con.split('!!!').join('\n');
     dataToMarkersGui(undefined, true);
 }
