@@ -8,9 +8,11 @@ import {lassos} from "./lasso.js";
 import {_baseiNaN} from './xyz.js';
 
 let uniforms, shader;
+let lastid; // id used to force rebuild of shader for experiments
 
 /*********** */
-function lassoShader() {
+function lassoShader(id=0) {
+    lastid = id;
     const vertexShader = /*glsl*/`
 /*
 precision highp float;
@@ -47,8 +49,9 @@ uniform vec2 vmap3;
 uniform vec3 lcol3;
 uniform vec3 hcol3;
 
+/** compute field normalized value for object and use associated colours to increment vColour  */
 void fcol(float field, vec2 vmap, vec3 lcol, vec3 hcol) {
-    if (vmap.x > 9e39) return;
+    if (vmap.x > 9e30) return;
     float v = clamp((field - vmap.x) * vmap.y, 0., 1.);
     vColor += mix(lcol, hcol, v);
 }
@@ -59,6 +62,8 @@ void main() {
     fcol(field1, vmap1, lcol1, hcol1);
     fcol(field2, vmap2, lcol2, hcol2);
     fcol(field3, vmap3, lcol3, hcol3);
+
+    vColor.x += float(${id});  // force recompile if new id
 
     // lasso
     vec4 sv4 = totmat * vec4(position, 1);
@@ -125,14 +130,15 @@ void main() {
 }
 
 let nolassomaterial, lassomaterial;
-async function useLassoShader(cols) {
+async function useLassoShader(cols, id) {
     if (cols === true) cols = ['cd3', 'cd4', 'cd16'];
     const xyz = X.currentXyz;
     const particles = xyz.particles;
     if (!nolassomaterial) nolassomaterial = particles.material;
+    if (lastid !== id) particles.material = lassomaterial = lassoShader(id);
 
     if (cols) {
-        particles.material = lassomaterial = lassomaterial || lassoShader();  // cache and set lasso material
+        particles.material = lassomaterial = lassomaterial || lassoShader(id);  // cache and set lasso material
         particles.onBeforeRender = () => {
             // handle lasso details every frame, could just do when lasso changes?
             const lasso = lassos[lassos.length - 1];

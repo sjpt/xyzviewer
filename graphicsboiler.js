@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/19 18:28:12
+window.lastModified.graphicsboiler = `Last modified: 2020/12/29 17:49:31
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata, log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -23,7 +23,7 @@ let camera, maingroup, outerscene, renderer,
     controls, canvas, orbcamera, camscene, display,
     usePhotoShader = false, light0, light1;
 const nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
-const nocamscene = new THREE.Scene();
+const nocamscene = new THREE.Scene(); nocamscene.name = 'nocamscene';
 X.defaultDistance = 50;
 let autoClear = false;
 let xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
@@ -44,19 +44,19 @@ function init() {
     // interpretSearchString();
     container = document.getElementById('container');
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); camera.name = 'camera';
     camera.position.z = 0;
-    orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+    orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); orbcamera.name = 'orbcamera';
     orbcamera.position.z = X.defaultDistance;
-    camscene = new THREE.Scene();
+    camscene = new THREE.Scene(); camscene.name = 'camscene';
     camscene.add(camera);
 
-    maingroup = new THREE.Scene();
+    maingroup = new THREE.Scene(); maingroup.name = 'maingroup';
     maingroup.rotateX(3.14159/2);   // so we see elevation z up by default
 	// scene.background = new THREE.Color( 0x505050 );
     // scene.add(camera);
 
-    outerscene = new THREE.Scene();
+    outerscene = new THREE.Scene(); outerscene.name = 'outerscene';
     outerscene.add(maingroup);
     outerscene.fog = new THREE.FogExp2( 0x000000, 0.0008 );
 

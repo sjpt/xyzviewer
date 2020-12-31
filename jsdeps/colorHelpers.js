@@ -1,14 +1,16 @@
 // Various colour helper functions not specific to xyzviewer.
-window.lastModified.xyz = `Last modified: 2020/12/13 12:57:09
+window.lastModified.xyz = `Last modified: 2020/12/29 17:10:44
 `; console.log('>>>>colorHelpers.js');
 
 // CIElab code drom https://raw.githubusercontent.com/antimatter15/rgb-lab/master/color.js
 // the following functions are based off of the pseudocode
 // found on www.easyrgb.com
-export {eqcols};
+export {eqcols, makeColeq, hsv2rgb};
 
 import {THREE} from "../threeH.js";
 
+// parameters for the model
+let e = 1/2.2, rg = 0.5, gr = 0.5, kr = 6, kg = 10, kb = 3, sss= {e, rg, gr, kr, kg, kb};
 
 // eslint-disable-next-line no-unused-vars
 function lab2rgb(lab){
@@ -77,31 +79,56 @@ function deltaE(labA, labB){
   return i < 0 ? 0 : Math.sqrt(i);
 }
 
-/** perceptual distance RGB */
+/** perceptual distance RGB using lab */
 // eslint-disable-next-line no-unused-vars
-function deltaRGB(r1, r2) {
-  return deltaE(rgb2lab(r1), rgb2lab(r2))
+function deltaRGBE(r1, r2) {
+  return deltaE(rgb2lab(r1), rgb2lab(r2));
 }
+
+/** perceptual distance RGB using simple experiment */
+function deltaRGBS(r1, r2) {
+    return (
+        kr * Math.abs((r1[0] + r1[1]*rg)**e - (r2[0] + r2[1]*gr)**e) +
+        kg * Math.abs((r1[1] + r1[0]*rg)**e - (r2[1] + r2[0]*gr)**e) +
+        kb * Math.abs((r1[2])**e - (r2[2])**e)
+    );
+}
+const deltaRGB = deltaRGBS;
 
 /** perceptual distance HSV */
 function deltaHSV(h1, h2) {
-  return deltaE(rgb2lab(hsv2rgb(h1)), rgb2lab(hsv2rgb(h2)))
+  // return deltaE(rgb2lab(hsv2rgb(h1)), rgb2lab(hsv2rgb(h2)))
+  return deltaRGB(hsv2rgb(h1), hsv2rgb(h2));
 }
+
+let eqcols = undefined;
+makeColeq();
+/*
+GG.colh = await import('./jsdeps/colorHelpers.js'); GG.expose()
+x = {kr:1, kg: 3, kb:1, gr:0.05, rg: 0.05, e:1/2.2}; COLS.cluster_id_major_cells = 0;  makeColeq(x); COLS.gencol(currentXyz, 'cluster_id_major_cells')
+x = {kr:5, kg: 9, kb:3, gr:0.05, rg: 0.05, e:1/2.2}; COLS.cluster_id_major_cells = 0;  makeColeq(x); COLS.gencol(currentXyz, 'cluster_id_major_cells')
+*/
 
 /** generate an equi-perceptual set of hues (experimental) */
 // eslint-disable-next-line no-unused-vars
-function makeColeq() {
+function makeColeq(pp = {}) {
+    Object.assign(sss, pp);
+    ({e, rg, gr, kr, kg, kb} = sss);
+    console.log('makeColeq', sss);
+
     const n = 500;    // number of distinct elements in the arrays
     let s = 0, cd = [];
 
+    const v = 1; // ??? 0.33
     // generate candidates and find total distance
     for (let i = 0; i < n; i++) {
       const h = i/n, h1 = (i+1)/n;
-      const d = deltaHSV([h,1,0.33], [h1,1,0.33]);
+      const d = deltaHSV([h,1,v], [h1,1,v]);
       cd[i] = s;
       s += d;
     }
     cd = cd.map(v => v/s);
+    // cd = cd.map((v,i) => i/n);
     cd.push(9999);  // just in case of overrun
     cd[-1] = 2*cd[0] - cd[1];
 
@@ -130,9 +157,9 @@ function makeColeq() {
     //   console.log(i, h, deltaHSV([h,1,1], [h1,1,1]), oh[i+1]-oh[i])
     // }
     // COLS.eqh = oh;      // save for debug
+    eqcols = o;
     return o;
 }
-const eqcols = makeColeq();
 
 /**  http://snipplr.com/view.php?codeview&id=14590
 * HSV to RGB color conversion

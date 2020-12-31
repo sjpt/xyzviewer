@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/23 18:27:52
+window.lastModified.xyz = `Last modified: 2020/12/29 17:27:54
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -621,7 +621,7 @@ finalize(fid, partial = false) {
     select(fid, this);
 }
 
-/** rebase a field based on centrerange, set o_ values */
+/** rebase a field based on centrerange (no longer set o_ values) */
 rebase(fn) {
     const c = centrerange[fn];
     // we used to keep extra columns for original data
@@ -692,7 +692,7 @@ gencolby() {
     E.colourby.innerHTML = s.join('');
 }
 
-/** generate stats from given data for a given field, or for all fields, also compute three.js position */
+/** generate stats from given data for a given field, or for all fields (no longer also compute three.js position) */
 genstats(name = undefined) {
     // function tothreepos(datals) {
     //     for (const d of datals) { 
