@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, fireev};
-window.lastModified.basic = `Last modified: 2020/12/23 14:24:43
+window.lastModified.basic = `Last modified: 2020/12/31 11:20:16
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
@@ -424,6 +424,7 @@ function killev(event) {
                 GG.basic = await import('./basic.js');
                 GG.lasso =  (await import('./lasso.js'));
                 GG.lassoshader =  (await import('./lassoshader.js'));
+                GG.xshader =  (await import('./xshader.js'));
                 GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
                 // put off speech till last, Firefox does not support it
                 GG.ospeech = (await import('./speech.js')).OrganicSpeech;
