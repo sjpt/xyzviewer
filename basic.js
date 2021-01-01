@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
-    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, fireev};
-window.lastModified.basic = `Last modified: 2020/12/31 11:20:16
+    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
+window.lastModified.basic = `Last modified: 2020/12/31 15:09:41
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';

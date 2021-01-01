@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/31 11:19:33
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2020/12/31 18:39:03
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -184,17 +184,24 @@ GG.starttime = Date.now();
                 </span>
 
                 <span>
-                    <b>use shader (w..i.p.): </b>
+                    <b>use shader: </b>
                     <input type="checkbox" id="lassoshaderbox" onchange="GG.lassoshader.useLassoShader(this.checked)"/>
                 </span>
-                <span class="help">use lasso shader for lasso implementation
+                <span class="help">use lasso shader for lasso implementation (w.i.p.)
                 </span>
 
                 <span>
-                    <b>use xshader (w..i.p.): </b>
+                    <b>xshader: </b>
                     <input type="checkbox" id="xshaderbox" onchange="GG.xshader.useXShader(this.checked)"/>
                 </span>
-                <span class="help">use multidimensional shader
+                <span class="help">use multidimensional shader (very much w.i.p.)
+                </span>
+
+                <span>
+                    <b>tumble: </b>
+                    <input type="checkbox" id="tumblebox" onchange="GG.xshader.settubmlerot(this.checked * 0.005)"/>
+                </span>
+                <span class="help">perform multidimensional tumble (very much w.i.p.)
                 </span>
 
                 <br>
