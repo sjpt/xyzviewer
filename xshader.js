@@ -86,10 +86,11 @@ class MM {
         return this;
     }
 
+    /* interop utilities to use math. functions in our context */
     tomath() {return math.reshape(Array.from(this.m), [ND, ND])};
     frommath(m) {this.m.set(math.reshape(m, [ND*ND])); return this; }
 
-    /** use math library */
+    /** use math library with given op */
     mat(op) {
         const x = this.tomath();
         const y = op(x);
