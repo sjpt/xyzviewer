@@ -1,13 +1,16 @@
 'use strict';
 // permit multidimensional input and linear transformation
 // also realtime lasso
-export {useXShader, uniforms, xmat, vmap, settubmlerot, setmouserot, cols, MM};
+export {useXShader, uniforms, xmat, vmap, settubmlerot, setmouserot, cols, MM, xclick};
 
-const {X} = window;
+const {X, math} = window;
 import {THREE} from "./threeH.js";
 import {lassos} from "./lasso.js";
 import {_baseiNaN} from './xyz.js';
 import {renderer, controls, plan, orbcamera} from './graphicsboiler.js';
+
+// import * as math from 'https://cdnjs.com/libraries/mathjs/math.js';
+// import * as math from './jsdeps/math.js';
 // import {killev} from './basic.js';
 let xmat = undefined;
 
@@ -31,7 +34,9 @@ class MM {
         if (this === xmat) showxmat();
     }
 
-    /** multiply am, bm into me, for now, asume all square ND*ND */
+    toString() { return Array.from(this.m).map(x => x.toFixed(3)).join(' '); }
+
+    /** multiply am, bm into me, for now, assume all square ND*ND */
     mult(am,bm) {
         const o = this.m, a = am.m, b = bm.m;
         o.fill(0);
@@ -80,6 +85,21 @@ class MM {
                 o[i+ND*j] = f[j+ND*i];
         return this;
     }
+
+    tomath() {return math.reshape(Array.from(this.m), [ND, ND])};
+    frommath(m) {this.m.set(math.reshape(m, [ND*ND])); return this; }
+
+    /** use math library */
+    mat(op) {
+        const x = this.tomath();
+        const y = op(x);
+        if (typeof y === 'number') return y;
+        return this.frommath(y);
+    }
+
+    /** inverse */  inv() { return this.mat(math.inv); }
+    /** sqrt */  sqrt() { return this.mat(math.sqrtm); }
+    /** determinant */  det() { return this.mat(math.det); }
 
     scale(k) { this.m.forEach((x,i, t) => t[i] = x*k); return this; }
     add(a, b) { this.m.forEach((x,i, t) => t[i] = a[i] + b[i]); return this; }
@@ -214,7 +234,7 @@ void main() {
     vColor.g += o[4] * 0.5 + 0.5;
     vColor.b += o[5] * 0.5 + 0.5;
 
-    vColor.x += float(${id});  // force recompile if new id
+    vColor.r += float(${id});  // force recompile if new id
 
     // lasso, find lasso value and use for filter or colouring
     vec4 sv4 = lassoTotmat * vec4(transformed, 1);
@@ -247,13 +267,13 @@ void main() {
 
 
     uniforms = {
-        gamma: {value: 0.25},
+        gamma: {value: 1},
         lassoMap: { value: undefined },
         lassoTotmat: { value: new THREE.Matrix4() },
         size: { value: new THREE.Vector2(100,100)},
         psize: { value: 1},
         doLassoFilter: { value: 0.0 },
-        doLassoColour: { value: 0.9 },
+        doLassoColour: { value: 0.0 },
 
         vmap: { value: vmap},
         xmat: { value: xmat.m}
@@ -267,7 +287,7 @@ void main() {
 
 let noxmaterial, xmaterial;
 async function useXShader(pcols, id) {
-    if (pcols === true || pcols === undefined) pcols = 'combat_sampleid cd3 cd4 hla_dr broad ir191di';
+    if (pcols === true || pcols === undefined) pcols = 'sample_id cd3 cd4 hla_dr broad ir191di';
     cols = typeof pcols === 'string' ? pcols.split(' ') : pcols;
     const xyz = X.currentXyz;
     const particles = xyz.particles;
@@ -285,6 +305,20 @@ async function useXShader(pcols, id) {
                 uniforms.size.value.copy(lasso.size);
             }
             if (tumblerot !== 0) tumble();
+
+            // move to checklist target
+            const d = 0.01;
+            const o = xmat.m;
+            for (const x of checklist) {
+                const i = +x[0];
+                const j = +x[2];
+                for (let k = 0; k < ND; k++) {
+                    o[i*ND + k] = +(k === j) * d + o[i*ND + k] * (1-d);
+                    o[k*ND + j] = +(k === i) * d + o[k*ND + j] * (1-d);
+                }
+            }
+            xmat.toOrth();
+            showxmat();
         }
 
         // handle field details on call to usexShader
@@ -363,15 +397,37 @@ function mouseup(e) {
     }
 }
 
+let makeshowxmatdone = false;
 function showxmat() {
+    if (!makeshowxmatdone) makeshowxmat();
+    const gamma = uniforms.gamma.value;
+    for (let i = 0; i < ND; i++) {
+        let xr, xg, xb;
+        for (let j = 0; j < ND+1; j++) {
+            const v = xmat.m[i*ND + j];
+            let [r,g,b] = [0,0,0];
+            if (j == 3) r = xr = (v+0.1)**gamma * 255;
+            else if (j == 4) g = xg = (v+0.1)**gamma * 255;
+            else if (j == 5) b = xb = (v+0.1)**gamma * 255;
+            else if (j == 6) [r, g, b] = [xr, xg, xb];
+            else {
+                r = v > 0 ? 0 : -v * 255;
+                g = v > 0 ? v*255 : 0;
+            }
+            E[`xmat${i}_${j}`].style.backgroundColor = `rgb(${r},${g},${b})`;
+        }
+    }   
+}
+
+const spaces = '&nbsp;&nbsp;&nbsp;&nbsp;'
+const spcheck = '&nbsp;&nbsp;X&nbsp;'
+function makeshowxmat() {
     const tab=['<table>']
+    const gamma = uniforms.gamma.value;
     for (let i = 0; i < ND; i++) {
         const row = [`<tr><td>${cols[i]}</td>`];
-        for (let j = 0; j < ND; j++) {
-            const v = xmat.m[i*ND + j] * 255;
-            const r = v > 0 ? 0 : -v;
-            const g = v > 0 ? v : 0;
-            row.push(`<td style="background-color: rgb(${r}, ${g}, 0)">&nbsp;&nbsp;&nbsp;&nbsp;</td>`);
+        for (let j = 0; j < ND+1; j++) {
+            row.push(`<td id="xmat${i}_${j}" onclick="GG.xshader.xclick(${i},${j})">${spaces}</td>`);
         }
         row.push('</tr>');
         tab.push(row.join(''));
@@ -380,4 +436,35 @@ function showxmat() {
     E.colkey.innerHTML = tab.join('\n');
     // E.colkey.blur();
     E.colkey.style.userSelect = 'none';
+    makeshowxmatdone = true;
+}
+
+const checklist = new Set();
+
+/** test if i,j checked */
+function checked(i,j) { return checklist.has(i + '_' + j); }
+
+/* check or uncheck i,j, and return previous value */
+function check(i, j, check) {
+    const r = checked(i,j);
+    const k = i + '_' + j;
+    if (check) checklist.add(k); else checklist.delete(k);
+    E[`xmat${i}_${j}`].innerHTML = check ? spcheck : spaces;
+    return r;
+}
+
+/** handle a click, toggle checked and swap pairs if appropriate */
+function xclick(i, j) {
+    // console.log('click', i, j);
+    const nowchecked = !checked(i, j);
+    let ii = -1, jj = -1;
+    if (nowchecked) {
+        for (let k=0; k < ND; k++) {
+            if (check(i,k, false)) ii = k;
+            if (check(k,j, false)) jj = k;
+        }
+        // check(i, j, true);
+        if (ii !== -1 && jj !== -1) check(jj, ii, true);
+    }
+    check(i, j, nowchecked);
 }

@@ -1,6 +1,6 @@
 
 'use strict';
-window.lastModified.xyz = `Last modified: 2020/12/29 17:27:54
+window.lastModified.xyz = `Last modified: 2021/01/03 13:11:38
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -267,6 +267,9 @@ async makefilterfun(filtin, box, mode='') {
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
                 else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;
+                else if (l.startsWith('R:')) l = `_C.r = ${l.substring(2)}`;
+                else if (l.startsWith('G:')) l = `_C.g = ${l.substring(2)}`;
+                else if (l.startsWith('B:')) l = `_C.b = ${l.substring(2)}`;
                 return l;
             }).join('\n');
 
@@ -657,12 +660,11 @@ spotsizeset(eventsize, temp='') {
         if (size !== undefined) sizeUniform.value = size * k;
         return r;
     }
-    const r = this.material.size;
-    if (size !== undefined) this.material.size = size;
+    if (size !== undefined && this.material) this.material.size = size;
     this.guiset.spotsize = size;
     const radio = E['spot'+this.guiset.spotsize];
     if (radio) radio.checked = true;
-    return r;
+    return this.material && this.material.size;
 }
 
 /** handle changes to the gui filter for markers
