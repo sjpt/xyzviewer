@@ -127,7 +127,8 @@ class MM {
         }
 
         // i normal
-        sf = 1 + (1 - Math.sqrt(this.dota(i,i))) * f;
+        f *= 10;
+        sf = 1 + (1 - Math.sqrt(this.dota(i,i)));
         for (let k = 0; k < ND; k++) o[i*ND + k] *= sf;
     }
 
@@ -296,6 +297,10 @@ async function useXShader(pcols, id) {
     if (lastid !== id) particles.material = xmaterial = xShader(id);
 
     if (cols) {
+        controls.enabled = false;
+        plan();
+        orbcamera.position.z = 3;
+
         particles.material = xmaterial = xmaterial || xShader(id);  // cache and set lasso material
         particles.onBeforeRender = () => {
             // handle lasso details every frame, could just do when lasso changes?
@@ -310,16 +315,19 @@ async function useXShader(pcols, id) {
             // move to checklist target
             const d = 0.01;
             const o = xmat.m;
-            for (const x of checklist) {
+            for (const x in checklist) {
                 const i = +x[0];
                 const j = +x[2];
+                const v = checklist[x];
                 for (let k = 0; k < ND; k++) {
-                    o[i*ND + k] = +(k === j) * d + o[i*ND + k] * (1-d);
-                    o[k*ND + j] = +(k === i) * d + o[k*ND + j] * (1-d);
+                    o[i*ND + k] = +(k === j) * d * v + o[i*ND + k] * (1-d);
+                    o[k*ND + j] = +(k === i) * d * v + o[k*ND + j] * (1-d);
                 }
             }
             xmat.toOrth();
             showxmat();
+
+            particles.geometry.setDrawRange(0, xyz.pendread_min);
         }
 
         // handle field details on call to usexShader
@@ -329,13 +337,13 @@ async function useXShader(pcols, id) {
             if (col) {
                 const usealpha = xyz.namecolnstrs[col] > xyz.namecolnnum[col];
                 if (!xyz.nameattcols[col]) {
-                    await xyz.lazyLoadCol(col);
+                    xyz.lazyLoadCol(col);       // don't await, we'll see data as it arrives
                     let namecol = xyz.namecols[col];
                     if (usealpha) { // for alpha columns we must generate an integer array from the NaN tags
                         let namevcol = xyz.namevcols[col];
                         const type = xyz.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
-                        const iarr = new type(namevcol.length);   // could usually use Uint8Array
-                        iarr.forEach((v,n) => iarr[n] = namevcol[n] - _baseiNaN);
+                        const iarr = new type(namevcol.length);
+                        // iarr.forEach((v,n) => iarr[n] = namevcol[n] - _baseiNaN); // done async as segments read
                         namecol = iarr;
                     }
                     xyz.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
@@ -359,9 +367,6 @@ async function useXShader(pcols, id) {
             }
         }
         renderer.domElement.addEventListener('mousedown', mousedown);
-        controls.enabled = false;
-        plan();
-        orbcamera.position.z = 3;
     } else {
         particles.material = noxmaterial;
         particles.onBeforeRender = ()=>{};
@@ -417,11 +422,13 @@ function showxmat() {
             }
             E[`xmat${i}_${j}`].style.backgroundColor = `rgb(${r},${g},${b})`;
         }
-    }   
+    }
+    E.xmat_det.innerHTML = xmat.det();   
 }
 
 const spaces = '&nbsp;&nbsp;&nbsp;&nbsp;'
-const spcheck = '&nbsp;&nbsp;X&nbsp;'
+const sppos = '&nbsp;&nbsp;+&nbsp;'
+const spneg = '&nbsp;&nbsp;-&nbsp;'
 function makeshowxmat() {
     const tab=['<table>']
     const gamma = uniforms.gamma.value;
@@ -434,23 +441,23 @@ function makeshowxmat() {
         tab.push(row.join(''));
     }
     tab.push('</table>');
-    E.colkey.innerHTML = tab.join('\n');
+    E.colkey.innerHTML = tab.join('\n') + `<br>det=<span id="xmat_det">?</span>`;
     // E.colkey.blur();
     E.colkey.style.userSelect = 'none';
     makeshowxmatdone = true;
 }
 
-const checklist = new Set();
+const checklist = {};  // usual values 1, 0, or -1
 
 /** test if i,j checked */
-function checked(i,j) { return checklist.has(i + '_' + j); }
+function checked(i,j) { return checklist[i + '_' + j]; }
 
 /* check or uncheck i,j, and return previous value */
 function check(i, j, check) {
     const r = checked(i,j);
     const k = i + '_' + j;
-    if (check) checklist.add(k); else checklist.delete(k);
-    E[`xmat${i}_${j}`].innerHTML = check ? spcheck : spaces;
+    if (check) checklist[k] = check; else delete checklist[k];
+    E[`xmat${i}_${j}`].innerHTML = check > 0 ? sppos : check < 0 ? spneg :  spaces;
     return r;
 }
 
@@ -461,11 +468,11 @@ function xclick(i, j) {
     let ii = -1, jj = -1;
     if (nowchecked) {
         for (let k=0; k < ND; k++) {
-            if (check(i,k, false)) ii = k;
-            if (check(k,j, false)) jj = k;
+            if (check(i,k, 0)) ii = k;
+            if (check(k,j, 0)) jj = k;
         }
         // check(i, j, true);
-        if (ii !== -1 && jj !== -1) check(jj, ii, true);
+        if (ii !== -1 && jj !== -1) check(jj, ii, ii === jj ? 1 : -1);
     }
-    check(i, j, nowchecked);
+    check(i, j, +nowchecked);
 }

@@ -1,13 +1,9 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2020/12/21 10:26:21
+window.lastModified.main = `Last modified: 2021/01/08 09:17:46
 `
 
 // @ts-ignore
-var W = window;
-// @ts-ignore
-var E = window;
-// @ts-ignore
-var X = window;
+var W = window, E = window, X = window, WA = window;
 
 console.log('main.js execute, window W set', W.closed, E.colourpick.value, X.raywidth);
 

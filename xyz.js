@@ -1,6 +1,5 @@
-
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/01/03 13:11:38
+window.lastModified.xyz = `Last modified: 2021/01/08 16:21:15
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -63,6 +62,7 @@ constructor(data, fid) {
     this._col = new THREE.Color(1,1,1);
     this.makechainlines = undefined;
     this.guiset = baseguiset;
+    this.pendread = {};  // pending async lazy reads
 
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
@@ -104,7 +104,7 @@ async dataToMarkers(pfilterfun, popping) {
     const geometry = this.geometry = this.geometry || new THREE.BufferGeometry();
     let ii = 0;
     let noxyz = 0;
-    for (let i = 0; i < l; i ++ ) {
+    for (let i = 0; i < this.pendread_min; i ++ ) {
         let du;
         if (filterfun) {
             this._col.setRGB(0.3, 0.3, 0.3);
@@ -327,28 +327,68 @@ async xlsxReader(raw, fid) {
  * Test for which is temporary, and the split should maybe be made somewhere more generic.
  */
 async lazyLoadCol(id) {
+    let step = 2*1024*1024;
     const t = this.namecols[id]; if (t) return t;
     const fid = this.bfid + '_' + id + '.colbin';
-    let fblob;
-    if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test!
+    // set up the complete buffer/views to hold all data (both Float32Array and Uint32Array views)
+    let fbuff = this.namecols[id] = new Float32Array(this.n);
+    this.namevcols[id] = new Uint32Array(fbuff.buffer);
+    const usealpha = this.namecolnstrs[id] > this.namecolnnum[id];
+    const kk = 'll' + id;
+    console.time(kk);
+
+    // find the stream so we can read the data incrementally
+    let stream;
+    if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test! will work for files from server
+        console.timeLog(kk);
         const resp = await fetch(fid);
+        console.timeLog(kk);
         if (resp.status !== 200)
             throw new Error(`Column data ${id} not available: rc=${resp.status}<br>${fid}`)
-        fblob = await resp.blob();
-    } else if (readyFiles[fid]) {
-        fblob = readyFiles[fid];
+        stream = resp.body;
+    } else if (readyFiles[fid]) {   // works for a dragged drop set of files
+        // fblob = readyFiles[fid];
         // if (!fblob) throw new Error('no ready file ' + fid);
-    } else if (availableFileList[fid]) {
+        stream = readyFiles[fid].stream();
+    } else if (availableFileList[fid]) {    // worked for dropped directory referenced by a file
         const makeFile = (fileEntry) =>
             new Promise(resolve => fileEntry.file(resolve));
-        const file = await makeFile(availableFileList[fid]);
-        fblob = readyFiles[fid] = file;
+            readyFiles[fid] = await makeFile(availableFileList[fid]);
+        stream = readyFiles[fid].stream();
     } else {
         throw new Error('no ready file ' + fid);
     }
-    const buff = await fblob.arrayBuffer();
-    this.namevcols[id] = new Uint32Array(buff);
-    return this.namecols[id] = new Float32Array(buff);
+
+    // incrementally read the data stream
+    const reader = stream.getReader();
+    let p = 0;                                              // p is position, pup is position updated
+    let ut = 0;                                             // ut is last update time, set to 0 so first input causes update
+    const updateInterval = 1000;                            // update every second
+    const att = this.nameattcols[id];
+    while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        const fseg = new Float32Array(value.buffer);        // get the segment as Float32Array (hope value.buffer comes in multipes of 4)
+        fbuff.set(fseg, p);                                 // and save into main buffer
+        if (att) {                                          // update associated texture (if any)
+            if (usealpha) {                                 // alpha ones need the unsigned bytes array updated
+                const namevcol = this.namevcols[id];
+                const iarr = att.array;
+                for (let n = p; n < p + fseg.length; n++)
+                    iarr[n] = namevcol[n] - _baseiNaN;                
+            }
+            const t = Date.now();                           // update the texture, but not toooften
+            if (t - ut > updateInterval) {
+                att.needsUpdate = true;
+                ut = t;
+            }
+        }
+        p += fseg.length;
+        this.pendread[id] = p;
+        this.showpendread();    
+    }
+    if (att) att.needsUpdate = true;
+    console.timeLog(kk);
 }
 
 async yamlReader(raw, fid) { 
@@ -376,13 +416,25 @@ async yamlReader(raw, fid) {
 
     this.bfid = fid.substring(0, fid.length - 5);
     const p = [];
-    p.push(this.lazyLoadCol('x'));
-    p.push(this.lazyLoadCol('y'));
-    p.push(this.lazyLoadCol('z'));
-    await Promise.all(p);
+    let done = 0;
+    this.lazyLoadCol('x').then(() => done++);
+    this.lazyLoadCol('y').then(() => done++);
+    this.lazyLoadCol('z').then(() => done++);
+    // await Promise.all(p);
 
-    dataToMarkersGui();
+    for (let i=0; i<100; i++) {
+        await dataToMarkersGui();
+        this.showpendread();
+        if (done === 3) break;
+        await sleep(500);
+    }
     select(this.bfid, this);
+}
+
+/** show pending read status; also compute min loaded value */
+showpendread() {
+    E.msgbox.innerHTML = Object.keys(this.pendread).map(k => `${k}=${(this.pendread[k] * 100 / this.n).toFixed()}%`).join('<br>');
+    this.pendread_min = Object.values(this.pendread).reduce((c,v) => Math.min(c,v), this.n);
 }
 
 /** load the data as an array of arrays, and separate out header 
