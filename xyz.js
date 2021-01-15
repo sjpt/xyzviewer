@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/01/08 16:21:15
+window.lastModified.xyz = `Last modified: 2021/01/15 10:36:45
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select} from './graphicsboiler.js';
@@ -433,8 +433,18 @@ async yamlReader(raw, fid) {
 
 /** show pending read status; also compute min loaded value */
 showpendread() {
-    E.msgbox.innerHTML = Object.keys(this.pendread).map(k => `${k}=${(this.pendread[k] * 100 / this.n).toFixed()}%`).join('<br>');
-    this.pendread_min = Object.values(this.pendread).reduce((c,v) => Math.min(c,v), this.n);
+    const all = [], some = [];
+    this.pendread_min = this.n;
+    for (const col in this.pendread) {
+        const p = this.pendread[col];
+        if (p === this.n) {
+            all.push(col);
+        } else {
+            some.push(`<br>${col}=${(p*100/this.n).toFixed()}%`);
+            this.pendread_min = Math.min(this.pendread_min, p);
+        }
+    }
+    E.msgbox.innerHTML = '100%: ' + all.join(' ') + some.join('');
 }
 
 /** load the data as an array of arrays, and separate out header 
@@ -618,6 +628,7 @@ addRow(rowa) {
             }
         }
         this.n++;
+        this.pendread_min = this.n;
     }
     return this.n;
 } // addRow

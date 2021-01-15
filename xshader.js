@@ -1,7 +1,8 @@
 'use strict';
 // permit multidimensional input and linear transformation
 // also realtime lasso
-export {useXShader, uniforms, xmat, vmap, settubmlerot, setmouserot, cols, MM, xclick};
+export {useXShader, modXShader, uniforms, xmat, vmap, settubmlerot, setmouserot, cols, MM, xclick, unclick,
+    checklist, usecheck, ND, showxmat, setobj, freelist};   // debug
 
 const {X, math} = window;
 import {THREE} from "./threeH.js";
@@ -40,15 +41,25 @@ class MM {
     mult(am,bm) {
         const o = this.m, a = am.m, b = bm.m;
         o.fill(0);
-        for (let i = 0; i<ND; i++)
-            for (let j = 0; j<ND; j++)
+        for (let col = 0; col<ND; col++)
+            for (let row = 0; row<ND; row++)
                 for (let k = 0; k<ND; k++)
-                    o[i*ND+k] += a[i*ND+j] * b[j*ND+k];
+                    o[col + row*ND] += a[col + k*ND] * b[k + row*ND];
         return this;
     }
 
+    /* left multiply */
+    lmult(am) { return this.mult(am, MM.tempmm1.copy(this)) }
+
+    /* right multiply */
+    rmult(bm) { return this.mult(MM.tempmm1.copy(this), bm) }
+
     /** copy */
     copy(m) { this.m.set(m.m); return this; }
+
+    /** clone this */
+    clone() { return new MM().copy(this)}
+
 
     /** make a rotation between cols i and j,  */
     makerot(i, j, d) {
@@ -105,31 +116,66 @@ class MM {
     scale(k) { this.m.forEach((x,i, t) => t[i] = x*k); return this; }
     add(a, b) { this.m.forEach((x,i, t) => t[i] = a[i] + b[i]); return this; }
 
-    dota(i, j) {
+    dotrow(r1, r2) {
         const o = this.m;
         let s = 0;
-        for (let k = 0; k < ND; k++) s += o[i*ND + k] * o[j*ND + k];
+        for (let k = 0; k < ND; k++) s += o[r1*ND + k] * o[r2*ND + k];
         return s;
     }
 
-    /** move towards orthogonality */
-    toOrth(f = 0.05) {
+    randrow(row, d = 0.1) {
         const o = this.m;
-        const i = Math.floor(Math.random() * ND);
-        let j = Math.floor(Math.random() * (ND-1));
-        if (j >= i) j++;
+        for (let col=0; col < ND; col++)
+            o[row*ND + col] += (Math.random() - 0.5) * d;
+    }
 
-        // i orth j
-        let sf = this.dota(i, j) * f * 0.5;
-        for (let k = 0; k < ND; k++) {
-            o[i*ND + k] -= sf * o[j*ND + k];
-            o[j*ND + k] -= sf * o[i*ND + k];
+
+    /** move towards orthogonality */
+    toOrth(f = 1) {
+        const o = this.m;
+        this.lastm = o.slice();
+        const ff = freelist.filter(x => x >= 0);
+        // i normal
+        for (let i of ff) {                 // i is free row
+            let oda = this.dotrow(i,i);
+            if (oda < 1e-10) { this.randrow(i); oda = this.dotrow(i,i); }
+            let sf = 1 + (1 - Math.sqrt(oda));
+            for (let k = 0; k < ND; k++) o[i*ND + k] *= sf;
+            // console.log('>>>>>', i, oda, this.dotrow(i,i));
         }
 
-        // i normal
-        f *= 10;
-        sf = 1 + (1 - Math.sqrt(this.dota(i,i)));
-        for (let k = 0; k < ND; k++) o[i*ND + k] *= sf;
+        // ortho
+        for (let i of ff) {                 // i is free row
+            for (let j = 0; j < ND; j++) {  // j may be free
+                if (j === i) continue;
+                const jfree = ff.includes(j);
+
+                // i orth j
+                const ll = Math.sqrt(this.dotrow(i,i)*this.dotrow(j,j));
+                let dot = this.dotrow(i, j);
+                if (Math.abs(dot) < 1e-10) {this.randrow(i); dot = this.dotrow(i,j); }
+
+                let osf =  dot * f / ll;
+                for (let k = 0; k < ND; k++) {
+                    o[i*ND + k] -= osf * o[j*ND + k] * (jfree ? 0.5 : 1);
+                    if (jfree) o[j*ND + k] -= osf * o[i*ND + k];
+                }
+                // console.log('>', i, j, dot/ll, this.dotrow(i,j));
+            }
+        }
+        if (this.m.filter(x =>isNaN(x)).length) {
+            // debugger;
+            log('>>>> NaN error');
+        }
+    }
+
+    // get idea of rotation amount from largest non-diagonal element
+    rotv() {
+        let mx = 0;
+        for (let k = 0; k < ND*ND; k++)
+            if (k % (ND+1) !== 0)
+                mx = Math.max(mx, Math.abs(this.m[k]));
+        return mx;
     }
 
     // /** nearest orthogonal */
@@ -159,6 +205,13 @@ let lastid; // id used to force rebuild of shader for experiments
 let tumblerot = 0;
 let mouserot = 0.003;
 xmat = new MM();
+const lastxmat = new MM();
+
+const checklist = {};   // key is i_j: usual values 1, 0, or -1
+const lastchecklist = {};
+let freelist = [];    // key is i
+
+for (let i=0; i<6; i++) freelist[i] = i;
 let cols;
 let vmap = [];
 for (let i = 0; i < ND; i++) vmap[i] = new THREE.Vector2(0,1);
@@ -312,19 +365,19 @@ async function useXShader(pcols, id) {
             }
             if (tumblerot !== 0) tumble();
 
-            // move to checklist target
-            const d = 0.01;
-            const o = xmat.m;
-            for (const x in checklist) {
-                const i = +x[0];
-                const j = +x[2];
-                const v = checklist[x];
-                for (let k = 0; k < ND; k++) {
-                    o[i*ND + k] = +(k === j) * d * v + o[i*ND + k] * (1-d);
-                    o[k*ND + j] = +(k === i) * d * v + o[k*ND + j] * (1-d);
-                }
-            }
-            xmat.toOrth();
+            // // move to checklist target
+            // const d = 0.01;
+            // const o = xmat.m;
+            // for (const x in checklist) {
+            //     const i = +x[0];
+            //     const j = +x[2];
+            //     const v = checklist[x];
+            //     for (let k = 0; k < ND; k++) {
+            //         o[i*ND + k] = +(k === j) * d * v + o[i*ND + k] * (1-d);
+            //         o[k*ND + j] = +(k === i) * d * v + o[k*ND + j] * (1-d);
+            //     }
+            // }
+            // xmat.toOrth();
             showxmat();
 
             particles.geometry.setDrawRange(0, xyz.pendread_min);
@@ -374,6 +427,12 @@ async function useXShader(pcols, id) {
         renderer.domElement.removeEventListener('mousedown', mousedown);
         controls.enabled = true;
     }
+    makeshowxmat();
+}
+
+async function modXShader(i, col) {
+    cols[i] = col;
+    useXShader(cols);
 }
 
 let lastx = Infinity, lasty;
@@ -407,20 +466,20 @@ let makeshowxmatdone = false;
 function showxmat() {
     if (!makeshowxmatdone) makeshowxmat();
     const gamma = uniforms.gamma.value;
-    for (let i = 0; i < ND; i++) {
+    for (let row = 0; row < ND; row++) {
         let xr, xg, xb;
-        for (let j = 0; j < ND+1; j++) {
-            const v = xmat.m[i*ND + j];
+        for (let col = 0; col < ND+1; col++) {
+            const v = xmat.m[row*ND + col];
             let [r,g,b] = [0,0,0];
-            if (j == 3) r = xr = (v+0.1)**gamma * 255;
-            else if (j == 4) g = xg = (v+0.1)**gamma * 255;
-            else if (j == 5) b = xb = (v+0.1)**gamma * 255;
-            else if (j == 6) [r, g, b] = [xr, xg, xb];
+            if (col == 3) r = xr = (v+0.1)**gamma * 255;
+            else if (col == 4) g = xg = (v+0.1)**gamma * 255;
+            else if (col == 5) b = xb = (v+0.1)**gamma * 255;
+            else if (col == 6) [r, g, b] = [xr, xg, xb];
             else {
                 r = v > 0 ? 0 : -v * 255;
                 g = v > 0 ? v*255 : 0;
             }
-            E[`xmat${i}_${j}`].style.backgroundColor = `rgb(${r},${g},${b})`;
+            E[`xmat${col}_${row}`].style.backgroundColor = `rgb(${r},${g},${b})`;
         }
     }
     E.xmat_det.innerHTML = xmat.det();   
@@ -431,14 +490,15 @@ const sppos = '&nbsp;&nbsp;+&nbsp;'
 const spneg = '&nbsp;&nbsp;-&nbsp;'
 function makeshowxmat() {
     const tab=['<table>']
+    tab.push('<row><th>' + (' x y z r g b rgb'.split(' ').join('</th><th>')) + '</th></row>');
     const gamma = uniforms.gamma.value;
-    for (let i = 0; i < ND; i++) {
-        const row = [`<tr><td>${cols[i]}</td>`];
-        for (let j = 0; j < ND+1; j++) {
-            row.push(`<td id="xmat${i}_${j}" onclick="GG.xshader.xclick(${i},${j})">${spaces}</td>`);
+    for (let row = 0; row < ND; row++) {
+        const rows = [`<tr><th>${cols[row]}</th>`];
+        for (let col = 0; col < ND+1; col++) {
+            rows.push(`<td id="xmat${col}_${row}" onclick="GG.xshader.xclick(${col},${row})">${spaces}</td>`);
         }
-        row.push('</tr>');
-        tab.push(row.join(''));
+        rows.push('</tr>');
+        tab.push(rows.join(''));
     }
     tab.push('</table>');
     E.colkey.innerHTML = tab.join('\n') + `<br>det=<span id="xmat_det">?</span>`;
@@ -447,32 +507,91 @@ function makeshowxmat() {
     makeshowxmatdone = true;
 }
 
-const checklist = {};  // usual values 1, 0, or -1
-
 /** test if i,j checked */
-function checked(i,j) { return checklist[i + '_' + j]; }
+function checked(col,row) { return checklist[col + '_' + row]; }
 
 /* check or uncheck i,j, and return previous value */
-function check(i, j, check) {
-    const r = checked(i,j);
-    const k = i + '_' + j;
-    if (check) checklist[k] = check; else delete checklist[k];
-    E[`xmat${i}_${j}`].innerHTML = check > 0 ? sppos : check < 0 ? spneg :  spaces;
+function check(col, row, checkv) {
+    const r = checked(col,row);
+    const k = col + '_' + row;
+    if (checkv) {
+        checklist[k] = checkv; 
+    } else {
+        delete checklist[k];
+    }
+    E[`xmat${k}`].innerHTML = checkv > 0 ? sppos : checkv < 0 ? spneg :  spaces;
     return r;
 }
 
+function usecheck() {
+    // refresh freelist
+    for (let i=0; i<6; i++) freelist[i] = i;
+    for (const k in checklist) {
+        // freelist[k[0]] = freelist[k[2]] = -1
+        freelist[k[2]] = -1
+    }
+    // freelist = freelist.filter(x => x >= 0);
+
+    const d = 0.01;
+    const o = xmat.m;
+    for (const x in checklist) {
+        const col = +x[0];
+        const row = +x[2];
+        const v = checklist[x];
+        for (let k = 0; k < ND; k++) {
+            // o[i*ND + k] = +(k === j) * d * v + o[i*ND + k] * (1-d);
+            // o[k*ND + j] = +(k === i) * d * v + o[k*ND + j] * (1-d);
+            o[row*ND + k] = +(k === col) * v;
+            o[k*ND + col] = +(k === row) * v;
+        }
+    }
+    
+    // move to checklist target
+    for (let i = 0; i < 10; i++) xmat.toOrth();
+
+    // return r;
+}
+
 /** handle a click, toggle checked and swap pairs if appropriate */
-function xclick(i, j) {
+function xclick(col, row) {
+    lastxmat.copy(xmat);
+    for (const x in lastchecklist) delete lastchecklist[x]; Object.assign(lastchecklist, checklist);
+    if (col >= ND) return;      // may use later, or don't add click event in first place
     // console.log('click', i, j);
-    const nowchecked = !checked(i, j);
+    const nowchecked = !checked(col, row);
     let ii = -1, jj = -1;
     if (nowchecked) {
         for (let k=0; k < ND; k++) {
-            if (check(i,k, 0)) ii = k;
-            if (check(k,j, 0)) jj = k;
+            if (check(col,k, 0)) ii = k;
+            if (check(k,row, 0)) jj = k;
         }
         // check(i, j, true);
-        if (ii !== -1 && jj !== -1) check(jj, ii, ii === jj ? 1 : -1);
+        if (ii !== -1 && jj !== -1) 
+            check(jj, ii, ii === jj ? 1 : -1);
+        else if (row !== col)
+            check(col, row, -1);
     }
-    check(i, j, +nowchecked);
+    check(col, row, +nowchecked);
+    usecheck();
 }
+
+/** set object as clone of another without losing object */
+function setobj(to, from) {
+    for (const x in to) delete to[x]; Object.assign(to, from);
+}
+
+function unclick(from=lastchecklist) {
+    // setobj(checklist, lastchecklist);
+    for (let i = 0; i < ND; i++)  for (let j = 0; j < ND; j++) check(i, j, 0);
+    for (const x in from) check(x[0], x[2], from[x])
+    usecheck();
+}
+
+/*
+d=1e-45; xmat.id(); xmat.m[0] = -1; xmat.m[7] = -1; xmat.m[1] = -d; xmat.m[6] = d;
+console.time('a'); xx=[]; xx[-1]=new MM().copy(xmat); for (i=0; i<20; i++) xx[i] = new MM().copy(xx[i-1]).sqrt(); console.timeEnd('a'); 
+xmat.id(); for (i=0; i<128; i++) { xmat.copy(new MM().mult(xmat, xx[6])); await sleep(30)}
+
+rr = () => Math.floor(Math.random()*ND); 
+for (let i=0; i<10; i++) {xclick(rr(), rr()); }
+*/
