@@ -1,10 +1,11 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2020/12/31 15:09:41
+window.lastModified.basic = `Last modified: 2021/01/15 14:50:41
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
 import {applyurl} from './xyz.js';
+import {plan, orbcamera} from './graphicsboiler.js';
 const queryVariables = {};
 var readyFiles = {};
 
@@ -56,6 +57,8 @@ async function showfirstdata() {
         setTimeout(async () => {
             // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
             X.currentXyz.spotsizeset(0.02);
+            plan();
+            orbcamera.position.z = 20;
         }, 1000);
     } 
 
