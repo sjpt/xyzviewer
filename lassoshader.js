@@ -131,8 +131,8 @@ void main() {
 
 let nolassomaterial, lassomaterial;
 async function useLassoShader(cols, id) {
-    if (cols === true) cols = ['cd3', 'cd4', 'cd16'];
     const xyz = X.currentXyz;
+    if (cols === true) cols = [xyz.getField('X') || 'cd3', xyz.getField('Y') || 'cd4', xyz.getField('Z') || 'cd16'];
     const particles = xyz.particles;
     if (!nolassomaterial) nolassomaterial = particles.material;
     if (lastid !== id) particles.material = lassomaterial = lassoShader(id);

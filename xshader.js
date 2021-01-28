@@ -5,6 +5,8 @@ export {useXShader, modXShader, uniforms, xmat, vmap, settubmlerot, setmouserot,
     checklist, usecheck, ND, showxmat, setobj, freelist};   // debug
 
 const {X, math} = window;
+// const {X} = window;
+// import {math} from './jsdeps/math.js';
 import {THREE} from "./threeH.js";
 import {lassos} from "./lasso.js";
 import {_baseiNaN} from './xyz.js';
@@ -165,7 +167,7 @@ class MM {
         }
         if (this.m.filter(x =>isNaN(x)).length) {
             // debugger;
-            log('>>>> NaN error');
+            console.log('>>>> NaN error');
         }
     }
 
@@ -342,9 +344,28 @@ void main() {
 
 let noxmaterial, xmaterial;
 async function useXShader(pcols, id) {
-    if (pcols === true || pcols === undefined) pcols = 'sample_id cd3 cd4 hla_dr broad ir191di';
-    cols = typeof pcols === 'string' ? pcols.split(' ') : pcols;
     const xyz = X.currentXyz;
+    if (pcols === true || pcols === undefined) {
+        pcols = 'sample_id cd3 cd4 hla_dr broad ir191di'.split(' ');
+        if (xyz.getField('X')) pcols[0] = xyz.getField('X');
+        if (xyz.getField('Y')) pcols[1] = xyz.getField('Y');
+        if (xyz.getField('Z')) pcols[2] = xyz.getField('Z');
+        if (xyz.getField('COL')) pcols[3] = xyz.getField('COL');
+        if (xyz.fid === 'fromMLV') {
+            pcols[4] = xyz.header[0];
+            pcols[5] = xyz.header[1];
+        }
+        E.filterbox.value = pcols.map(x => 'MD:' + x).join('\n');
+    }
+    if (pcols === 'MD:') {
+        pcols = E.filterbox.value.split('\n').filter(x => x.startsWith('MD:')).map(x => x.substring(3).trim());
+        if (pcols.length < ND) pcols.push('x', 'y', 'z', 'cd3', 'cd4', 'ir191di');
+        // if (pcols.length === 0) {
+        //     pcols = 'sample_id cd3 cd4 hla_dr broad ir191di'.split(' ');
+        //     E.filterbox.value = pcols.map(x => 'MD:' + x).join('\n');
+        // }
+    }
+    cols = typeof pcols === 'string' ? pcols.split(' ') : pcols;
     const particles = xyz.particles;
     if (!noxmaterial) noxmaterial = particles.material;
     if (lastid !== id) particles.material = xmaterial = xShader(id);

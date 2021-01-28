@@ -2,7 +2,7 @@
 
 // export {makevirchains, virchaindists};
 /** dynamic expansion, todo add easier scripting */
-import {centrerange, col3, dataToMarkersGui, spotsizeset} from '../xyz.js';
+import {centrerange, col3, dataToMarkersGui, setPointSize} from '../xyz.js';
 import {posturiasync, log} from '../basic.js';
 
 import {pdbReader} from '../plugins/pdbreader.js';
@@ -27,7 +27,7 @@ function folddemofun(tt = 10000, gap = 2000) {
     virchaindists();
     virusshow();
 
-    spotsizeset(5);
+    setPointSize(5);
     COLS.set('resname');
     orbcamera.position.set(0,0,250);
     fullcanvas(true);
@@ -264,7 +264,7 @@ function expandchain(trik = 0, pentk = 0, cenk = 0) {
 function virusshow() {
     E.colourby.value = 'fixed';
     if (usePhotoShader) {  // quick demo for Steve
-        myxyz.spotsizeset(2);
+        myxyz.setPointSize(2);
         E.colourby.value = 'random';
     }
     dataToMarkersGui();

@@ -1,4 +1,4 @@
-window.lastModified.xyz = `Last modified: 2020/12/22 10:11:20
+window.lastModified.threeH = `Last modified: 2021/01/20 11:53:18
 `;
 // everyone can import THREE from here using  'import {THREE} from "./threeH.js";'
 // which helps ensure everyone is using the same THREE as we switch to modules
@@ -13,8 +13,8 @@ window.lastModified.xyz = `Last modified: 2020/12/22 10:11:20
 //
 export {THREE};
 const {X} = window, {THREE} = X; console.log('>>>>threeH.js global');// this behaves best for now, 13/12/2020
-//import * as THREE from "three";
-//import * as THREE from "./jsdeps/three121.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
+// import * as THREE from "three";
+// import * as THREE from "./jsdeps/three121.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
 //import * as THREE from "./node_modules/three/build/three.module.js";  // gives lots of compiler errors as above
 /// <reference path="node_modules/three/src/Three.d.ts" /> // this seems to be there anyway for THREE from window.
 //import * as THREE from "./node_modules/three/src/Three";  // compiles ok but no THREE at runtime

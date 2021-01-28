@@ -61,6 +61,7 @@ function mousemove(e) {
 }
 
 function mouseup() {
+    window.dispatchEvent(new Event('lassoUp'));
     canvas.removeEventListener('mousemove', mousemove);
     dataToMarkersGui();
     // stop();
@@ -110,6 +111,7 @@ function stop() {
     canvas.removeEventListener('mouseup', dblclick);
     
     controls.enabled = true;
+    window.dispatchEvent(new Event('lassoStop'));
     dataToMarkersGui();
 
 }

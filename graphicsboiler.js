@@ -1,10 +1,10 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2020/12/29 17:49:31
+window.lastModified.graphicsboiler = `Last modified: 2021/01/25 18:35:56
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata, log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-import {spotsizeset, col3} from './xyz.js';
+import {setPointSize, col3} from './xyz.js';
 import {THREE} from "./threeH.js";
 import {} from "./raycast.js";
 
@@ -12,13 +12,14 @@ import {OrbitControls} from './jsdeps/OrbitControls.js';
 import {vrstart, vrframe} from './vrcontrols.js';
 
 
-export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene, setxyzspeechupdate,
-    camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls};
+export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene, setxyzspeechupdate, 
+    setBackground, setHostDOM, setSize,
+    camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls, onWindowResize};
 const {E, X, Stats} = window;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-let container, stats;
+let xyzcontainer, stats;
 let camera, maingroup, outerscene, renderer,
     controls, canvas, orbcamera, camscene, display,
     usePhotoShader = false, light0, light1;
@@ -36,13 +37,13 @@ let i; // very odd, to check
 function init() {
     // make sure all spotsize elements ready for appropriate events
     document.getElementsByName('spotsize').forEach(e => {
-        e.onmouseenter = (e) => spotsizeset(e, 'in'); 
-        e.onmouseleave = (e) => spotsizeset(e, 'out'); 
-        e.onclick = spotsizeset;
+        e.onmouseenter = (e) => setPointSize(e, 'in'); 
+        e.onmouseleave = (e) => setPointSize(e, 'out'); 
+        e.onclick = setPointSize;
     });
 
     // interpretSearchString();
-    container = document.getElementById('container');
+    xyzcontainer = document.getElementById('xyzcontainer');
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); camera.name = 'camera';
     camera.position.z = 0;
@@ -90,15 +91,17 @@ function init() {
     renderer.xr.enabled = true;   // will NOT??? be overwritten frame by frame
     renderer.autoClear = autoClear;
     canvas = renderer.domElement;
-    container.appendChild(canvas);
-    canvas.id = 'canvas';
+    xyzcontainer.appendChild(canvas);
+    canvas.id = 'xyzcanvas';
     canvas.style.position = 'fixed';
     canvas.style.top = '0';
     canvas.onclick = () => document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
 
-    stats = new Stats();
-    container.appendChild( stats.dom );
-    stats.dom.style.bottom = '0'; stats.dom.style.top = ''
+    if (Stats) {
+        stats = new Stats();
+        xyzcontainer.appendChild( stats.dom );
+        stats.dom.style.bottom = '0'; stats.dom.style.top = ''
+    }
 
     document.addEventListener( 'keydown', onDocumentKeyDown, false );
 
@@ -161,10 +164,10 @@ function render() {
     /***********/
     renderer.clear();   // if three.js does not see anything it doesn't clear???
     renderer.render( outerscene, camera );
-    if (nocamscene.children.length !== 0) {  // ??? TODO, do this on resize() ?
-        nocamcamera.right = window.innerWidth;
-        nocamcamera.top = window.innerHeight;
-        nocamcamera.updateProjectionMatrix();
+    if (nocamscene.children.length !== 0) {
+        //nocamcamera.right = window.innerWidth; //   // ??? now done on resize() ?
+        //nocamcamera.top = window.innerHeight;
+        //nocamcamera.updateProjectionMatrix();
         renderer.render(nocamscene, nocamcamera);
     }
 }   // render
@@ -192,9 +195,14 @@ function fullcanvas(full = E.info.style.display !== 'none' ) {
 
 /** make sure camera tracks window changes */
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    let w, h;
+    if (renderer.domElement.parentElement.id === 'xyzcontainer') {  // standalone xyz
+        w = window.innerWidth; h = window.innerHeight;
+    } else {                                                        // xyz owned by some other app
+        const hhh = renderer.domElement.parentElement;
+        w = hhh.offsetWidth; h = hhh.offsetHeight;
+    }
+    setSize(w, h);
 }
 
 /** make a circle */
@@ -215,6 +223,24 @@ function makeCircle(s = 64) {
         THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.NearestFilter, 1);
     texture.needsUpdate = true;
     return texture;
+}
+
+/** set the background */
+function setBackground(r = 0, g = r, b = r, alpha = 1) {
+    renderer.setClearColor(new THREE.Color(r, g, b));
+    renderer.setClearAlpha(alpha);
+}
+
+function setHostDOM(host) { host.appendChild(renderer.domElement); }
+function setSize(w, h) {
+    if (w[0]) [w, h] = w;
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize( w, h );
+
+    nocamcamera.right = w;
+    nocamcamera.top = h;
+    nocamcamera.updateProjectionMatrix();
 }
 
 const addvisList = {};
@@ -270,7 +296,7 @@ function select(fid, xyz) {
             E.colourby.value = guiset.colourby;
             E.filterbox.value = guiset.filterbox;
             E.colourpick.value = guiset.colourpick;
-            if (xyz.material) xyz.spotsizeset(guiset.spotsize)
+            if (xyz.material) xyz.setPointSize(guiset.spotsize)
             // E['spot'+guiset.spotsize].checked = true;
         }
     }

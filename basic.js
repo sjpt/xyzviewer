@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2021/01/15 14:50:41
+window.lastModified.basic = `Last modified: 2021/01/25 14:05:02
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
@@ -56,7 +56,7 @@ async function showfirstdata() {
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
         setTimeout(async () => {
             // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
-            X.currentXyz.spotsizeset(0.02);
+            X.currentXyz.setPointSize(0.02);
             plan();
             orbcamera.position.z = 20;
         }, 1000);
@@ -415,21 +415,21 @@ function killev(event) {
 	return true;
 }
 
-
-            // GG gives the handlers in this file access to necessary functions
-            // while limiting pollution to the global scope.
-            var {GG} = window;
-            setTimeout(async function() {
-                GG.gb = await import('./graphicsboiler.js');
-                GG.cols = (await import('./cols.js')).COLS;
-                GG.ps = await import('./photoshader.js');
-                GG.xyz = await import('./xyz.js');
-                GG.basic = await import('./basic.js');
-                GG.lasso =  (await import('./lasso.js'));
-                GG.lassoshader =  (await import('./lassoshader.js'));
-                GG.xshader =  (await import('./xshader.js'));
-                GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
-                // put off speech till last, Firefox does not support it
-                GG.ospeech = (await import('./speech.js')).OrganicSpeech;
-                GG.xyzspeech = (await import('./xyzspeech.js'));
-            }, 1000);
+// GG gives the handlers in this file access to necessary functions
+// while limiting pollution to the global scope.
+var {GG} = window;
+(async function() {
+    GG.gb = await import('./graphicsboiler.js');
+    GG.cols = (await import('./cols.js')).COLS;
+    GG.ps = await import('./photoshader.js');
+    GG.xyz = await import('./xyz.js');
+    GG.basic = await import('./basic.js');
+    GG.lasso =  (await import('./lasso.js'));
+    GG.lassoshader =  (await import('./lassoshader.js'));
+    GG.xshader =  (await import('./xshader.js'));
+    GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
+    // put off speech till last, Firefox does not support it
+    GG.ospeech = (await import('./speech.js')).OrganicSpeech;
+    GG.xyzspeech = (await import('./xyzspeech.js'));
+    window.dispatchEvent(new Event('GGLoaded'));
+})();

@@ -1,11 +1,12 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2020/12/22 10:10:05
+window.lastModified.basic = `Last modified: 2021/01/15 15:37:57
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
 import {dataToMarkersGui} from './xyz.js';
+import {useXShader} from './xshader.js';        // todo cleanup MD: code
 
 const {X, E} = window, {jsyaml} = X;
 import {THREE} from "./threeH.js";
@@ -140,9 +141,15 @@ COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
 
 /** set a colour value */
 COLS.set = function(f, fixed) {
+    if (E.xshaderbox.checked) { // this GUI should be at a different level, outside COLS.
+        E.filterbox.value = (E.filterbox.value + `\nMD:${f}`).trim();
+        useXShader('MD:');
+        return;
+    }
+
     if (E.colourby.value !== f) E.colourby.value = fixed ? 'fixed' : f;
     const ofilt = '\n' + E.filterbox.value + '\n'
-    let g = ofilt.match(/(.*)\nCOL:(.*?)\n(.*)/);
+    let g = ofilt.match(/^(.*)\nCOL:(.*?)\n(.*)/s);
     if (g)
         E.filterbox.value = `${g[1]}\nCOL:${f}\n${g[3]}`.trim();
     else

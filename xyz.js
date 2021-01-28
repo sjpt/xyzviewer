@@ -1,19 +1,21 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/01/15 10:36:45
+window.lastModified.xyz = `Last modified: 2021/01/28 16:31:14
 `; console.log('>>>>xyz.js');
 
-import {addToMain, select} from './graphicsboiler.js';
+import {addToMain, select, setBackground, setHostDOM, setSize} from './graphicsboiler.js';
 //?? import {pdbReader} from './pdbreader.js';
 import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
 import {COLS} from './cols.js';
 import {THREE} from "./threeH.js";
 import {lassoGet} from "./lasso.js";
+import {useXShader} from './xshader.js';        // todo cleanup MD: code
+
 
 //let E = window, X = window;
 
 export {
     centrerange, // for draw centre consistency
-    spotsizeset,
+    setPointSize,
     dataToMarkersGui,
     filtergui, filterAdd, filterRemove, applyurl,
     // particles, // for subclass pdbreader, and particles for photoshader
@@ -27,7 +29,7 @@ import {addscript, log} from './basic.js';
 var XLSX;
 
 // ??? to engineer below more cleanly
-const spotsizeset = (a, b) => { if (X.currentXyz) X.currentXyz.spotsizeset(a, b); }
+const setPointSize = (a, b) => { if (X.currentXyz) X.currentXyz.setPointSize(a, b); }
 const filtergui = g => { if (X.currentXyz) X.currentXyz.filtergui(g); }
 const dataToMarkersGui = (type, popping) => { if (X.currentXyz) X.currentXyz.dataToMarkersGui(type, popping); }
 const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
@@ -57,12 +59,16 @@ class XYZ {
 static xyzs = {};       // why is eslint complaining here?
 
 constructor(data, fid) {
+    const self = this;
     X.currentXyz = X.currentThreeObj = this.xyz = this;
     this.fid = fid;
     this._col = new THREE.Color(1,1,1);
     this.makechainlines = undefined;
     this.guiset = baseguiset;
     this.pendread = {};  // pending async lazy reads
+    this._ids = undefined;    // ids for crossfilter
+    this.fields = {};
+    this._onFilter = undefined;
 
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
@@ -74,10 +80,21 @@ constructor(data, fid) {
     // colourby is dropdown, colourpick is colour picker
     select(fid, this);
     XYZ.xyzs[fid] = this;
+
+    // catch our filter events from lasso and pass them on if wanted
+    window.addEventListener('lassoUp', async function() {
+        const ids = await self.getCallbacks();
+        if (self._onFilter) self._onFilter(ids);
+    });
 }
 
 /** load data based on gui values */
 dataToMarkersGui(type, popping) {
+    if (E.xshaderbox.checked) {
+        useXShader('MD:');
+        return;
+    }
+    
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
         if (!this.guiset) this.guiset = baseguiset;   // in case of pdbreader ... todo proper subclass
@@ -90,12 +107,32 @@ dataToMarkersGui(type, popping) {
     }
 }
 
+/** filter ids, those not in list will not be displayed */
+filter(ids) {
+    console.log('filter #', Object.keys(ids).length);
+    this._ids = ids;
+    this.dataToMarkersGui();
+}
+
+/** hide ids, those not in list will not be displayed */
+hide(ids) {
+    console.log('hide #', Object.keys(ids).length);
+    this._ids = ids;
+    this.dataToMarkersGui();
+}
+
+/** set up callback on our filter change */
+onFilter(f) { this._onFilter = f; }
+
 
 /** load the data with given filter and colour functions if required, and display as markers */
-async dataToMarkers(pfilterfun, popping) {
+async dataToMarkers(pfilterfun, popping, cbs) {
     const st = performance.now();
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
-    const xc = this.namecols.x, yc = this.namecols.y, zc = this.namecols.z;
+    const xc = this.namecols.x || this.namecols[this.header[0]];
+    const yc = this.namecols.y || this.namecols[this.header[1]];
+    const zc = this.namecols.z || this.namecols[this.header[2]];
+    
     const l = xc.length;
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
     if (filterfun === badfun) return;
@@ -105,6 +142,7 @@ async dataToMarkers(pfilterfun, popping) {
     let ii = 0;
     let noxyz = 0;
     for (let i = 0; i < this.pendread_min; i ++ ) {
+        if (this._ids !== undefined && !this._ids[i+1]) continue;  // handle crossfilter
         let du;
         if (filterfun) {
             this._col.setRGB(0.3, 0.3, 0.3);
@@ -122,14 +160,19 @@ async dataToMarkers(pfilterfun, popping) {
         if (_x === undefined || _y === undefined || _z === undefined) {
             noxyz++;
         } else {            
-            vert[ii] = _x;
-            col[ii++] = c.r;
-            vert[ii] = _y;
-            col[ii++] = c.g;
-            vert[ii] = _z;
-            col[ii++] = c.b;
+            if (cbs) {
+                cbs[i+1] = true;
+            } else {
+                vert[ii] = _x;
+                col[ii++] = c.r;
+                vert[ii] = _y;
+                col[ii++] = c.g;
+                vert[ii] = _z;
+                col[ii++] = c.b;
+            }
         }
     }
+    if (cbs) return;
     const ll = ii/3;
     // if (ll !== l) {
     //     vert = vert.slice(0, ii);
@@ -263,6 +306,7 @@ async makefilterfun(filtin, box, mode='') {
             filt = filt.split('\n').map(l => {
                 if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
                 else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_C.' + COLS.gencol(this, ll)}
+                else if (l.startsWith('MD:')) l = '// ' + l;
                 else if (l.startsWith('COLX:')) {const ll = l.substring(5).trim(); l = '_C.set(' + ll + ')'}
                 else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
                 else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
@@ -560,6 +604,19 @@ prep() {
     this.graphicsUpdateInterval = 250000;
 }
 
+// set up using input JSON object, eg injected from MLV
+useJson(d) {
+    this.prep();
+    const header = Object.keys(d[0]);
+    this.addHeader(header);
+    for (const o of d) {
+        // Object.values(o) almost the same,
+        // but inefficient anyway and may not be reliable
+        this.addRow(header.map(x => o[x]));
+    }
+    this.finalize('fromMLV');
+}
+
 // add header, array of names
 addHeader(header) {
     header = this.header = header.map(x=>x.trim().toLowerCase().split(',')[0]);
@@ -590,7 +647,8 @@ addRow(rowa) {
     
     // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
     // with testing 300 => 500
-    const xyztest = +rowa[this.xi] + +rowa[this.yi] //  + +rowa[zi] // when not makiong tuples
+    // TODO: consider whether we want any xyz testing if those columns ARE present
+    const xyztest = 99+99; // eg do not test +rowa[this.xi] + +rowa[this.yi] //  + +rowa[zi] // when not makiong tuples
     if (xyztest === 0) {
         // log('odd position', s.oid, s.x, s.y, s.z);
     } else if (isNaN(xyztest)) {
@@ -672,7 +730,7 @@ finalize(fid, partial = false) {
         if (me.header.includes(col)) {
             me.rebase(col);
         } else {
-            console.error('data does not have expected column', col, fid);
+            // console.error('data does not have expected column to rebase', col, fid);
         }
     }
     if (!partial) {
@@ -710,7 +768,7 @@ sForEach(fun) {
 
 /** set/get the spotsize. input may be size or may be event from spotsize gui
 TODO, allow for number of pixels so value has similar effect on different devices */
-spotsizeset(eventsize, temp='') {
+setPointSize(eventsize, temp='') {
     let size = eventsize.srcElement ? +eventsize.srcElement.id.substring(4) : +eventsize;
     if (temp === 'out') size = this.permspotsize || this.guiset.spotsize;
     this.permspotsize = (temp === 'in') ? this.guiset.spotsize : size;
@@ -771,7 +829,7 @@ genstats(name = undefined) {
         for (name of this.header)  {
             lranges[name] = this.genstats(name);
         }
-        if (centrerange.x === Infinity)  // centrerange is static set on first file, and use same for all subsequent files
+        if (centrerange.x === Infinity && lranges.x)  // centrerange is static set on first file, and use same for all subsequent files
             centrerange.set(lranges.x.mean, lranges.y.mean, lranges.z.mean);
         return lranges;
     }
@@ -807,7 +865,7 @@ setup(fid) {
     // 3: load from base4, seems to work always, but not very convenient
     // 4: leave undefined, we see squares of approriate size on screen
     let sprite;
-    if (location.href.startsWith('file:') || location.host.startsWith('combinatronics.com') || navigator.userAgent.indexOf("Edge") > -1) {
+    if (location.href.startsWith('file:') || location.host.startsWith('combinatronics.com')|| location.host.startsWith('mlv.') || navigator.userAgent.indexOf("Edge") > -1) {
         // Chrome is too fussy with file: loading, so use this instead
         // the data was converted from circle.png using https://www.base64-image.de/
         // Edge did not assume sprite subdirectory authenticated even when higher level one OK
@@ -896,6 +954,48 @@ _lasso(x,y,z,id) {
     return lassoGet(x,y,z,id);
 }
 
+/** get ids from lasso for callback */
+async getCallbacks() {
+    const cbs = {};
+    await this.dataToMarkers(E.filterbox.value + '\nif (!xyz._lasso(_x, _y, _z)) return;', undefined, cbs);
+    // this.dataToMarkers();
+    return cbs;
+}
+
+/** make a proxy, experiment that may help with MLV */
+makeProxy() {
+    this.pvals = [];
+    for (let i=0; i < this.n; i++) {
+        this.pvals[i] = new Proxy(this, {get: (targ, prop) => targ.val(prop, i)});
+    }
+}
+
+/** set the field to use for a particular role */
+/** TODO, handle ranges, _N, etc */
+setField(fieldRole, fieldName, update=true) {
+    this.fields[fieldRole] = fieldName;
+    const ofilt = '\n' + E.filterbox.value + '\n';
+    const rx = new RegExp('^(.*)\\n' + fieldRole + ':(.*?)\\n(.*)', 's');  // was /^(.*)\nCOL:(.*?)\n(.*)/s
+    let g = ofilt.match(rx);
+    if (g)
+        E.filterbox.value = `${g[1]}\n${fieldRole}:${fieldName}\n${g[3]}`.trim();
+    else
+        E.filterbox.value = `${ofilt.trim()}\n${fieldRole}:${fieldName}`.trim();
+    if (update) this.dataToMarkersGui();
+}
+
+getField(fieldRole) {
+    return this.fields[fieldRole].replace('_N', '');
+}
+
+setColor(fieldName, details) { this.setField('COL', fieldName); }
+
+/** delegate various functions to (single for now) graphicsBoider/renderer */
+setBackground(r = 0, g = r, b = r, alpha = 1) { setBackground(r, g, b, alpha); }
+setHostDOM(host) { setHostDOM(host); }
+setSize(x, y) { setSize(x, y); }
+
+
 } // end class XYZ
 
 function filterAdd(s, end=false) {
@@ -917,6 +1017,7 @@ function filterRemove(s) {
     //filtergui();
     dataToMarkersGui();
 }
+
 
 function applyurl() {
     const con = decodeURI(location.href).split('&control=')[1] || ''; // location.search is terminated by '#' character

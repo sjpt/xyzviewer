@@ -24,8 +24,8 @@ declare var WA: any, W: Window, E: MyElements, X: MyExternals;
 
 // these are dom elements referred to by id
 interface MyElements {
-    gui, canvas, filterbox, msgbox, visibles, photoscheck, info, filterr, fileChooser, colkey,
-    colourpick, filedropbox, colourby, filtcount, ack, speechhelp, speechbox, lastmod, xmat_det
+    gui, canvas, filterbox, msgbox, visibles, photoscheck, info, filterr, fileChooser, colkey, xshaderbox,
+    colourpick, filedropbox, colourby, filtcount, ack, speechhelp, speechbox, lastmod, xmat_det, xyzviewergui
 }
 interface Element { blur }
 
