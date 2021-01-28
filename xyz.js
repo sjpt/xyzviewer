@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/01/28 16:31:14
+window.lastModified.xyz = `Last modified: 2021/01/28 18:18:25
 `; console.log('>>>>xyz.js');
 
 import {addToMain, select, setBackground, setHostDOM, setSize} from './graphicsboiler.js';
@@ -648,7 +648,8 @@ addRow(rowa) {
     // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
     // with testing 300 => 500
     // TODO: consider whether we want any xyz testing if those columns ARE present
-    const xyztest = 99+99; // eg do not test +rowa[this.xi] + +rowa[this.yi] //  + +rowa[zi] // when not makiong tuples
+    const xyztest = (this.fid.startsWith('StarCarr')) ? +rowa[this.xi] + +rowa[this.yi] : 99; // only test for StarCarr
+
     if (xyztest === 0) {
         // log('odd position', s.oid, s.x, s.y, s.z);
     } else if (isNaN(xyztest)) {
@@ -994,6 +995,11 @@ setColor(fieldName, details) { this.setField('COL', fieldName); }
 setBackground(r = 0, g = r, b = r, alpha = 1) { setBackground(r, g, b, alpha); }
 setHostDOM(host) { setHostDOM(host); }
 setSize(x, y) { setSize(x, y); }
+
+/** pending, dispose of resources */
+dispose() {
+
+}
 
 
 } // end class XYZ
