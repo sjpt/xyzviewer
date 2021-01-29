@@ -10,7 +10,7 @@ const {X, math} = window;
 import {THREE} from "./threeH.js";
 import {lassos} from "./lasso.js";
 import {_baseiNaN} from './xyz.js';
-import {renderer, controls, plan, orbcamera} from './graphicsboiler.js';
+import {ggb} from './graphicsboiler.js'; // renderer, controls, plan, orbcamera
 
 // import * as math from 'https://cdnjs.com/libraries/mathjs/math.js';
 // import * as math from './jsdeps/math.js';
@@ -371,9 +371,9 @@ async function useXShader(pcols, id) {
     if (lastid !== id) particles.material = xmaterial = xShader(id);
 
     if (cols) {
-        controls.enabled = false;
-        plan();
-        orbcamera.position.z = 3;
+        ggb.controls.enabled = false;
+        ggb.plan();
+        ggb.orbcamera.position.z = 3;
 
         particles.material = xmaterial = xmaterial || xShader(id);  // cache and set lasso material
         particles.onBeforeRender = () => {
@@ -440,13 +440,13 @@ async function useXShader(pcols, id) {
                 vmap[i].x = 1e40;
             }
         }
-        renderer.domElement.addEventListener('mousedown', mousedown);
+        ggb.renderer.domElement.addEventListener('mousedown', mousedown);
     } else {
         particles.material = noxmaterial;
         particles.onBeforeRender = ()=>{};
         mouseup({buttons:0});
-        renderer.domElement.removeEventListener('mousedown', mousedown);
-        controls.enabled = true;
+        ggb.renderer.domElement.removeEventListener('mousedown', mousedown);
+        ggb.controls.enabled = true;
     }
     makeshowxmat();
 }
@@ -469,16 +469,16 @@ function mousemove(e) {
 }
 function mousedown(e) {
     if (lastx === Infinity) {
-        renderer.domElement.addEventListener('mousemove', mousemove);
-        renderer.domElement.addEventListener('mouseup', mouseup);
+        ggb.renderer.domElement.addEventListener('mousemove', mousemove);
+        ggb.renderer.domElement.addEventListener('mouseup', mouseup);
     }
     lastx = e.clientX;
     lasty = e.clientY;
 }
 function mouseup(e) {
     if (e.buttons === 0) {
-        renderer.domElement.removeEventListener('mousemove', mousemove);
-        renderer.domElement.removeEventListener('mouseup', mouseup);
+        ggb.renderer.domElement.removeEventListener('mousemove', mousemove);
+        ggb.renderer.domElement.removeEventListener('mouseup', mouseup);
         lastx = Infinity;
     }
 }

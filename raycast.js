@@ -1,6 +1,6 @@
 'use strict';
 export {};
-import {maingroup, camera} from './graphicsboiler.js';
+import {ggb} from './graphicsboiler.js'; // maingroup, camera
 import {dataToMarkersGui} from './xyz.js';
 const {E, X} = window;
 import {THREE} from "./threeH.js";
@@ -21,7 +21,7 @@ function onMouseMove( event ) {
 
     // ~~~~~~~~ each frame?
     // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera( mouse, camera );
+    raycaster.setFromCamera( mouse, ggb.camera );
     const th = X.raywidth || 0.2;
     raycaster.params.Points.threshold = th;
     raycaster.params.Line.threshold = th;   // ?? have the three.js rules changed ??
@@ -29,7 +29,7 @@ function onMouseMove( event ) {
 
     // calculate visible objects intersecting the picking ray
     console.time('raycast')
-    const visibles = []; maingroup.traverseVisible(v => visibles.push(v))
+    const visibles = []; ggb.maingroup.traverseVisible(v => visibles.push(v))
     var intersects = raycaster.intersectObjects( visibles, false );
     console.timeEnd('raycast')
     const num = intersects.length;

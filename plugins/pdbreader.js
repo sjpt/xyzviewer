@@ -1,6 +1,6 @@
 'use strict';
 export {pdbReader};
-import {addToMain} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain
 import {dataToMarkersGui, XYZ} from '../xyz.js';
 import {addFileTypeHandler, queryVariables} from '../basic.js';
 const {E} = window;
@@ -99,7 +99,7 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
     // maingroup.remove(chainlines);
     if (!chainlines) {
         chainlines = new THREE.LineSegments(geom, linemat);
-        addToMain(chainlines, 'chainlines');
+        ggb.addToMain(chainlines, 'chainlines');
     }
 
     const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z']; // , residc = myxyz.namecols['resid'];

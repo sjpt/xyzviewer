@@ -1,10 +1,10 @@
 'use strict';
 export {filelist};
-window.lastModified.archstart = `Last modified: 2020/12/13 16:11:10
+window.lastModified.archstart = `Last modified: 2021/01/29 10:53:40
 `
 const {E, GG} = window;
 import {posturiasync, addToFilelist} from '../basic.js';
-import {plan} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // plan
 import {refit} from './refit.js';
 var filelist = `
 Flint.csv
@@ -31,7 +31,7 @@ document.title = 'Star Carr: xyzviewer';
 const starturi = 'StarCarr/Flint.csv';
 (async function start() {
     await posturiasync(starturi);
-    plan();
+    ggb.plan();
     refit();
     await posturiasync('StarCarr/contours.geojson');
     E.msgbox.innerHTML = 'StarCarr load time: ' + (Date.now() - GG.starttime);

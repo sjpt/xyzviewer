@@ -1,5 +1,5 @@
 export {dxfReader};
-import {addToMain} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain
 import {centrerange} from '../xyz.js';
 
 import {THREE} from "../threeH.js";
@@ -34,7 +34,7 @@ async function dxfReader(data, fid) {
         lsegs.name = fid + ent.handle;
         dxfscene.add(lsegs);
     }
-    addToMain(dxfscene, fid);
+    ggb.addToMain(dxfscene, fid);
     console.log(`added ${nent} entities with total ${nvert} vertices`)
 }
 

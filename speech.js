@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ ts-nocheck
 // speech input for Organic
 export {OrganicSpeech};
 var log = console.log, msgfix = console.log;
@@ -110,6 +110,10 @@ const OrganicSpeechF = function() {
         me._running = false;
     }
     // return me;
+
+    me.commands = {};
+    me.replace = {};
+
 }
 const OrganicSpeech = new OrganicSpeechF();
 Object.defineProperty(OrganicSpeech, 'isRunning', {
@@ -117,5 +121,5 @@ Object.defineProperty(OrganicSpeech, 'isRunning', {
     set: v => { v ? OrganicSpeech._start() : OrganicSpeech._stop() }
 });
 // OrganicSpeech()
-OrganicSpeech.commands = {};
-OrganicSpeech.replace = {};
+//OrganicSpeech.commands = {};
+//OrganicSpeech.replace = {};

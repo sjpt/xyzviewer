@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2021/01/25 18:35:56
+window.lastModified.graphicsboiler = `Last modified: 2021/01/29 13:06:06
 `; console.log('>>>>graphicsboiler.js');
 import {showfirstdata, log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -10,31 +10,42 @@ import {} from "./raycast.js";
 
 import {OrbitControls} from './jsdeps/OrbitControls.js';
 import {vrstart, vrframe} from './vrcontrols.js';
+export {ggb};
 
 
-export {addToMain, framenum, makeCircle, renderer, fullcanvas, maingroup, nocamscene, setxyzspeechupdate, 
-    setBackground, setHostDOM, setSize,
-    camera, usePhotoShader, orbcamera, outerscene, plan, elevation, scale, addvis_clicked, select, controls, onWindowResize};
+// export {addToMain, framenum, makeCircle, this.renderer as renderer, fullcanvas, this.maingroup, this.nocamscene as nocamscene, setxyzspeechupdate, 
+//     setBackground, setHostDOM, setSize,
+//     this.camera as camera, this.usePhotoShader as usePhotoShader, this.orbcamera as orbcamera, this.outerscene as outerscene, plan, elevation, scale, addvis_clicked, select, this.controls as controls, onWindowResize};
 const {E, X, Stats} = window;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+class GraphicsBoiler {
+    constructor() {
+        this.init();
+    }
 
-let xyzcontainer, stats;
-let camera, maingroup, outerscene, renderer,
-    controls, canvas, orbcamera, camscene, display,
-    usePhotoShader = false, light0, light1;
-const nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
-const nocamscene = new THREE.Scene(); nocamscene.name = 'nocamscene';
-X.defaultDistance = 50;
-let autoClear = false;
-let xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
-function setxyzspeechupdate(f) {xyzspeechupdate = f;}
+// this.xyzcontainer
+// let this.stats;
+// let this.camera, this.main3group, this.outerscene, this.renderer,
+//     this.controls, this.canvas, this.orbcamera, this.camscene, display,
+//     this.usePhotoShader = false, this.light0, this.light1;
+//const this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
+//const this.nocamscene = new THREE.Scene(); this.nocamscene.name = 'nocamscene';
+// let this.autoClear = false;
+// let this.xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
+setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
 
 // window.onload = init;  // do in html
 
-let i; // very odd, to check
+//?? let i; // very odd, to check
 /** initial call to read data and set up graphics */
-function init() {
+init() {
+    const self = this;
+    ggb = this;
+    X.defaultDistance = 50;
+    this.framenum = 0;
+    this.addvisList = {};
+
     // make sure all spotsize elements ready for appropriate events
     document.getElementsByName('spotsize').forEach(e => {
         e.onmouseenter = (e) => setPointSize(e, 'in'); 
@@ -43,215 +54,219 @@ function init() {
     });
 
     // interpretSearchString();
-    xyzcontainer = document.getElementById('xyzcontainer');
+    this.xyzcontainer = document.getElementById('xyzcontainer');
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); camera.name = 'camera';
-    camera.position.z = 0;
-    orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); orbcamera.name = 'orbcamera';
-    orbcamera.position.z = X.defaultDistance;
-    camscene = new THREE.Scene(); camscene.name = 'camscene';
-    camscene.add(camera);
+    this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
+    this.nocamscene = new THREE.Scene(); this.nocamscene.name = 'nocamscene';
+    this.autoClear = false;
 
-    maingroup = new THREE.Scene(); maingroup.name = 'maingroup';
-    maingroup.rotateX(3.14159/2);   // so we see elevation z up by default
+
+    this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.camera.name = 'camera';
+    this.camera.position.z = 0;
+    this.orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.orbcamera.name = 'orbcamera';
+    this.orbcamera.position.z = X.defaultDistance;
+    this.camscene = new THREE.Scene(); this.camscene.name = 'camscene';
+    this.camscene.add(this.camera);
+
+    this.maingroup = new THREE.Scene(); this.maingroup.name = 'this.maingroup';
+    this.maingroup.rotateX(3.14159/2);   // so we see elevation z up by default
 	// scene.background = new THREE.Color( 0x505050 );
     // scene.add(camera);
 
-    outerscene = new THREE.Scene(); outerscene.name = 'outerscene';
-    outerscene.add(maingroup);
-    outerscene.fog = new THREE.FogExp2( 0x000000, 0.0008 );
+    this.outerscene = new THREE.Scene(); this.outerscene.name = 'outerscene';
+    this.outerscene.add(this.maingroup);
+    this.outerscene.fog = new THREE.FogExp2( 0x000000, 0.0008 );
 
     // prepare lights to help the mesh (currently fixed as camera moves)
-    outerscene.remove(light0);
-    light0 = new THREE.DirectionalLight(col3(1,1,1), 1);
-    light0.target.position.set(0,0,0);
-    light0.position.set(1,1,-1);
-    outerscene.add(light0);
+    this.outerscene.remove(this.light0);
+    this.light0 = new THREE.DirectionalLight(col3(1,1,1), 1);
+    this.light0.target.position.set(0,0,0);
+    this.light0.position.set(1,1,-1);
+    this.outerscene.add(this.light0);
 
-    outerscene.remove(light1);
-    light1 = new THREE.DirectionalLight(col3(1,1,1), 1);
-    light1.target.position.set(0,0,0);
-    light1.position.set(-1,-1,1);
-    outerscene.add(light1);
+    this.outerscene.remove(this.light1);
+    this.light1 = new THREE.DirectionalLight(col3(1,1,1), 1);
+    this.light1.target.position.set(0,0,0);
+    this.light1.position.set(-1,-1,1);
+    this.outerscene.add(this.light1);
+    this.vrdisplay = undefined;
 
     showfirstdata();
 
-    renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
+    this.renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
     if (navigator.getVRDisplays) {
         navigator.getVRDisplays().then(
         function ( displays ) {
             log('display found');
-            display = displays[0];
-            renderer.xr.setDevice(display);
+            self.vrdisplay = displays[0];
+            self.renderer.xr.setDevice(self.vrdisplay);
         });
     }
 
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.xr.enabled = true;   // will NOT??? be overwritten frame by frame
-    renderer.autoClear = autoClear;
-    canvas = renderer.domElement;
-    xyzcontainer.appendChild(canvas);
-    canvas.id = 'xyzcanvas';
-    canvas.style.position = 'fixed';
-    canvas.style.top = '0';
-    canvas.onclick = () => document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
+    this.renderer.setPixelRatio( window.devicePixelRatio );
+    this.renderer.setSize( window.innerWidth, window.innerHeight );
+    this.renderer.xr.enabled = true;   // will NOT??? be overwritten frame by frame
+    this.renderer.autoClear = this.autoClear;
+    this.canvas = this.renderer.domElement;
+    this.xyzcontainer.appendChild(this.canvas);
+    this.canvas.id = 'xyzcanvas';
+    this.canvas.style.position = 'fixed';
+    this.canvas.style.top = '0';
+    this.canvas.onclick = () => document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
 
     if (Stats) {
-        stats = new Stats();
-        xyzcontainer.appendChild( stats.dom );
-        stats.dom.style.bottom = '0'; stats.dom.style.top = ''
+        this.stats = new Stats();
+        this.xyzcontainer.appendChild( this.stats.dom );
+        this.stats.dom.style.bottom = '0'; this.stats.dom.style.top = ''
     }
 
-    document.addEventListener( 'keydown', onDocumentKeyDown, false );
+    document.addEventListener( 'keydown', this.onDocumentKeyDown, false );
 
-    maingroup.scale.set(1,1,1);
-    window.addEventListener( 'resize', onWindowResize, false );
+    this.maingroup.scale.set(1,1,1);
+    window.addEventListener( 'resize', this.onWindowResize, false );
 
     if (OrbitControls) {
-        controls = new OrbitControls(orbcamera, renderer.domElement);
-        controls.autoRotate = false;  // was is_webgl
+        this.controls = new OrbitControls(this.orbcamera, this.renderer.domElement);
+        this.controls.autoRotate = false;  // was is_webgl
     }
 
     // three.js default (at 106) is 'local-floor', which should be supported but is not on Chrome 79.0.3942.0 and 81.0.4006.0
-    if (renderer.xr.setReferenceSpaceType)
-        renderer.xr.setReferenceSpaceType('local'); // ('bounded-floor');
+    if (this.renderer.xr.setReferenceSpaceType)
+        this.renderer.xr.setReferenceSpaceType('local'); // ('bounded-floor');
 
     
 //    setTimeout(() => {  // temp test for startup with esbuild
-        document.body.appendChild(VRButton.createButton(renderer));
-        animate();
+        document.body.appendChild(VRButton.createButton(this.renderer));
+        this.animate();
         vrstart();
 //    }, 100);
 }   // init
 
-// add an object to parent, default maingroup, and add a selection/visibility icon
-function addToMain(obj, name, parent = maingroup, xyz) {
+// add an object to parent, default this.maingroup, and add a selection/visibility icon
+addToMain(obj, name, parent = this.maingroup, xyz) {
     parent.add(obj);
-    addvis(obj, name, xyz);
+    this.addvis(obj, name, xyz);
 }
 
 /** start the animation loop, managed by three.js */
-function animate() {
-	renderer.setAnimationLoop( render );
+animate() {
+	this.renderer.setAnimationLoop( () => this.render() );
 }
 
-var framenum = 0;
-/** callback function from three.js to render each frame */
-function render() {
-    framenum++;
-    if (stats) stats.update();
+/** callback from three.js to render each frame */
+render() {
+    this.framenum++;
+    if (this.stats) this.stats.update();
     vrframe();
     /**********/
     // If we are not presenting we don't want the VR headset camera to override nonVR navigation
     // We still need more navigation for VR, and smooth handover between nonVR and VR.
     // renderer.xr.enabled = renderer.xr.getDevice() && renderer.xr.getDevice().isPresenting;
 
-    if (controls) {
-        controls.update(0.1);
-        if (document.activeElement === document.body) controls.usekeys();  // use keys becuase of continuous mode
-        orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
-        if (xyzspeechupdate) xyzspeechupdate();
+    if (this.controls) {
+        this.controls.update(); // ??? (0.1);
+        if (document.activeElement === document.body) this.controls.usekeys();  // use keys becuase of continuous mode
+        this.orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
+        if (this.xyzspeechupdate) this.xyzspeechupdate();
     }
     //    outerscene.matrixAutoUpdate = false;
     //    outerscene.matrix.getInverse(orbcamera.matrix);
     //    outerscene.matrixWorldNeedsUpdate = true;
-    camscene.matrixAutoUpdate = false;
-    camscene.matrix.fromArray(orbcamera.matrix.elements);
-    camscene.matrixWorldNeedsUpdate = true;
-    camscene.updateMatrixWorld(true);
+    this.camscene.matrixAutoUpdate = false;
+    this.camscene.matrix.fromArray(this.orbcamera.matrix.elements);
+    this.camscene.matrixWorldNeedsUpdate = true;
+    this.camscene.updateMatrixWorld(true);
 
     /***********/
-    renderer.clear();   // if three.js does not see anything it doesn't clear???
-    renderer.render( outerscene, camera );
-    if (nocamscene.children.length !== 0) {
+    this.renderer.clear();   // if three.js does not see anything it doesn't clear???
+    this.renderer.render( this.outerscene, this.camera );
+    if (this.nocamscene.children.length !== 0) {
         //nocamcamera.right = window.innerWidth; //   // ??? now done on resize() ?
         //nocamcamera.top = window.innerHeight;
         //nocamcamera.updateProjectionMatrix();
-        renderer.render(nocamscene, nocamcamera);
+        this.renderer.render(this.nocamscene, this.nocamcamera);
     }
 }   // render
 
 /** onkyedown only used so far to support 'Q' for toggling gui information */
-function onDocumentKeyDown(evt) {
+onDocumentKeyDown(evt) {
     const k = String.fromCharCode(evt.keyCode);
     // console.log('key', k);
-    if (k === 'Q') fullcanvas();
+    if (k === 'Q') this.fullcanvas();
     if (evt.key === 'F2') {
-        display.requestPresent( [ { source: renderer.domElement } ] );
+        this.vrdisplay.requestPresent( [ { source: this.renderer.domElement } ] );
     }
     if (evt.key === 'F4') {
-        display.exitPresent();
+        this.vrdisplay.exitPresent();
     }
 }
 
 /** show the full canvas */
-function fullcanvas(full = E.info.style.display !== 'none' ) {
+fullcanvas(full = E.info.style.display !== 'none' ) {
     E.info.style.display = full ? 'none' : '';
     E.ack.style.display = E.info.style.display
     // canvas.style.top = full ? '0' : '0';
-    canvas.focus();
+    this.canvas.focus();
 }
 
 /** make sure camera tracks window changes */
-function onWindowResize() {
+onWindowResize() {
     let w, h;
-    if (renderer.domElement.parentElement.id === 'xyzcontainer') {  // standalone xyz
+    if (this.renderer.domElement.parentElement.id === 'xyzcontainer') {  // standalone xyz
         w = window.innerWidth; h = window.innerHeight;
     } else {                                                        // xyz owned by some other app
-        const hhh = renderer.domElement.parentElement;
+        const hhh = this.renderer.domElement.parentElement;
         w = hhh.offsetWidth; h = hhh.offsetHeight;
     }
-    setSize(w, h);
+    this.setSize(w, h);
 }
 
-/** make a circle */
-function makeCircle(s = 64) {
-    var d = new Uint8Array(s * s * 4);
-    for (let x = -s/2 + 0.5; x < s/2; x++) {
-        for (let y = -s/2 + 0.5; y < s/2; y++) {
-            const v = +(x*x + y*y < s*s/4) * 255;
-            d[i++] = v;
-            d[i++] = v;
-            d[i++] = v;
-            d[i++] = v;
-        }
-    }
+// /** make a circle */
+// makeCircle(s = 64) {
+//     var d = new Uint8Array(s * s * 4);
+//     let i = 0;
+//     for (let x = -s/2 + 0.5; x < s/2; x++) {
+//         for (let y = -s/2 + 0.5; y < s/2; y++) {
+//             const v = +(x*x + y*y < s*s/4) * 255;
+//             d[i++] = v;
+//             d[i++] = v;
+//             d[i++] = v;
+//             d[i++] = v;
+//         }
+//     }
 
-    var texture = new THREE.DataTexture(d, s, s, THREE.RGBAFormat,
-        THREE.UnsignedByteType, undefined,
-        THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.NearestFilter, 1);
-    texture.needsUpdate = true;
-    return texture;
-}
+//     var texture = new THREE.DataTexture(d, s, s, THREE.RGBAFormat,
+//         THREE.UnsignedByteType, undefined,
+//         THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.NearestFilter, 1);
+//     texture.needsUpdate = true;
+//     return texture;
+// }
 
 /** set the background */
-function setBackground(r = 0, g = r, b = r, alpha = 1) {
-    renderer.setClearColor(new THREE.Color(r, g, b));
-    renderer.setClearAlpha(alpha);
+setBackground(r = 0, g = r, b = r, alpha = 1) {
+    this.renderer.setClearColor(new THREE.Color(r, g, b));
+    this.renderer.setClearAlpha(alpha);
 }
 
-function setHostDOM(host) { host.appendChild(renderer.domElement); }
-function setSize(w, h) {
+setHostDOM(host) { host.appendChild(this.renderer.domElement); }
+setSize(w, h) {
     if (w[0]) [w, h] = w;
-    camera.aspect = w/h;
-    camera.updateProjectionMatrix();
-    renderer.setSize( w, h );
+    this.camera.aspect = w/h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize( w, h );
 
-    nocamcamera.right = w;
-    nocamcamera.top = h;
-    nocamcamera.updateProjectionMatrix();
+    this.nocamcamera.right = w;
+    this.nocamcamera.top = h;
+    this.nocamcamera.updateProjectionMatrix();
 }
 
-const addvisList = {};
-
-/** function to add visibility gui and photo swapper */
-function addvis(obj, bname, xyz) {
+/** to add visibility gui and photo swapper */
+addvis(obj, bname, xyz) {
     let name;
     // make a new name if needed for duplicate load
     for(let i = 0; i < 20; i++) {
         name = bname + (i===0 ? '' : '_'+i);
-        if (!addvisList[name]) break;
+        if (!this.addvisList[name]) break;
     }
     obj.name = name;
     const sfid = name.split('\\').pop().split('/').pop();
@@ -271,7 +286,7 @@ function addvis(obj, bname, xyz) {
     // cbs();
 
     // const item = 
-    addvisList[name] = {name, sfid, obj, xyz};
+    this.addvisList[name] = {name, sfid, obj, xyz};
     //?item.obj = obj;
     if (xyz) {
         //?item.xyz = xyz;
@@ -281,10 +296,10 @@ function addvis(obj, bname, xyz) {
 }
 
 /** select given object, w.i.p */
-function select(fid, xyz) {
-    for (const f in addvisList)
+select(fid, xyz) {
+    for (const f in this.addvisList)
         E[f+'_k'].style.color = f === fid ? 'lightgreen' : 'white';
-    const avl = addvisList[fid];
+    const avl = this.addvisList[fid];
     // if (!avl) return;      // try to select before ready ???
     log('sselect', fid, avl);
     if (avl) X.currentThreeObj = avl.obj;
@@ -302,42 +317,48 @@ function select(fid, xyz) {
     }
 }
 
-/** function called on click of visibility checkbox */
-function addvis_clicked(evt) {
+/** called on click of visibility checkbox */
+addvis_clicked(evt) {
     const src = evt.target;
-    const ele = addvisList[src.name];
+    const ele = this.addvisList[src.name];
     ele.obj.visible = src.checked;
     //window.currentThreeObj = ele.obj;
     //if (ele.obj.xyz) window.currentXyz = ele.obj.xyz;
 }
 
 /** set the sacel in x,y,z */
-function scale(x,y=x,z=y) {
-    maingroup.scale.set(x,y,z);
+scale(x,y=x,z=y) {
+    this.maingroup.scale.set(x,y,z);
 }
 
 
 // helpers, global
-function plan() {
-    maingroup.rotation.set(0,0,0);
-    home();
+plan() {
+    this.maingroup.rotation.set(0,0,0);
+    this.home();
 }
 
-function elevation() {
-    maingroup.rotation.set(Math.PI/2,0,0);
-    home();
+elevation() {
+    this.maingroup.rotation.set(Math.PI/2,0,0);
+    this.home();
 }
 
-function home() {
-    controls.home();
+home() {
+    this.controls.home();
 }
 
-const start = ()=>{
+
+} // end class
+
+let ggb;
+function start() {
     console.log('document loaded');
     E.lastmod.textContent = window.lastModified.xyzhtml;
-    init();
+    ggb = new GraphicsBoiler();
+    // ggb.init();
     // setTimeout(init, 1000); // temp test for esbuild
-};
+}
+
 if (document.readyState === 'complete' || document.readyState === 'interactive')
     start(); 
 else

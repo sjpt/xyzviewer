@@ -1,9 +1,9 @@
 'use strict';
-window.lastModified.geojson = `Last modified: 2020/12/13 12:58:17
+window.lastModified.geojson = `Last modified: 2021/01/29 10:53:17
 `
 // code for display of geojson data
 export  {geojsonReader};
-import {addToMain} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain
 import {centrerange} from '../xyz.js';
 import {addFileTypeHandler, log} from '../basic.js';
 import {THREE} from "../threeH.js";
@@ -53,7 +53,7 @@ function geojsonReader(json, fid) {
     // if (geolines) maingroup.remove(geolines);
     geolines = new THREE.LineSegments(linegeom, linemat);
 
-    addToMain(geolines, fid);
+    ggb.addToMain(geolines, fid);
     log(fid + `features=${features.length} segs=${linegeom.vertices.length}`);
 
 }

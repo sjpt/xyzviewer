@@ -1,7 +1,7 @@
 // read grid data from lidar
 // https://environment.data.gov.uk/ds/survey/index.jsp#/survey?grid=SU42
 export {ascReader};
-import {addToMain} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain
 import {addFileTypeHandler} from '../basic.js';
 import {centrerange} from '../xyz.js';
 
@@ -59,7 +59,7 @@ function ascReader(rawdata, fid) {
     mesh.scale.set(cellsize, cellsize, -1);
     mesh.material.side = THREE.DoubleSide;
     // window.ascmesh = mesh;
-    addToMain(mesh, fid);
+    ggb.addToMain(mesh, fid);
 
 }
 

@@ -1,5 +1,5 @@
 export {readply};
-import {addToMain} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain
 import {addFileTypeHandler} from '../basic.js';
 
 const {X, E} = window;
@@ -75,7 +75,7 @@ meshmaker ( geometry, fid ) {
 //    mesh.receiveShadow = true;
 
     obj.xyz = this;
-    addToMain(obj, fid);
+    ggb.addToMain(obj, fid);
     return obj;
 }
 }

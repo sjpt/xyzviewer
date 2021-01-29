@@ -1,6 +1,6 @@
 'use strict';
 export {start, stop, map, paint, lassoGet, setrun, setColour, setFilter, lassos};
-import {camera, renderer, addToMain, controls, nocamscene, maingroup} from './graphicsboiler.js';
+import {ggb} from './graphicsboiler.js'; // camera, renderer, addToMain, controls, nocamscene, maingroup
 import {dataToMarkersGui, filterAdd, filterRemove} from './xyz.js';
 import {THREE} from "./threeH.js";
 
@@ -10,8 +10,8 @@ const lassos = [];  // array of saved lassos, with camera. map etc
 function mousedown(e) {
     startx = lastx = e.offsetX, starty = lasty = e.offsetY;
 
-    renderer.domElement.addEventListener('mousemove', mousemove);
-    renderer.domElement.addEventListener('mouseup', mouseup);
+    ggb.renderer.domElement.addEventListener('mousemove', mousemove);
+    ggb.renderer.domElement.addEventListener('mouseup', mouseup);
     e.preventDefault();     // otherwise the double-click somehow selects msgbox text
 }
 
@@ -74,12 +74,13 @@ function dblclick() {
 
 function start(pflag = 0xff) {
     flag = pflag;
-    canvas = renderer.domElement;
+    canvas = ggb.renderer.domElement;
     canvas.addEventListener('mousedown', mousedown);
     canvas.addEventListener('dblclick', dblclick);
-    controls.enabled = false;
+    ggb.controls.enabled = false;
 
-    renderer.getSize(size);
+    ggb.renderer.getSize(size);
+    ggb.setSize(size.x, size.y);    // get nocamcamera set up right ... NOT the correct way?
     map = new Uint8Array(size.x * size.y);
     mapt = new THREE.DataTexture(map, size.x, size.y, THREE.LuminanceFormat, THREE.UnsignedByteType);
     let material = new THREE.MeshBasicMaterial();
@@ -89,7 +90,7 @@ function start(pflag = 0xff) {
     let geometry = new THREE.PlaneGeometry(size.x, size.y);
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(size.x/2, size.y/2, 0);
-    addToMain(mesh, 'lasso_' + lassos.length, nocamscene);
+    ggb.addToMain(mesh, 'lasso_' + lassos.length, ggb.nocamscene);
     // mesh.scale.set(0.08,0.08,1)
 
     // compute the complete object position => screen (map) position matrix
@@ -97,9 +98,9 @@ function start(pflag = 0xff) {
     const m = () => new THREE.Matrix4();
     totmat.multiply(m().makeTranslation(size.x/2, size.y/2, 0));
     totmat.multiply(m().makeScale(size.x/2, size.y/2, 0));
-    totmat.multiply(camera.projectionMatrix);
-    totmat.multiply(camera.matrixWorldInverse);
-    totmat.multiply(maingroup.matrixWorld);
+    totmat.multiply(ggb.camera.projectionMatrix);
+    totmat.multiply(ggb.camera.matrixWorldInverse);
+    totmat.multiply(ggb.maingroup.matrixWorld);
 
     lassos.push({map, size, totmat, mapt})
 }
@@ -110,7 +111,7 @@ function stop() {
     canvas.removeEventListener('mouseup', mouseup);
     canvas.removeEventListener('mouseup', dblclick);
     
-    controls.enabled = true;
+    ggb.controls.enabled = true;
     window.dispatchEvent(new Event('lassoStop'));
     dataToMarkersGui();
 
@@ -131,11 +132,11 @@ function lassoGet(x,y,z, id=lassos.length-1) {
 }
 
 function setColour(bool) {
-    (bool ? filterAdd : filterRemove)('VX(0.5 + _L * 0.5);', true);
+    (bool ? filterAdd : filterRemove)('VX(0.5 + _L/255 * 0.5);', true);
 }
 
 function setFilter(bool) {
-    (bool ? filterAdd : filterRemove)('?_L');    
+    (bool ? filterAdd : filterRemove)('?_L', true);    
 }
 
 /*

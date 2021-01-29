@@ -1,11 +1,11 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2021/01/25 14:05:02
+window.lastModified.basic = `Last modified: 2021/01/29 10:46:39
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
 import {applyurl} from './xyz.js';
-import {plan, orbcamera} from './graphicsboiler.js';
+import {ggb} from './graphicsboiler.js'; // plan, orbcamera
 const queryVariables = {};
 var readyFiles = {};
 
@@ -57,8 +57,8 @@ async function showfirstdata() {
         setTimeout(async () => {
             // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
             X.currentXyz.setPointSize(0.02);
-            plan();
-            orbcamera.position.z = 20;
+            ggb.plan();
+            ggb.orbcamera.position.z = 20;
         }, 1000);
     } 
 
@@ -419,7 +419,7 @@ function killev(event) {
 // while limiting pollution to the global scope.
 var {GG} = window;
 (async function() {
-    GG.gb = await import('./graphicsboiler.js');
+    GG.gb = (await import('./graphicsboiler.js')).ggb;
     GG.cols = (await import('./cols.js')).COLS;
     GG.ps = await import('./photoshader.js');
     GG.xyz = await import('./xyz.js');

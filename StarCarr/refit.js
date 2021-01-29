@@ -1,7 +1,7 @@
 'use strict';
 // code for display of refit data
 export {refit};
-import {addToMain} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain
 import {col3} from '../xyz.js';
 const { X} = window;
 import {THREE} from "../threeH.js";
@@ -62,6 +62,6 @@ function refit() {
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true /*THREE.VertexColors*/ } );
     //if (rlines) maingroup.remove(rlines);
     rlines = new THREE.LineSegments(linegeom, linemat);
-    addToMain(rlines, 'refits');
+    ggb.addToMain(rlines, 'refits');
 }
 

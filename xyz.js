@@ -1,8 +1,10 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/01/28 18:18:25
+window.lastModified.xyz = `Last modified: 2021/01/29 18:09:49
 `; console.log('>>>>xyz.js');
 
-import {addToMain, select, setBackground, setHostDOM, setSize} from './graphicsboiler.js';
+// import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
+import {ggb} from './graphicsboiler.js'; // ggb
+
 //?? import {pdbReader} from './pdbreader.js';
 import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
 import {COLS} from './cols.js';
@@ -69,16 +71,16 @@ constructor(data, fid) {
     this._ids = undefined;    // ids for crossfilter
     this.fields = {};
     this._onFilter = undefined;
+    this._inDataToMarkers = 0;
+    this._dataToMarkersQ = [];
 
-    if (!data) return;  // called from pdbReader
-    this.csvReader(data, fid);
 
     // make sure control= values in URL get respected (after csvReader in case yamlReader has other ideas)
     if (Object.keys(XYZ.xyzs).length === 0)
         this.guiset.filterbox = E.filterbox.value;
         
     // colourby is dropdown, colourpick is colour picker
-    select(fid, this);
+    ggb.select(fid, this);
     XYZ.xyzs[fid] = this;
 
     // catch our filter events from lasso and pass them on if wanted
@@ -86,6 +88,10 @@ constructor(data, fid) {
         const ids = await self.getCallbacks();
         if (self._onFilter) self._onFilter(ids);
     });
+
+    if (!data) return;  // called from pdbReader
+    this.csvReader(data, fid);
+
 }
 
 /** load data based on gui values */
@@ -125,8 +131,26 @@ hide(ids) {
 onFilter(f) { this._onFilter = f; }
 
 
-/** load the data with given filter and colour functions if required, and display as markers */
+// dataToMarkers must be queued as it is async
+// in particular, we want to make sure filter canclulation is complete before it is used.
 async dataToMarkers(pfilterfun, popping, cbs) {
+    this._dataToMarkersQ.push({pfilterfun, popping, cbs})
+    // console.error('attempt to reenter dataToMarkers')
+    if (this._inDataToMarkers) return;
+
+    this._inDataToMarkers++;
+    while (true) {
+        const s = this._dataToMarkersQ.shift();
+        if (!s) break;
+        ({pfilterfun, popping, cbs} = s);
+        await this._dataToMarkers(pfilterfun, popping, cbs);
+    }
+    this._inDataToMarkers--;
+}
+
+
+/** load the data with given filter and colour functions if required, and display as markers */
+async _dataToMarkers(pfilterfun, popping, cbs) {
     const st = performance.now();
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
     const xc = this.namecols.x || this.namecols[this.header[0]];
@@ -207,7 +231,7 @@ async dataToMarkers(pfilterfun, popping, cbs) {
     }
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
 
-    return [ll,l];
+    // return [ll,l];
 }
 
 /** extract the value for an element
@@ -269,11 +293,6 @@ async makefilterfun(filtin, box, mode='') {
         filtfun = filt;
     else if (typeof filt === 'string') {
         try {
-            if (filt.match(/\b_L\b/)) filt = `const _L = xyz._lasso(x,y,z)\n${filt}`
-            if (filt.match(/\b_L[0-9]\b/)) {
-                for (let i=0; i<=9; i++)
-                    if (filt.match(new RegExp('\\b_L' + i + '\\b', 'g'))) filt = `const _L${i} = xyz._lasso(x,y,z, ${i})\n${filt}`
-            }
             
             for (let fn in this.ranges) { // find used fields and assign (saves risk of accidental override of d.<fn>)
                 if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
@@ -301,6 +320,14 @@ async makefilterfun(filtin, box, mode='') {
             filt = filt.replace(/\b_G\b/g, "_C.g");
             filt = filt.replace(/\b_B\b/g, "_C.b");
             // RGB(cd3_N, cd4_N, cd16_N)
+
+            // apply after VX() etc to reduce wrong bracketing risk
+            filt = filt.replace(/\b_L\b/g, 'xyz._lasso(_x,_y,_z)');
+            filt.replace(/\b_L([0-9])\b/g, 'xyz._lasso(_x,_y,_z,$1)')
+            // if (filt.match(/\b_L[0-9]\b/)) {
+            //     for (let i=0; i<=9; i++)
+            //         if (filt.match(new RegExp('\\b_L' + i + '\\b', 'g'))) filt = `const _L${i} = xyz._lasso(x,y,z, ${i})\n${filt}`
+            // }
             
 
             filt = filt.split('\n').map(l => {
@@ -472,7 +499,7 @@ async yamlReader(raw, fid) {
         if (done === 3) break;
         await sleep(500);
     }
-    select(this.bfid, this);
+    ggb.select(this.bfid, this);
 }
 
 /** show pending read status; also compute min loaded value */
@@ -743,7 +770,7 @@ finalize(fid, partial = false) {
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
     this.filtergui({keyCode: 13});    // display as markers
-    select(fid, this);
+    ggb.select(fid, this);
 }
 
 /** rebase a field based on centrerange (no longer set o_ values) */
@@ -888,7 +915,7 @@ setup(fid) {
     X.currentThreeObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.frustumCulled = false;
     this.particles.xyz = this;
-    addToMain( this.particles, fid, undefined, this );
+    ggb.addToMain( this.particles, fid, undefined, this );
     // xyzs[this.name] = this;
 } // setup
 
@@ -958,7 +985,14 @@ _lasso(x,y,z,id) {
 /** get ids from lasso for callback */
 async getCallbacks() {
     const cbs = {};
-    await this.dataToMarkers(E.filterbox.value + '\nif (!xyz._lasso(_x, _y, _z)) return;', undefined, cbs);
+    const f = `
+X:${this.getField('X')}_N
+Y:${this.getField('Y')}_N
+Z:${this.getField('Z')}_N
+if (!xyz._lasso(_x, _y, _z)) return;
+`
+    await this.dataToMarkers(f, undefined, cbs);
+    console.log('filtered OK ', Object.keys(cbs).length);
     // this.dataToMarkers();
     return cbs;
 }
@@ -986,15 +1020,23 @@ setField(fieldRole, fieldName, update=true) {
 }
 
 getField(fieldRole) {
-    return this.fields[fieldRole].replace('_N', '');
+    const f = this.fields[fieldRole];
+    if (f) return f.replace('_N', '');
+    const filt = new RegExp(`${fieldRole}:(.*)`);
+    const m = E.filterbox.value.match(filt);
+    if (m) return m[1];
+    const defaults = {X: 'x', Y: 'y', Z: 'z'};
+    const v = defaults[fieldRole];
+    E.filterbox.value = `${fieldRole}:${v}\n` + E.filterbox.value;
+    return v;
 }
 
 setColor(fieldName, details) { this.setField('COL', fieldName); }
 
 /** delegate various functions to (single for now) graphicsBoider/renderer */
-setBackground(r = 0, g = r, b = r, alpha = 1) { setBackground(r, g, b, alpha); }
-setHostDOM(host) { setHostDOM(host); }
-setSize(x, y) { setSize(x, y); }
+setBackground(r = 0, g = r, b = r, alpha = 1) { ggb.setBackground(r, g, b, alpha); }
+setHostDOM(host) { ggb.setHostDOM(host); }
+setSize(x, y) { ggb.setSize(x, y); }
 
 /** pending, dispose of resources */
 dispose() {

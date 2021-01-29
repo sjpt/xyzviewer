@@ -6,7 +6,7 @@ import {centrerange, col3, dataToMarkersGui, setPointSize} from '../xyz.js';
 import {posturiasync, log} from '../basic.js';
 
 import {pdbReader} from '../plugins/pdbreader.js';
-import {addToMain, fullcanvas, orbcamera, renderer, usePhotoShader} from '../graphicsboiler.js';
+import {ggb} from '../graphicsboiler.js'; // addToMain, fullcanvas, orbcamera, renderer, usePhotoShader
 import {COLS} from '../cols.js';
 import {THREE} from '../threeH.js';
 const {E} = window;
@@ -29,8 +29,8 @@ function folddemofun(tt = 10000, gap = 2000) {
 
     setPointSize(5);
     COLS.set('resname');
-    orbcamera.position.set(0,0,250);
-    fullcanvas(true);
+    ggb.orbcamera.position.set(0,0,250);
+    ggb.fullcanvas(true);
 
     if (!folddemo_st) requestAnimationFrame(foldframe);
     folddemo_st = Date.now();
@@ -118,7 +118,7 @@ function virchaindists(sc = 1) {
 
     if (!groupgeom) {
         groupgeom = new THREE.Group();
-        addToMain(groupgeom, 'pdbgroup');
+        ggb.addToMain(groupgeom, 'pdbgroup');
     }
     groupgeom.scale.set(sc,sc,sc);
     // find the close pairs
@@ -149,7 +149,7 @@ function virchaindists(sc = 1) {
     //maingroup.remove(rlines);
     groupgeom.remove(rlines);
     rlines = new THREE.LineSegments(linegeom, linemat);
-    addToMain(rlines, 'poly lines', groupgeom);
+    ggb.addToMain(rlines, 'poly lines', groupgeom);
 
     // refine dds to get found close distances; result was used (manually) in setting up cols above
     dds.sort((a,b) => a.d - b.d);
@@ -229,7 +229,7 @@ function virchaindists(sc = 1) {
     const meshmat = new THREE.MeshPhongMaterial( { color: 0xffffff, opacity: 1, vertexColors: true /*THREE.VertexColors*/, side: THREE.DoubleSide } );
     if (polygonmesh) groupgeom.remove(polygonmesh);
     polygonmesh = new THREE.Mesh(trigeom, meshmat);
-    addToMain(polygonmesh, 'polygon', groupgeom);
+    ggb.addToMain(polygonmesh, 'polygon', groupgeom);
 
     return dds;
 }
@@ -263,10 +263,10 @@ function expandchain(trik = 0, pentk = 0, cenk = 0) {
 /** set up to show virus */
 function virusshow() {
     E.colourby.value = 'fixed';
-    if (usePhotoShader) {  // quick demo for Steve
+    if (ggb.usePhotoShader) {  // quick demo for Steve
         myxyz.setPointSize(2);
         E.colourby.value = 'random';
     }
     dataToMarkersGui();
-    if (!renderer.xr.getSession()) orbcamera.position.z = 200;
+    if (!ggb.renderer.xr.getSession()) ggb.orbcamera.position.z = 200;
 }
