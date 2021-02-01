@@ -59,7 +59,7 @@ COLS.gencol = function(xyz, field) {
 
         if (xyz.namecolnstrs[field] > xyz.namecolnnum[field] && !COLS[field]) COLS.autocol(xyz, field);
 
-        if (COLS[field]) return `set(COLS["${field}"][${field}])`;       // field with defined colours
+        if (COLS[field]) return `set(COLS['${field}'][xyz.val('${field}', i)])`;       // field with defined colours
 
         // below no longer needed, colours defined above instead
         //if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `stdcol(xyz.valE("${field}", i))`; // mainly character field, no defined colours
@@ -73,7 +73,8 @@ COLS.gencol = function(xyz, field) {
             throw new Error(`Field "${field}" not present.`)        // field not valid
         }
         const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
-        return `set(COLS.forrange(${field}, ${low}, ${range}))`;      // mainly number field
+        // return `set(COLS.forrange(${field}, ${low}, ${range}))`;      // mainly number field
+        return `set(COLS.forrange(${field}, 0,1))`;      // mainly number field
     } finally {
         COLS.show(xyz, field);        
     }

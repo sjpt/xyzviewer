@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2021/01/29 10:46:39
+window.lastModified.basic = `Last modified: 2021/02/01 09:54:37
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
@@ -43,7 +43,7 @@ async function showfirstdata() {
     applyurl();
     if (wls.startsWith('?arch')) await import("./StarCarr/archstart.js");
     if (wls.startsWith('?fold')) await import('./extras/folddemo.js');
-    if (wls.startsWith('?ox')) {
+    if (wls.startsWith('?ox')) {      
         if (location.host.startsWith('csynth'))
             if (wls.startsWith('?ox7m'))
                 queryVariables.startdata='../xyzdata/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml"';
@@ -52,6 +52,8 @@ async function showfirstdata() {
         if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) 
             if (wls.startsWith('?ox7m'))
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/t1-data/user/erepapi/Fellowship/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml"';
+            else if (wls.startsWith('?oxm'))
+                queryVariables.startdata=',,/,,/,,/,,/BigPointData/fromMLV/fromMLV.yaml';
             else
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
         setTimeout(async () => {
@@ -431,5 +433,8 @@ var {GG} = window;
     // put off speech till last, Firefox does not support it
     GG.ospeech = (await import('./speech.js')).OrganicSpeech;
     GG.xyzspeech = (await import('./xyzspeech.js'));
+
+    showfirstdata();
+    
     window.dispatchEvent(new Event('GGLoaded'));
 })();

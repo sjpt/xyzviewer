@@ -1,11 +1,13 @@
 'use strict';
 export {filelist};
-window.lastModified.archstart = `Last modified: 2021/01/29 10:53:40
+window.lastModified.archstart = `Last modified: 2021/02/01 12:53:30
 `
 const {E, GG} = window;
 import {posturiasync, addToFilelist} from '../basic.js';
 import {ggb} from '../graphicsboiler.js'; // plan
 import {refit} from './refit.js';
+import {XYZ} from '../xyz.js';
+XYZ.autorange = false;
 var filelist = `
 Flint.csv
 Fungi.csv

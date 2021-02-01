@@ -1,15 +1,15 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/01/29 18:09:49
+window.lastModified.xyz = `Last modified: 2021/02/01 12:51:11
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
-import {ggb} from './graphicsboiler.js'; // ggb
+import {ggb, GraphicsBoiler} from './graphicsboiler.js'; // ggb
 
 //?? import {pdbReader} from './pdbreader.js';
 import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
 import {COLS} from './cols.js';
 import {THREE} from "./threeH.js";
-import {lassoGet} from "./lasso.js";
+import {Lasso, lassoGet} from "./lasso.js";
 import {useXShader} from './xshader.js';        // todo cleanup MD: code
 
 
@@ -58,9 +58,10 @@ const baseguiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', fil
 
 class XYZ {
 
-static xyzs = {};       // why is eslint complaining here?
+static xyzs = {};
+static autorange = true;       // why is eslint complaining here?
 
-constructor(data, fid) {
+constructor(data, fid, owngb) {
     const self = this;
     X.currentXyz = X.currentThreeObj = this.xyz = this;
     this.fid = fid;
@@ -73,14 +74,14 @@ constructor(data, fid) {
     this._onFilter = undefined;
     this._inDataToMarkers = 0;
     this._dataToMarkersQ = [];
-
+    this.gb = owngb ? new GraphicsBoiler() : ggb;
 
     // make sure control= values in URL get respected (after csvReader in case yamlReader has other ideas)
     if (Object.keys(XYZ.xyzs).length === 0)
         this.guiset.filterbox = E.filterbox.value;
         
     // colourby is dropdown, colourpick is colour picker
-    ggb.select(fid, this);
+    this.gb.select(fid, this);
     XYZ.xyzs[fid] = this;
 
     // catch our filter events from lasso and pass them on if wanted
@@ -153,9 +154,9 @@ async dataToMarkers(pfilterfun, popping, cbs) {
 async _dataToMarkers(pfilterfun, popping, cbs) {
     const st = performance.now();
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
-    const xc = this.namecols.x || this.namecols[this.header[0]];
-    const yc = this.namecols.y || this.namecols[this.header[1]];
-    const zc = this.namecols.z || this.namecols[this.header[2]];
+    const xc = this.namecols[this.getField('X')];
+    const yc = this.namecols[this.getField('Y')];
+    const zc = this.namecols[this.getField('Z')];
     
     const l = xc.length;
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
@@ -296,8 +297,13 @@ async makefilterfun(filtin, box, mode='') {
             
             for (let fn in this.ranges) { // find used fields and assign (saves risk of accidental override of d.<fn>)
                 if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
-                    // used.push(fn);
-                    filt = `const ${fn} = xyz.val('${fn}', i);\n${filt}`;
+                    const usealpha = this.namecolnstrs[fn] > this.namecolnnum[fn];
+                    let fun = usealpha ? 'valEN' : XYZ.autorange ? 'valN' : 'val';
+                    filt = `const ${fn} = xyz.${fun}('${fn}', i);\n${filt}`;
+                    await this.lazyLoadCol(fn);
+                }
+                if (filt.match( new RegExp('\\b' + fn + '_R\\b', 'g'))) {
+                    filt = `const ${fn}_N = xyz.val('${fn}', i, 1.5);\n${filt}`;
                     await this.lazyLoadCol(fn);
                 }
                 if (filt.match( new RegExp('\\b' + fn + '_N\\b', 'g'))) {
@@ -319,7 +325,7 @@ async makefilterfun(filtin, box, mode='') {
             filt = filt.replace(/\b_R\b/g, "_C.r");
             filt = filt.replace(/\b_G\b/g, "_C.g");
             filt = filt.replace(/\b_B\b/g, "_C.b");
-            // RGB(cd3_N, cd4_N, cd16_N)
+            // RGB(cd3, cd4, cd16)
 
             // apply after VX() etc to reduce wrong bracketing risk
             filt = filt.replace(/\b_L\b/g, 'xyz._lasso(_x,_y,_z)');
@@ -475,7 +481,7 @@ async yamlReader(raw, fid) {
     this.namevcols = {};
     for (const n in namevset)
         namevseti[n] = Object.keys(namevset[n]);
-    this.gencolby();  
+    this.headerSetup();  
     
     // maybe these could be saved as is in the yaml file --- more or less duplicate code with finalize()
     this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
@@ -488,9 +494,9 @@ async yamlReader(raw, fid) {
     this.bfid = fid.substring(0, fid.length - 5);
     const p = [];
     let done = 0;
-    this.lazyLoadCol('x').then(() => done++);
-    this.lazyLoadCol('y').then(() => done++);
-    this.lazyLoadCol('z').then(() => done++);
+    this.lazyLoadCol(this.getField('X')).then(() => done++);
+    this.lazyLoadCol(this.getField('Y')).then(() => done++);
+    this.lazyLoadCol(this.getField('Z')).then(() => done++);
     // await Promise.all(p);
 
     for (let i=0; i<100; i++) {
@@ -499,7 +505,7 @@ async yamlReader(raw, fid) {
         if (done === 3) break;
         await sleep(500);
     }
-    ggb.select(this.bfid, this);
+    this.gb.select(this.bfid, this);
 }
 
 /** show pending read status; also compute min loaded value */
@@ -660,7 +666,7 @@ addHeader(header) {
         this.colnnull[i] = 0;
         this.colnnum[i] = 0;
     }
-    this.gencolby();
+    this.headerSetup();
 }
 
 // add a row, array of values, return new n
@@ -770,7 +776,7 @@ finalize(fid, partial = false) {
     this.ranges.forEach = this.sForEach;
     this.setup(fid);
     this.filtergui({keyCode: 13});    // display as markers
-    ggb.select(fid, this);
+    this.gb.select(fid, this);
 }
 
 /** rebase a field based on centrerange (no longer set o_ values) */
@@ -834,8 +840,16 @@ async filtergui(evt = {}) {
     }
 }
 
-/** generate colourby */
-gencolby() {
+/** generate colourby and initial filter*/
+headerSetup() {
+    this.def = {};
+    this.def.X = this.header.includes('x') ? 'x' : this.header[0];
+    this.def.Y = this.header.includes('y') ? 'y' : this.header[1];
+    this.def.Z = this.header.includes('z') ? 'z' : this.header[2];
+    this.setField('X', this.getField('X'), false);
+    this.setField('Y', this.getField('Y'), false);
+    this.setField('Z', this.getField('Z'), false);
+
     const s = [`<option value="fixed">fixed</option>`];
     s.push(`<option value="random">random</option>`);
     for (const name of this.header)
@@ -915,7 +929,7 @@ setup(fid) {
     X.currentThreeObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.frustumCulled = false;
     this.particles.xyz = this;
-    ggb.addToMain( this.particles, fid, undefined, this );
+    this.gb.addToMain( this.particles, fid, undefined, this );
     // xyzs[this.name] = this;
 } // setup
 
@@ -940,6 +954,7 @@ async savefiles() {
     delete obj.material;
     delete obj.geometry;
     delete obj.particles;
+    delete obj.gb;
     var yaml = X.jsyaml.safeDump(obj, {skipInvalid: true})
     console.log('yaml size', yaml.length);
 
@@ -986,9 +1001,9 @@ _lasso(x,y,z,id) {
 async getCallbacks() {
     const cbs = {};
     const f = `
-X:${this.getField('X')}_N
-Y:${this.getField('Y')}_N
-Z:${this.getField('Z')}_N
+X:${this.getField('X')}
+Y:${this.getField('Y')}
+Z:${this.getField('Z')}
 if (!xyz._lasso(_x, _y, _z)) return;
 `
     await this.dataToMarkers(f, undefined, cbs);
@@ -1008,7 +1023,7 @@ makeProxy() {
 /** set the field to use for a particular role */
 /** TODO, handle ranges, _N, etc */
 setField(fieldRole, fieldName, update=true) {
-    this.fields[fieldRole] = fieldName;
+    this.fields[fieldRole] = fieldName; // .replace('_ N', '');
     const ofilt = '\n' + E.filterbox.value + '\n';
     const rx = new RegExp('^(.*)\\n' + fieldRole + ':(.*?)\\n(.*)', 's');  // was /^(.*)\nCOL:(.*?)\n(.*)/s
     let g = ofilt.match(rx);
@@ -1021,12 +1036,12 @@ setField(fieldRole, fieldName, update=true) {
 
 getField(fieldRole) {
     const f = this.fields[fieldRole];
-    if (f) return f.replace('_N', '');
+    if (f) return f; // .replace('_ N', '');
     const filt = new RegExp(`${fieldRole}:(.*)`);
     const m = E.filterbox.value.match(filt);
-    if (m) return m[1];
-    const defaults = {X: 'x', Y: 'y', Z: 'z'};
-    const v = defaults[fieldRole];
+    if (m) return m[1]; // .replace('_ N', '');
+    
+    const v =this.def[fieldRole];
     E.filterbox.value = `${fieldRole}:${v}\n` + E.filterbox.value;
     return v;
 }
@@ -1034,9 +1049,11 @@ getField(fieldRole) {
 setColor(fieldName, details) { this.setField('COL', fieldName); }
 
 /** delegate various functions to (single for now) graphicsBoider/renderer */
-setBackground(r = 0, g = r, b = r, alpha = 1) { ggb.setBackground(r, g, b, alpha); }
-setHostDOM(host) { ggb.setHostDOM(host); }
-setSize(x, y) { ggb.setSize(x, y); }
+setBackground(r = 0, g = r, b = r, alpha = 1) { this.gb.setBackground(r, g, b, alpha); }
+setHostDOM(host) {  host.appendChild(this.gb.renderer.domElement); }
+getHostDOM() { return this.gb.renderer.domElement.parentElement; }
+
+setSize(x, y) { this.gb.setSize(x, y); }
 
 /** pending, dispose of resources */
 dispose() {

@@ -1,8 +1,8 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2021/01/29 13:06:06
+window.lastModified.graphicsboiler = `Last modified: 2021/01/31 20:21:30
 `; console.log('>>>>graphicsboiler.js');
-import {showfirstdata, log} from './basic.js';
+import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
 import {setPointSize, col3} from './xyz.js';
 import {THREE} from "./threeH.js";
@@ -10,17 +10,19 @@ import {} from "./raycast.js";
 
 import {OrbitControls} from './jsdeps/OrbitControls.js';
 import {vrstart, vrframe} from './vrcontrols.js';
-export {ggb};
+export {ggb, GraphicsBoiler};
 
 
 // export {addToMain, framenum, makeCircle, this.renderer as renderer, fullcanvas, this.maingroup, this.nocamscene as nocamscene, setxyzspeechupdate, 
 //     setBackground, setHostDOM, setSize,
 //     this.camera as camera, this.usePhotoShader as usePhotoShader, this.orbcamera as orbcamera, this.outerscene as outerscene, plan, elevation, scale, addvis_clicked, select, this.controls as controls, onWindowResize};
 const {E, X, Stats} = window;
+let gbid = 0;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 class GraphicsBoiler {
-    constructor() {
+    constructor(id = 'gb' + gbid++) {
+        this.id = id;
         this.init();
     }
 
@@ -30,7 +32,7 @@ class GraphicsBoiler {
 //     this.controls, this.canvas, this.orbcamera, this.camscene, display,
 //     this.usePhotoShader = false, this.light0, this.light1;
 //const this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
-//const this.nocamscene = new THREE.Scene(); this.nocamscene.name = 'nocamscene';
+//const this.nocamscene = new THREE.Scene(); this.nocamscene.name = this.id + 'nocamscene';
 // let this.autoClear = false;
 // let this.xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
 setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
@@ -41,7 +43,6 @@ setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
 /** initial call to read data and set up graphics */
 init() {
     const self = this;
-    ggb = this;
     X.defaultDistance = 50;
     this.framenum = 0;
     this.addvisList = {};
@@ -57,23 +58,23 @@ init() {
     this.xyzcontainer = document.getElementById('xyzcontainer');
 
     this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
-    this.nocamscene = new THREE.Scene(); this.nocamscene.name = 'nocamscene';
+    this.nocamscene = new THREE.Scene(); this.nocamscene.name = this.id + 'nocamscene';
     this.autoClear = false;
 
 
-    this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.camera.name = 'camera';
+    this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.camera.name = this.id + 'camera';
     this.camera.position.z = 0;
-    this.orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.orbcamera.name = 'orbcamera';
+    this.orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.orbcamera.name = this.id + 'orbcamera';
     this.orbcamera.position.z = X.defaultDistance;
-    this.camscene = new THREE.Scene(); this.camscene.name = 'camscene';
+    this.camscene = new THREE.Scene(); this.camscene.name = this.id + 'camscene';
     this.camscene.add(this.camera);
 
-    this.maingroup = new THREE.Scene(); this.maingroup.name = 'this.maingroup';
+    this.maingroup = new THREE.Group(); this.maingroup.name = this.id + 'maingroup';
     this.maingroup.rotateX(3.14159/2);   // so we see elevation z up by default
 	// scene.background = new THREE.Color( 0x505050 );
     // scene.add(camera);
 
-    this.outerscene = new THREE.Scene(); this.outerscene.name = 'outerscene';
+    this.outerscene = new THREE.Scene(); this.outerscene.name = this.id + 'outerscene';
     this.outerscene.add(this.maingroup);
     this.outerscene.fog = new THREE.FogExp2( 0x000000, 0.0008 );
 
@@ -91,9 +92,12 @@ init() {
     this.outerscene.add(this.light1);
     this.vrdisplay = undefined;
 
-    showfirstdata();
+    // showfirstdata();
 
-    this.renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
+    this.renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true, preserveDrawingBuffer: false} );  
+    // <<< without the 'antialias' setting the monitor canvas flashes while in VR
+    // preserveDrawingBuffer can help copy image to another canvas
+    //   but if done at once it is not needed
     if (navigator.getVRDisplays) {
         navigator.getVRDisplays().then(
         function ( displays ) {
@@ -138,7 +142,6 @@ init() {
 //    setTimeout(() => {  // temp test for startup with esbuild
         document.body.appendChild(VRButton.createButton(this.renderer));
         this.animate();
-        vrstart();
 //    }, 100);
 }   // init
 
@@ -186,6 +189,10 @@ render() {
         //nocamcamera.updateProjectionMatrix();
         this.renderer.render(this.nocamscene, this.nocamcamera);
     }
+    // test w.i.p. 31/01/2021 towards multiple canvas MLV
+    // const ctx = E.testcanvas.getContext('2d');
+    // ctx.clearRect(0,0,999999999999,9999999);
+    // ctx.drawImage(this.renderer.domElement,0,0)
 }   // render
 
 /** onkyedown only used so far to support 'Q' for toggling gui information */
@@ -248,7 +255,6 @@ setBackground(r = 0, g = r, b = r, alpha = 1) {
     this.renderer.setClearAlpha(alpha);
 }
 
-setHostDOM(host) { host.appendChild(this.renderer.domElement); }
 setSize(w, h) {
     if (w[0]) [w, h] = w;
     this.camera.aspect = w/h;
@@ -265,10 +271,10 @@ addvis(obj, bname, xyz) {
     let name;
     // make a new name if needed for duplicate load
     for(let i = 0; i < 20; i++) {
-        name = bname + (i===0 ? '' : '_'+i);
+        name = this.id + bname + (i===0 ? '' : '_'+i);
         if (!this.addvisList[name]) break;
     }
-    obj.name = name;
+    obj.name = this.id + name;
     const sfid = name.split('\\').pop().split('/').pop();
     E.visibles.innerHTML += `
         <span id="${name}_k" onclick="GG.gb.select('${name}')">${sfid}:</span>
@@ -290,7 +296,7 @@ addvis(obj, bname, xyz) {
     //?item.obj = obj;
     if (xyz) {
         //?item.xyz = xyz;
-        xyz.name = name;
+        xyz.name = this.id + name;
         xyz.sfid = sfid;
     }
 }
@@ -355,6 +361,8 @@ function start() {
     console.log('document loaded');
     E.lastmod.textContent = window.lastModified.xyzhtml;
     ggb = new GraphicsBoiler();
+    vrstart();
+
     // ggb.init();
     // setTimeout(init, 1000); // temp test for esbuild
 }

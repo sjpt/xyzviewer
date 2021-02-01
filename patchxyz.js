@@ -27,7 +27,7 @@ console.log('importing', div)
 Also capture (most, not all) fields at graph.js 180 setColumns()
 
 */
-export {init, register}
+export {register}
 
 // set up the window proxies used by the rest of xyzviewer
 // @ts-ignore
@@ -37,6 +37,7 @@ const {E} = window;
 
 console.log('patchxyz.js execute, window W set');
 
+// init called lazily once on first intercept, to load up all the xyz code, and then perform intercept
 async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', plotobj) {
 
     const hh = await(await fetch(loc + 'xyz.html')).text();
@@ -75,71 +76,73 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', p
     // ? Will need to consider how datatextures etc are shared
     await import(loc + 'graphicsboiler.js');
 
-    // now intercept the captured pane: capturing done by breakpoint for now
-    // plotobj holds the 'donor' object, from which we can extract data, columns, etc
     window.addEventListener('GGLoaded', ()=>{
-        const GG = window.GG;   // this gives access to various parts of xysviewer
-        // create a XYZ object and populate it with the captured data
-        const xyzobj = new GG.xyz.XYZ(undefined, 'fromMLV');
-        plotobj = window.plotobj = plotobj || Object.values(XXXYZ.filter_panel.charts).filter(x => x.type === 'wgl_scatter_plot')[0];
-        // const plotobj = window.XXXYZ.plotobj; 
-        xyzobj.useJson(plotobj.ndx.getOriginalData());
+        makexyz(loc, plotobj);
+    });
+    // return this;
+}
 
-        // find the captured div, and display the domElement inside it
-        const renderer = GG.gb.renderer;
-        const hhh = plotobj.div[0];
-        window.hhh = hhh;               // debug
-        const ch = hhh.children;
-        for (let i = 0; i < ch.length; i++) {
-            if (ch[i].className !== 'mlv-chart-label')
-                ch[i].style.display = 'none';
-        }
-        // hhh.replaceChildren();
+// intercept the captured pane and convert it to xyz object: capturing done by breakpoint for now
+// plotobj holds the 'donor' object, from which we can extract data, columns, etc
+function makexyz(loc, plotobj) {
+    const GG = window.GG;   // this gives access to various parts of xysviewer
+    if (!GG.gb) return init(loc, plotobj);  // first time in will load first, then recall makexyz
+    // create a XYZ object and populate it with the captured data
+    const xyzobj = new GG.xyz.XYZ(undefined, 'fromMLV', true); // true
+    const gb = xyzobj.gb;
+    xyzobj.useJson(plotobj.ndx.getOriginalData());
 
-        xyzobj.setHostDOM(hhh);
-        hhh.addEventListener('resize', GG.gb.onWindowResize);
-        // renderer.setSize(hhh.offsetWidth, hhh.offsetHeight);
-        GG.gb.onWindowResize();
-        renderer.domElement.style.zIndex = 999;
-        renderer.domElement.style.position = 'relative';
-        // give access to our GUI, toggled by double-click on our canvas
-        renderer.domElement.ondblclick = () => E.xyzviewergui.style.display = E.xyzviewergui.style.display ? '' : 'none';
+    // find the captured div, and display the domElement inside it
+    const renderer = gb.renderer;
+    const hhh = plotobj.div[0];
+    // window.hhh = hhh;               // debug
+    const ch = hhh.children;
+    for (let i = 0; i < ch.length; i++) {
+        if (ch[i].className !== 'mlv-chart-label')
+            ch[i].style.display = 'none';
+    }
+    // hhh.replaceChildren();
 
-        // set up some sensible view etc
-        GG.gb.plan();
-        GG.gb.orbcamera.position.set(0,0,3);
-        xyzobj.setPointSize(0.01)
+    xyzobj.setHostDOM(hhh);
+    hhh.addEventListener('resize', gb.onWindowResize);
+    // renderer.setSize(hhh.offsetWidth, hhh.offsetHeight);
+    gb.onWindowResize();
+    renderer.domElement.style.zIndex = 999;
+    renderer.domElement.style.position = 'relative';
+    // give access to our GUI, toggled by double-click on our canvas
+    renderer.domElement.ondblclick = () => E.xyzviewergui.style.display = E.xyzviewergui.style.display ? '' : 'none';
 
-        const cols = plotobj.config.param;
-        xyzobj.setField('X', cols[0] + '_N', false);
-        xyzobj.setField('Y', cols[1] + '_N', false);
-        xyzobj.setField('Z', 'field35' + '_N', false);
-        xyzobj.setColor(plotobj.config.color_by.column.id, false);
+    // set up some sensible view etc
+    gb.plan();
+    gb.orbcamera.position.set(0,0,3);
+    xyzobj.setPointSize(0.01)
 
-        xyzobj.onFilter(ids => {
-            plotobj.dim.filter(function(d){ return ids[d]; }); 
-            const xids = plotobj.dim.getIds(); 
-            plotobj.updateListener(xids,plotobj.config.id);
-        });
+    const cols = plotobj.config.param;
+    xyzobj.setField('X', cols[0], false);
+    xyzobj.setField('Y', cols[1], false);
+    xyzobj.setField('Z', 'field35', false);
+    xyzobj.setColor(plotobj.config.color_by.column.id, false);
 
-        // handle incoming crossfilter
-        plotobj._filter = ids => xyzobj.filter(ids); // ???
-        plotobj._hide = ids => xyzobj.hide(ids);
-
-
-        // colour change (field name only supported)
-        plotobj.colorByField = param => {
-            if (param)
-                 xyzobj.setColor(param.column.id);
-        }
-
-        // point size
-        plotobj.setPointRadius = v => xyzobj.setPointSize(v/10);
-
+    xyzobj.onFilter(ids => {
+        plotobj.dim.filter(function(d){ return ids[d]; }); 
+        const xids = plotobj.dim.getIds(); 
+        plotobj.updateListener(xids,plotobj.config.id);
     });
 
+    // handle incoming crossfilter
+    plotobj._filter = ids => xyzobj.filter(ids); // ???
+    plotobj._hide = ids => xyzobj.hide(ids);
 
-    return this;
+
+    // colour change (field name only supported)
+    plotobj.colorByField = param => {
+        if (param)
+                xyzobj.setColor(param.column.id);
+    }
+
+    // point size
+    plotobj.setPointRadius = v => xyzobj.setPointSize(v/10);
+
 }
 
 /** register a WGLScatterPlot object for interception, sp is the WGLScatterPlot object */
@@ -149,7 +152,7 @@ function register(loc, sp) {
     sp.div[0].tabIndex = 0;
     sp.div[0].addEventListener('keydown', async (e) => {
         if (e.key === '3') {
-            this.init(loc, sp);
+            makexyz(loc, sp);
         }
     });
 }

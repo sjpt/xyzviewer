@@ -15,9 +15,9 @@ let lastface, lastcol, lastint0;
 function onMouseMove( event ) {
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
-    if (event.target !== E.canvas || !(event.ctrlKey || event.type === 'click'))  return;
-    mouse.x = ( event.offsetX / E.canvas.style.width.replace('px','') ) * 2 - 1;
-    mouse.y = - ( event.offsetY / E.canvas.style.height.replace('px','') ) * 2 + 1;
+    if (event.target !== E.xyzcanvas || !(event.ctrlKey || event.type === 'click'))  return;
+    mouse.x = ( event.offsetX / E.xyzcanvas.style.width.replace('px','') ) * 2 - 1;
+    mouse.y = - ( event.offsetY / E.xyzcanvas.style.height.replace('px','') ) * 2 + 1;
 
     // ~~~~~~~~ each frame?
     // update the picking ray with the camera and mouse position
