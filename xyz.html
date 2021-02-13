@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/01/31 20:15:23
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/11 11:55:38
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -42,6 +42,7 @@ GG.starttime = Date.now();
             ._unexpected {background: #200;}
             ._exception {background: #200;}
             ._OK {background: #020;}
+            ._fast {background: #220;}
 
             .help, .helpabove {
                 display: none;  /* overridden on :hover on previous element */
@@ -161,7 +162,16 @@ GG.starttime = Date.now();
 
                 <span>
                     <b>lasso: </b>
-                    <input type="checkbox" id="lassobox" onchange="GG.lasso.setrun(this.checked)"/>
+                    <input type="checkbox" id="lassobox" onchange="GG.gb.lasso.setrun(this.checked)"/>
+                </span>
+                <span class="help">check for lasso creation
+                    <br>normal mode is additive
+                    <br>alt key for subtractive
+                    <br>ctrl key for xor
+                </span>
+
+                <span>
+                    <button id="lassoclearbut" onclick="GG.gb.lasso.clear(); lassobox.checked=false;">clear</button>
                 </span>
                 <span class="help">check for lasso creation
                     <br>normal mode is additive
@@ -171,14 +181,14 @@ GG.starttime = Date.now();
 
                 <span>
                     <b>filter: </b>
-                    <input type="checkbox" id="lassofilterbox" onchange="GG.lasso.setFilter(this.checked)"/>
+                    <input type="checkbox" id="lassofilterbox" onchange="GG.gb.lasso.setFilter(this.checked)"/>
                 </span>
                 <span class="help">check lasso to work as filter on points
                 </span>
 
                 <span>
                     <b>colour: </b>
-                    <input type="checkbox" id="lassocolourbox" onchange="GG.lasso.setColour(this.checked)"/>
+                    <input type="checkbox" id="lassocolourbox" onchange="GG.gb.lasso.setColour(this.checked)"/>
                 </span>
                 <span class="help">check for lasso to apply colouring
                 </span>
@@ -280,6 +290,13 @@ GG.starttime = Date.now();
                         <span class="help">Select to impose photographs on each data point.<br>
                         Experimental, no sensible photos currently available in this demo.</span>
                         </span>
+
+                        <span><span><b>raycast:</b> <input id="raycastcheck" type="checkbox" onclick="GG.raycast.enableRaycast(this.checked)"/></br>
+                        </span>
+                        <span class="help">Select to impose photographs on each data point.<br>
+                        Experimental, no sensible photos currently available in this demo.</span>
+                        </span>
+
                         <br>
                         <span><button onclick="currentXyz.savefiles()">save columns</button></span>
                         <span class="help">Save the columns files for current xys object.<br>

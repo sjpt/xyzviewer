@@ -2,8 +2,13 @@
 //
 // see comments in https://docs.google.com/document/d/18CteOxpaPWIA2zRnd3FJBw5ybBWwSESFct4IEoE6Hyw/edit#heading=h.1eek8clfzs4s
 
+
 /*
 // to get it to work
+
+run
+"%LOCALAPPDATA%\Google\Chrome SxS\Application\chrome.exe"  --disable-web-security --user-data-dir=%temp%\mlvxyz
+
 // in graph.js after 'class WGLScatterPlot extends WGLChart{' ... 'self = this;'
 // add conditional breakpoint as below
 loc = 'http://localhost:8800/,,/xyz/'; 
@@ -27,7 +32,7 @@ console.log('importing', div)
 Also capture (most, not all) fields at graph.js 180 setColumns()
 
 */
-export {register}
+export {register, init, makexyz}
 
 // set up the window proxies used by the rest of xyzviewer
 // @ts-ignore
@@ -53,6 +58,7 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', p
     guidiv.style.display = 'none';
     guidiv.style.position = 'absolute';
     guidiv.style.left = '50%';
+    guidiv.style.top = '0%';
     guidiv.style.background = 'rgba(40,40,40,255)';
     guidiv.style.zIndex = '99999';
 
@@ -76,32 +82,48 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', p
     // ? Will need to consider how datatextures etc are shared
     await import(loc + 'graphicsboiler.js');
 
-    window.addEventListener('GGLoaded', ()=>{
-        makexyz(loc, plotobj);
-    });
-    // return this;
+    window.addEventListener('GGLoaded', ()=>ggloaded = true);
 }
 
+let initdone, ggloaded;
 // intercept the captured pane and convert it to xyz object: capturing done by breakpoint for now
 // plotobj holds the 'donor' object, from which we can extract data, columns, etc
-function makexyz(loc, plotobj) {
+async function makexyz(loc, plotobj) {
+    // if (!(plotobj.div)) return;
     const GG = window.GG;   // this gives access to various parts of xysviewer
-    if (!GG.gb) return init(loc, plotobj);  // first time in will load first, then recall makexyz
+    if (!initdone) {initdone = true; await init(loc, plotobj);}  // first time in will load first, then recall makexyz
+    const bbb = await import(loc + 'basic.js');
+    while (!ggloaded) {await bbb.sleep(100)}
     // create a XYZ object and populate it with the captured data
-    const xyzobj = new GG.xyz.XYZ(undefined, 'fromMLV', true); // true
-    const gb = xyzobj.gb;
-    xyzobj.useJson(plotobj.ndx.getOriginalData());
+    let hhh;
+    /* * @type {XYZ} */ let xyzobj;  // don't use types while this is patch
+    if (plotobj.div) {
+        xyzobj = new GG.xyz.XYZ(undefined, 'fromMLV', true); // true
+        xyzobj.useJson(plotobj.ndx.getOriginalData());
 
-    // find the captured div, and display the domElement inside it
-    const renderer = gb.renderer;
-    const hhh = plotobj.div[0];
-    // window.hhh = hhh;               // debug
-    const ch = hhh.children;
-    for (let i = 0; i < ch.length; i++) {
-        if (ch[i].className !== 'mlv-chart-label')
-            ch[i].style.display = 'none';
+        // find the captured div, and display the domElement inside it
+        hhh = plotobj.div[0];
+        // window.hhh = hhh;               // debug
+        const ch = hhh.children;
+        for (let i = 0; i < ch.length; i++) {
+            if (ch[i].className !== 'mlv-chart-label')
+                ch[i].style.display = 'none';
+        }
+
+        const cols = plotobj.config.param;
+        xyzobj.setField('X', cols[0], false);
+        xyzobj.setField('Y', cols[1], false);
+        xyzobj.setField('Z', 'field35', false);
+        xyzobj.setColor(plotobj.config.color_by.column.id, false);
+
+    } else {
+        const fid = ',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
+        xyzobj = new GG.xyz.XYZ(await fetch(fid), fid, true)
+        hhh = plotobj;
+        // cols = ['x', 'y', 'z']
     }
-    // hhh.replaceChildren();
+    const gb = xyzobj.gb;
+    const renderer = gb.renderer;
 
     xyzobj.setHostDOM(hhh);
     hhh.addEventListener('resize', gb.onWindowResize);
@@ -114,14 +136,8 @@ function makexyz(loc, plotobj) {
 
     // set up some sensible view etc
     gb.plan();
-    gb.orbcamera.position.set(0,0,3);
+    // gb.orbcamera.position.set(0,0,3); // leave to default
     xyzobj.setPointSize(0.01)
-
-    const cols = plotobj.config.param;
-    xyzobj.setField('X', cols[0], false);
-    xyzobj.setField('Y', cols[1], false);
-    xyzobj.setField('Z', 'field35', false);
-    xyzobj.setColor(plotobj.config.color_by.column.id, false);
 
     xyzobj.onFilter(ids => {
         plotobj.dim.filter(function(d){ return ids[d]; }); 

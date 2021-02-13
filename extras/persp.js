@@ -2,10 +2,8 @@
 export {};
 var {THREE, Stats} = window;
 
-var log = console.log;
-
 var container, stats;
-var camera, renderer, controls, canvas, scene, display;
+var camera, renderer, controls, canvas, scene;
 var autoClear = false;
 var defaultPos = V(0,0,10);
 
@@ -19,15 +17,7 @@ function init() {
     scene = new THREE.Scene();
     scene.add(camera);
 
-    renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the minitor canvas flashes while in VR
-    if (navigator.getVRDisplays) {
-        navigator.getVRDisplays().then(
-        function ( displays ) {
-            log('display found');
-            display = displays[0];
-            renderer.xr.setDevice(display);
-        });
-    }
+    renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true} );  // <<< without the 'antialias' the monitor canvas flashes while in VR
 
     renderer.autoClear = autoClear;
     canvas = renderer.domElement;

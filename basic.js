@@ -1,10 +1,9 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2021/02/01 09:54:37
+window.lastModified.basic = `Last modified: 2021/02/13 17:26:59
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
-import {applyurl} from './xyz.js';
 import {ggb} from './graphicsboiler.js'; // plan, orbcamera
 const queryVariables = {};
 var readyFiles = {};
@@ -40,7 +39,6 @@ getQueryVariables();
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 async function showfirstdata() {
     const wls = window.location.search;
-    applyurl();
     if (wls.startsWith('?arch')) await import("./StarCarr/archstart.js");
     if (wls.startsWith('?fold')) await import('./extras/folddemo.js');
     if (wls.startsWith('?ox')) {      
@@ -56,12 +54,12 @@ async function showfirstdata() {
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/fromMLV/fromMLV.yaml';
             else
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
-        setTimeout(async () => {
-            // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
-            X.currentXyz.setPointSize(0.02);
-            ggb.plan();
-            ggb.orbcamera.position.z = 20;
-        }, 1000);
+
+            setTimeout(async () => {
+                // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
+                X.currentXyz.setPointSize(0.02);
+                ggb.plan();
+            }, 1000);
     } 
 
     const {startcode, startdata, pdb} = queryVariables;
@@ -424,15 +422,29 @@ var {GG} = window;
     GG.gb = (await import('./graphicsboiler.js')).ggb;
     GG.cols = (await import('./cols.js')).COLS;
     GG.ps = await import('./photoshader.js');
+    GG.tdata = await import('./tdata.js');
     GG.xyz = await import('./xyz.js');
     GG.basic = await import('./basic.js');
-    GG.lasso =  (await import('./lasso.js'));
-    GG.lassoshader =  (await import('./lassoshader.js'));
-    GG.xshader =  (await import('./xshader.js'));
+    GG.lasso = (await import('./lasso.js'));
+    GG.lassoshader = (await import('./lassoshader.js'));
+    GG.xshader = (await import('./xshader.js'));
+    GG.raycast = (await import('./raycast.js'));
     GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
     // put off speech till last, Firefox does not support it
     GG.ospeech = (await import('./speech.js')).OrganicSpeech;
     GG.xyzspeech = (await import('./xyzspeech.js'));
+
+    GG.test = () => {
+        let s = location.href.split('?')[0] + '?';
+        const test = k => open(s + k, '_blank')
+        test('ox');
+        test('arch');
+        test('pdb=6vxx');
+        test('fold');
+        
+        s = s.replace('/xyz.html', '/xyz4.html');
+        test('');
+    }
 
     showfirstdata();
     

@@ -1,5 +1,5 @@
 // Various colour helper functions not specific to xyzviewer.
-window.lastModified.xyz = `Last modified: 2020/12/29 17:10:44
+window.lastModified.xyz = `Last modified: 2021/02/08 12:30:46
 `; console.log('>>>>colorHelpers.js');
 
 // CIElab code drom https://raw.githubusercontent.com/antimatter15/rgb-lab/master/color.js
@@ -105,8 +105,8 @@ let eqcols = undefined;
 makeColeq();
 /*
 GG.colh = await import('./jsdeps/colorHelpers.js'); GG.expose()
-x = {kr:1, kg: 3, kb:1, gr:0.05, rg: 0.05, e:1/2.2}; COLS.cluster_id_major_cells = 0;  makeColeq(x); COLS.gencol(currentXyz, 'cluster_id_major_cells')
-x = {kr:5, kg: 9, kb:3, gr:0.05, rg: 0.05, e:1/2.2}; COLS.cluster_id_major_cells = 0;  makeColeq(x); COLS.gencol(currentXyz, 'cluster_id_major_cells')
+x = {kr:1, kg: 3, kb:1, gr:0.05, rg: 0.05, e:1/2.2}; COLS.cluster_id_major_cells = 0;  makeColeq(x); COLS.gen col(currentXyz, 'cluster_id_major_cells')
+x = {kr:5, kg: 9, kb:3, gr:0.05, rg: 0.05, e:1/2.2}; COLS.cluster_id_major_cells = 0;  makeColeq(x); COLS.gen col(currentXyz, 'cluster_id_major_cells')
 */
 
 /** generate an equi-perceptual set of hues (experimental) */

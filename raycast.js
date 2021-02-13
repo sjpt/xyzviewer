@@ -1,16 +1,22 @@
 'use strict';
-export {};
+export {enableRaycast};
 import {ggb} from './graphicsboiler.js'; // maingroup, camera
-import {dataToMarkersGui} from './xyz.js';
+import {dataToMarkersGui, XYZ} from './xyz.js';
 const {E, X} = window;
 import {THREE} from "./threeH.js";
 
 /** raycasting */
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
-document.onmousemove = onMouseMove;
-document.onclick = onMouseMove;
+//document.onmousemove = onMouseMove;
+//document.onclick = onMouseMove;
 let lastface, lastcol, lastint0;
+
+function enableRaycast(bool) {
+    const f = bool ? document.addEventListener : document.removeEventListener;
+    f('mousemove', onMouseMove);
+    f('click', onMouseMove);
+}
 
 function onMouseMove( event ) {
     // calculate mouse position in normalized device coordinates
@@ -71,14 +77,14 @@ function onMouseMove( event ) {
 
     intersects.forEach(function(ii) {
     //const ii = intersects[0];
-        const xyz = ii.object.xyz;
+        /** @type {XYZ} */ const xyz = ii.object.xyz;
         let frow;
         if (xyz) {
             const s = [];
             const ind = ii.index;
             // const row = xyz.datas[ii.index];
-            for (const name in xyz.namecols) { 
-                const v = xyz.val(name, ind); 
+            for (const name in xyz.tdata.namecols) { 
+                const v = xyz.tdata.val(name, ind); 
                 if (typeof v !== 'object') 
                     s.push(name + ': ' + v);
             }

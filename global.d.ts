@@ -10,8 +10,7 @@ interface MyExternals {
     COLS,               // no longer needed for gui for COLS.set, but needed for scope of filter expressions
     // OrganicSpeech,      // gui
 
-    currentXyz, currentThreeObj, 
-    defaultDistance,    // tweak
+    currentXyz: XYZ, currentThreeObj, 
     proxy,              // tweak, only instanced if set eg in dev tools
     raywidth,           // tweak, only instanced if set eg in dev tools
     xyzspeechupdate,    // should be moved and clarified

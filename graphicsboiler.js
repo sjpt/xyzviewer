@@ -1,12 +1,13 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2021/01/31 20:21:30
+window.lastModified.graphicsboiler = `Last modified: 2021/02/12 17:25:05
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
 import {setPointSize, col3} from './xyz.js';
 import {THREE} from "./threeH.js";
 import {} from "./raycast.js";
+import {Lasso} from './lasso.js';
 
 import {OrbitControls} from './jsdeps/OrbitControls.js';
 import {vrstart, vrframe} from './vrcontrols.js';
@@ -39,13 +40,17 @@ setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
 
 // window.onload = init;  // do in html
 
+
+
 //?? let i; // very odd, to check
 /** initial call to read data and set up graphics */
 init() {
-    const self = this;
-    X.defaultDistance = 50;
+    // const self = this;
     this.framenum = 0;
     this.addvisList = {};
+    this.defaultDistance = 10;
+    this.defaultFov = Math.atan2(1.5,this.defaultDistance) * 360/Math.PI;  // gives a view of y in -1.5..1.5 for z = 0
+
 
     // make sure all spotsize elements ready for appropriate events
     document.getElementsByName('spotsize').forEach(e => {
@@ -63,9 +68,11 @@ init() {
 
 
     this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.camera.name = this.id + 'camera';
+    this.camera.fov = this.defaultFov;
+    this.camera.updateProjectionMatrix();
     this.camera.position.z = 0;
     this.orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.orbcamera.name = this.id + 'orbcamera';
-    this.orbcamera.position.z = X.defaultDistance;
+    this.orbcamera.position.z = this.defaultDistance;
     this.camscene = new THREE.Scene(); this.camscene.name = this.id + 'camscene';
     this.camscene.add(this.camera);
 
@@ -98,14 +105,6 @@ init() {
     // <<< without the 'antialias' setting the monitor canvas flashes while in VR
     // preserveDrawingBuffer can help copy image to another canvas
     //   but if done at once it is not needed
-    if (navigator.getVRDisplays) {
-        navigator.getVRDisplays().then(
-        function ( displays ) {
-            log('display found');
-            self.vrdisplay = displays[0];
-            self.renderer.xr.setDevice(self.vrdisplay);
-        });
-    }
 
     this.renderer.setPixelRatio( window.devicePixelRatio );
     this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -124,10 +123,10 @@ init() {
         this.stats.dom.style.bottom = '0'; this.stats.dom.style.top = ''
     }
 
-    document.addEventListener( 'keydown', this.onDocumentKeyDown, false );
+    document.addEventListener( 'keydown', e=>this.onDocumentKeyDown(e), false );
 
     this.maingroup.scale.set(1,1,1);
-    window.addEventListener( 'resize', this.onWindowResize, false );
+    window.addEventListener( 'resize', ()=>this.onWindowResize(), false );
 
     if (OrbitControls) {
         this.controls = new OrbitControls(this.orbcamera, this.renderer.domElement);
@@ -137,6 +136,8 @@ init() {
     // three.js default (at 106) is 'local-floor', which should be supported but is not on Chrome 79.0.3942.0 and 81.0.4006.0
     if (this.renderer.xr.setReferenceSpaceType)
         this.renderer.xr.setReferenceSpaceType('local'); // ('bounded-floor');
+
+    this.lasso = new Lasso();
 
     
 //    setTimeout(() => {  // temp test for startup with esbuild
@@ -303,6 +304,7 @@ addvis(obj, bname, xyz) {
 
 /** select given object, w.i.p */
 select(fid, xyz) {
+    if (this !== ggb) return;       // for now, we don't support multiple xyz etc objects in the non-global graphics boiler
     for (const f in this.addvisList)
         E[f+'_k'].style.color = f === fid ? 'lightgreen' : 'white';
     const avl = this.addvisList[fid];
@@ -352,6 +354,31 @@ elevation() {
 home() {
     this.controls.home();
 }
+
+saveview() {
+    function save(a) {
+        return a.matrix.elements.slice();
+    }
+    this.lastsave = {
+        camera: save(this.camera), 
+        orbcamera: save(this.orbcamera), 
+        mg: save(this.maingroup), 
+        targpos: this.controls.target.clone()
+    };
+    return this.lastsave;
+}
+
+restoreview(s = this.lastsave) {
+    function rest(a, b) {
+        a.matrix.elements = b.slice();
+        a.matrix.decompose(a.position, a.quaternion, a.scale);
+    }
+    rest(this.camera, s.camera);
+    rest(this.orbcamera, s.orbcamera);
+    rest(this.maingroup, s.mg);
+    this.controls.target.copy(s.targpos);
+}
+
 
 
 } // end class

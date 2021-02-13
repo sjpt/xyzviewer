@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/12 17:38:33
+`
+var GG = {};
+GG.starttime = Date.now();
+setTimeout(async () => {
+    pp = await import('./patchxyz.js'); 
+    pp.makexyz('./', a);
+    setTimeout( () => {
+        pp.makexyz('./', b)
+        pp.makexyz('./', c)
+        pp.makexyz('./', d)
+    }, 500)
+}, 500);
+</script>
+<html lang="en">
+	<head>
+		<title>xyzviewer 4 pane test</title>
+		<meta charset="utf-8">
+        <script>
+            function globalPollution() {return Object.keys(window).filter(x => !globalPollution.init.includes(x))};
+            globalPollution.init = Object.keys(window);
+        </script>
+	</head>
+	<body>
+        <table style="width: 100%; height: 900px; table-layout: fixed;">
+            <tr><td id="a">A</td><td id="b">B</td></tr>
+            <tr><td id="c">C</td><td id="d">D</td></tr>
+    </body>
+</html>
+<!-- 
+https://combinatronics.com/sjpt/xyzviewer/master/xyz.html
+https://gitcdn.link/cdn/sjpt/xyzviewer/master/xyz.html  (less dynamic)
+-->

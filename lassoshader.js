@@ -4,8 +4,7 @@ export {useLassoShader, uniforms};
 
 const {X} = window;
 import {THREE} from "./threeH.js";
-import {lassos} from "./lasso.js";
-import {_baseiNaN} from './xyz.js';
+import {XYZ, _baseiNaN} from './xyz.js';
 
 let uniforms, shader;
 let lastid; // id used to force rebuild of shader for experiments
@@ -66,9 +65,14 @@ void main() {
     vColor.x += float(${id});  // force recompile if new id
 
     // lasso
-    vec4 sv4 = totmat * vec4(position, 1);
-    vec2 sv2 = sv4.xy / sv4.w / size;
-    float v = texture2D(map, sv2).x;
+    float v;
+    if (size.x > 0.) {
+        vec4 sv4 = totmat * vec4(position, 1);
+        vec2 sv2 = sv4.xy / sv4.w / size;
+        v = texture2D(map, sv2).x;
+    } else {
+        v = 1.0;
+    }
 
     if (dofilter != 0. && v == 0.) transformed = vec3(1e20);
     vColor *= (1. - docolour + v*docolour);
@@ -130,8 +134,14 @@ void main() {
 }
 
 let nolassomaterial, lassomaterial;
+/**
+ * @param {boolean | any[]} cols
+ * @param {number} id
+ */
 async function useLassoShader(cols, id) {
+    /** @type {XYZ} */
     const xyz = X.currentXyz;
+    const tdata =xyz.tdata;
     if (cols === true) cols = [xyz.getField('X') || 'cd3', xyz.getField('Y') || 'cd4', xyz.getField('Z') || 'cd16'];
     const particles = xyz.particles;
     if (!nolassomaterial) nolassomaterial = particles.material;
@@ -141,11 +151,13 @@ async function useLassoShader(cols, id) {
         particles.material = lassomaterial = lassomaterial || lassoShader(id);  // cache and set lasso material
         particles.onBeforeRender = () => {
             // handle lasso details every frame, could just do when lasso changes?
-            const lasso = lassos[lassos.length - 1];
+            const lasso = xyz.gb.lasso.lassos[0];
             if (lasso) {
                 uniforms.map.value = lasso.mapt;
                 uniforms.totmat.value.copy(lasso.totmat);
                 uniforms.size.value.copy(lasso.size);
+            } else {
+                uniforms.size.value.x = -1;
             }
         }
 
@@ -154,23 +166,23 @@ async function useLassoShader(cols, id) {
         for (let i=1; i<=3; i++) {
             const col = cols[i-1];    // column name
             if (col) {
-                const usealpha = xyz.namecolnstrs[col] > xyz.namecolnnum[col];
-                if (!xyz.nameattcols[col]) {
-                    await xyz.lazyLoadCol(col);
-                    let namecol = xyz.namecols[col];
+                const usealpha = tdata.namecolnstrs[col] > tdata.namecolnnum[col];
+                if (!tdata.nameattcols[col]) {
+                    await tdata.lazyLoadCol(col);
+                    let namecol = tdata.namecols[col];
                     if (usealpha) { // for alpha columns we must generate an integer array from the NaN tags
-                        let namevcol = xyz.namevcols[col];
-                        const type = xyz.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
+                        let namevcol = tdata.namevcols[col];
+                        const type = tdata.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
                         const iarr = new type(namevcol.length);   // could usually use Uint8Array
                         iarr.forEach((v,n) => iarr[n] = namevcol[n] - _baseiNaN);
                         namecol = iarr;
                     }
-                    xyz.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
+                    tdata.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
                 }                
-                particles.geometry.setAttribute('field' + i, xyz.nameattcols[col]);
-                const r = xyz.ranges[col];
+                particles.geometry.setAttribute('field' + i, tdata.nameattcols[col]);
+                const r = tdata.ranges[col];
                 if (usealpha)
-                    uniforms['vmap' + i].value.set(0, 1/xyz.namevsetlen[col]);
+                    uniforms['vmap' + i].value.set(0, 1/tdata.namevsetlen[col]);
                 else
                     uniforms['vmap' + i].value.set(r.mean - 1.5*r.sd, 1/3/r.sd);
             } else {

@@ -8,8 +8,7 @@ const {X, math} = window;
 // const {X} = window;
 // import {math} from './jsdeps/math.js';
 import {THREE} from "./threeH.js";
-import {lassos} from "./lasso.js";
-import {_baseiNaN} from './xyz.js';
+import {XYZ, _baseiNaN} from './xyz.js';
 import {ggb} from './graphicsboiler.js'; // renderer, controls, plan, orbcamera
 
 // import * as math from 'https://cdnjs.com/libraries/mathjs/math.js';
@@ -293,10 +292,16 @@ void main() {
 
     vColor.r += float(${id});  // force recompile if new id
 
-    // lasso, find lasso value and use for filter or colouring
-    vec4 sv4 = lassoTotmat * vec4(transformed, 1);
-    vec2 sv2 = sv4.xy / sv4.w / size;
-    float v = texture2D(lassoMap, sv2).x;
+    // lasso
+    float v;
+    if (size.x > 0.) {
+        vec4 sv4 = lassoTotmat * vec4(transformed, 1);
+        vec2 sv2 = sv4.xy / sv4.w / size;
+        v = texture2D(lassoMap, sv2).x;
+    } else {
+        v = 1.0;
+    }
+    
 
     if (doLassoFilter != 0. && v == 0.) transformed = vec3(1e20);
     vColor *= (1. - doLassoColour + v*doLassoColour);
@@ -344,7 +349,9 @@ void main() {
 
 let noxmaterial, xmaterial;
 async function useXShader(pcols, id) {
+    /** @type {XYZ} */
     const xyz = X.currentXyz;
+    const tdata = xyz.tdata;
     if (pcols === true || pcols === undefined) {
         pcols = 'sample_id cd3 cd4 hla_dr broad ir191di'.split(' ');
         if (xyz.getField('X')) pcols[0] = xyz.getField('X');
@@ -352,8 +359,8 @@ async function useXShader(pcols, id) {
         if (xyz.getField('Z')) pcols[2] = xyz.getField('Z');
         if (xyz.getField('COL')) pcols[3] = xyz.getField('COL');
         if (xyz.fid === 'fromMLV') {
-            pcols[4] = xyz.header[0];
-            pcols[5] = xyz.header[1];
+            pcols[4] = tdata.header[0];
+            pcols[5] = tdata.header[1];
         }
         E.filterbox.value = pcols.map(x => 'MD:' + x).join('\n');
     }
@@ -378,11 +385,13 @@ async function useXShader(pcols, id) {
         particles.material = xmaterial = xmaterial || xShader(id);  // cache and set lasso material
         particles.onBeforeRender = () => {
             // handle lasso details every frame, could just do when lasso changes?
-            const lasso = lassos[lassos.length - 1];
+            const lasso = xyz.gb.lasso.lassos[0];
             if (lasso) {
                 uniforms.lassoMap.value = lasso.mapt;
-                uniforms.lassoTotmat.value.copy(lasso.lassoTotmat);
+                uniforms.lassoTotmat.value.copy(lasso.totmat);
                 uniforms.size.value.copy(lasso.size);
+            } else {
+                uniforms.size.value.x = -1;
             }
             if (tumblerot !== 0) tumble();
 
@@ -401,7 +410,7 @@ async function useXShader(pcols, id) {
             // xmat.toOrth();
             showxmat();
 
-            particles.geometry.setDrawRange(0, xyz.pendread_min);
+            particles.geometry.setDrawRange(0, tdata.pendread_min);
         }
 
         // handle field details on call to usexShader
@@ -409,31 +418,31 @@ async function useXShader(pcols, id) {
         for (let i=0; i<ND; i++) {
             const col = cols[i];    // column name
             if (col) {
-                const usealpha = xyz.namecolnstrs[col] > xyz.namecolnnum[col];
-                if (!xyz.nameattcols[col]) {
-                    xyz.lazyLoadCol(col);       // don't await, we'll see data as it arrives
-                    let namecol = xyz.namecols[col];
+                const usealpha = tdata.namecolnstrs[col] > tdata.namecolnnum[col];
+                if (!tdata.nameattcols[col]) {
+                    tdata.lazyLoadCol(col);       // don't await, we'll see data as it arrives
+                    let namecol = tdata.namecols[col];
                     if (usealpha) { // for alpha columns we must generate an integer array from the NaN tags
-                        let namevcol = xyz.namevcols[col];
-                        const type = xyz.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
+                        let namevcol = tdata.namevcols[col];
+                        const type = tdata.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
                         const iarr = new type(namevcol.length);
                         // iarr.forEach((v,n) => iarr[n] = namevcol[n] - _baseiNaN); // done async as segments read
                         namecol = iarr;
                     }
-                    xyz.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
+                    tdata.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
                 }                
-                particles.geometry.setAttribute('field' + i, xyz.nameattcols[col]);
-                const r = xyz.ranges[col];
+                particles.geometry.setAttribute('field' + i, tdata.nameattcols[col]);
+                const r = tdata.ranges[col];
                 // map to -1..1
                 if (usealpha)
-                    vmap[i].set(xyz.namevsetlen[col]/2, 2/xyz.namevsetlen[col]);
+                    vmap[i].set(tdata.namevsetlen[col]/2, 2/tdata.namevsetlen[col]);
                 //else if(col === 'x' || col === 'y' || col === 'z') // do not normalize x,y,z, to consider ...
                 //    vmap[i].set(0, 1);
                 else
                     vmap[i].set(r.mean, 1/(1.5*r.sd));
                 // // map to 0..1
                 // if (usealpha)
-                //     vmap[i].set(0, 1/xyz.namevsetlen[col]);
+                //     vmap[i].set(0, 1/tdata.namevsetlen[col]);
                 // else
                 //     vmap[i].set(r.mean - 1.5*r.sd, 1/3/r.sd);
             } else {

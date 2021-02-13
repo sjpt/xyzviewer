@@ -10,13 +10,15 @@ import {THREE} from "../threeH.js";
 addFileTypeHandler('.pdb', pdbReader);
 addFileTypeHandler('.vdb', pdbReader);
 
-let chainlines, myxyz;
+let chainlines;
+/** @type {XYZ} */ let myxyz;
 
 /** call pdbReader when pdb data read and ready to be parsed */
 function pdbReader(data, fid) {
     myxyz = new XYZ(undefined, fid);  // will become current
     myxyz.makechainlines = makechainlines;
     const lines = data.split('\n');
+    /** @type {any[][]} */
     const format = [
     // [1,4, 'atom'], //    “ATOM”        character
     [7,11, 'atid'], //    Atom serial number    right    integer
@@ -35,8 +37,8 @@ function pdbReader(data, fid) {
     //[77,78, 'elesym'], //     Element symbol    right    character
     ]; format.pop();                     // dummy to make ending , easier
 
-    myxyz.prep();
-    myxyz.addHeader(format.map(f => f[2]));
+    myxyz.tdata.prep();
+    myxyz.tdata.addHeader(format.map(f => f[2]));
 
     // process the pdb file to get the data
     
@@ -49,7 +51,7 @@ function pdbReader(data, fid) {
             d.push(v);
         });
         if (!(queryVariables.ca && d[1] !== 'CA'))
-            myxyz.addRow(d);
+            myxyz.tdata.addRow(d);
     });
 
     // process the format and data to get the ranges
@@ -59,10 +61,20 @@ function pdbReader(data, fid) {
 
     // push data to main graphics
     // maingroup.remove(rlines);
-    myxyz.finalize(fid);
+    myxyz.tdata.finalize(fid);
+    myxyz.setField('COL', 'resname');
     
-    dataToMarkersGui();
+    // finalize will do this ... dataToMarkersGui();
     document.title = 'xyzviewer: ' + fid;
+    XYZ.autorange = false;
+    const r = myxyz.tdata.ranges;
+    const max = Math.max(r.x.range, r.y.range, r.z.range);
+    ggb.defaultDistance = max*2;
+    ggb.defaultFov = 50;
+    ggb.home();
+    myxyz.setPointSize(2);
+
+    myxyz.dataToMarkersGui();
     return myxyz;
 }
 // var vdbReader = pdbReader;  // so we can read vdb files with same function
@@ -91,7 +103,8 @@ function pdbcol(d) {
  * */
 async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 80) {
     if (chainlines && chainlines.visible === false) return;
-    if (!myxyz.namecols) return;
+    const tdata = myxyz.tdata;
+    if (!tdata.namecols) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
     var geom = new THREE.Geometry;
 
@@ -102,19 +115,19 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
         ggb.addToMain(chainlines, 'chainlines');
     }
 
-    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z']; // , residc = myxyz.namecols['resid'];
+    const xc = tdata.namecols['x'], yc = tdata.namecols['y'], zc = tdata.namecols['z']; // , residc = myxyz.namecols['resid'];
 
-    for (let i = 0; i < myxyz.n - 1; i++) {
-        if (myxyz.val('chain', i) !== myxyz.val('chain', i+1)) continue;
+    for (let i = 0; i < tdata.n - 1; i++) {
+        if (myxyz.tdata.val('chain', i) !== myxyz.tdata.val('chain', i+1)) continue;
         // patch missing data ... maybe clearer not to
         // if (residc[i] !== residc[i+1] && residc[i]+1 !== residc[i+1]) continue;
         // if ((xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 > maxdsq) continue;
 
         myxyz._col.setRGB(0.3, 0.3, 0.3);
-        if (filterfun) if (!filterfun(myxyz, i)) continue;
+        if (filterfun) if (!filterfun(myxyz, i, tdata.namecols)) continue;
         const col1 = myxyz._col.clone();
         myxyz._col.setRGB(0.3, 0.3, 0.3);
-        if (filterfun) if (!filterfun(myxyz, i+1)) continue;
+        if (filterfun) if (!filterfun(myxyz, i+1, tdata.namecols)) continue;
         const col2 = myxyz._col.clone();
 
         geom.vertices.push(new THREE.Vector3(xc[i], yc[i], zc[i]));

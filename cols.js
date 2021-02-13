@@ -1,12 +1,14 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2021/01/15 15:37:57
+window.lastModified.basic = `Last modified: 2021/02/13 16:25:53
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
 import {dataToMarkersGui} from './xyz.js';
 import {useXShader} from './xshader.js';        // todo cleanup MD: code
+import {XYZ} from './xyz.js';        // todo cleanup MD: code
+import {TData} from './tdata.js';        // todo cleanup MD: code
 
 const {X, E} = window, {jsyaml} = X;
 import {THREE} from "./threeH.js";
@@ -17,7 +19,11 @@ X.COLS = COLS;  // still needed in global scope for filters
 /** for now key is probably just a field name:
  * we may consider more structured keys with colour scheme names etc., maybe related to fid
  */
-COLS.reader = function(data, fid) {
+COLS.reader = /**
+ * @param {string} data
+ * @param {string} fid
+ */
+ function(data, fid) {
     data = data.trim();
     let coldata;
     if (data[0] === '{')
@@ -39,8 +45,12 @@ COLS.reader = function(data, fid) {
 }
 
 /** make colours from equal hues */
-COLS.autocol = function(xyz, field) {
-    const nv = xyz.namevseti[field];
+COLS.autocol = /**
+ * @param {TData} tdata
+ * @param {string | number} field
+ */
+ function(tdata, field) {
+    const nv = tdata.namevseti[field];
     const nn = nv.length;
     const r = COLS[field] = {};
     const eql = eqcols.length;
@@ -48,44 +58,60 @@ COLS.autocol = function(xyz, field) {
         const v = nv[i];
         r[v] = eqcols[Math.floor( i * eql /nn)]
     }
-    COLS.show(xyz, field);
+    COLS.show(tdata, field);
 }
 
 /** generate code for setting colour for field */
-COLS.gencol = function(xyz, field) {
+COLS.gencol = /**
+ * @param {string} toset
+ * @param {TData} tdata
+ * @param {string} field
+ */
+ function(toset, tdata, field) {
     try{
-        if (field === 'random') return 'set(COLS.random())';             // random colours
+        field = field.trim();
+        // if (field.endsWith('_N')) {
+        //     // field = field.slice(0, -2); // temp till we sort out _N etc
+        //     return `setRGB(${field}, 1-${field}, 1-${field})`
+        // }
+        if (field === 'random') return toset + '.set(COLS.random())';             // random colours
         if (field === 'fixed') field = E.colourpick.value;          // fixed colour
 
-        if (xyz.namecolnstrs[field] > xyz.namecolnnum[field] && !COLS[field]) COLS.autocol(xyz, field);
+        if (tdata.namecolnstrs[field] > tdata.namecolnnum[field] && !COLS[field]) COLS.autocol(tdata, field);
 
-        if (COLS[field]) return `set(COLS['${field}'][xyz.val('${field}', i)])`;       // field with defined colours
+        if (COLS[field]) return `${toset}.set(COLS['${field}'][xyz.tdata.val('${field}', i)])`;       // field with defined colours
 
-        // below no longer needed, colours defined above instead
-        //if (xyz.namecolnstrs[field] > xyz.namecolnnum[field]) return `stdcol(xyz.valE("${field}", i))`; // mainly character field, no defined colours
-
-
-        const r = xyz.ranges[field];
+        const r = tdata.ranges[field];
         if (r === undefined) {
             const c = new THREE.Color(field);
             if (Object.getOwnPropertyNames(c).indexOf('r') !== -1)  // not sure how it manages c.r === 1 and 'r' in c, this is a better test
-                return `setRGB(${c.r}, ${c.g}, ${c.b})`          // field a constant colour value
+                return `${toset}.setRGB(${c.r}, ${c.g}, ${c.b})`          // field a constant colour value
             throw new Error(`Field "${field}" not present.`)        // field not valid
         }
-        const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
-        // return `set(COLS.forrange(${field}, ${low}, ${range}))`;      // mainly number field
-        return `set(COLS.forrange(${field}, 0,1))`;      // mainly number field
+        if (XYZ.autorange) {
+            //return `set(COLS.forrange(${field}, 0,1))`;      // mainly number field, (auto)range was done at xyz level
+            // field has been ranged to -1..1, _cc is range 0..1
+            return `const _cc = (${field}+1)*0.5; ${toset}.r = _cc; ${toset}.g = 1-_cc; ${toset}.b = 1-_cc;`;      // mainly number field, (auto)range was done at xyz level
+        } else {
+            const low = r.mean - 2*r.sd, high = r.mean + 2*r.sd, range = high - low;
+            return `${toset}.set(COLS.forrange(${field}, ${low}, ${range}))`;      // mainly number field
+        }
     } finally {
-        COLS.show(xyz, field);        
+        COLS.show(tdata, field);        
     }
 }
 
-/** (inefficient) get colour for single value, mainly for debug */
-COLS.colfor = function(xyz, field, i) {
-    const sf = COLS.gencol(xyz, field);
-    const f = new Function('xyz', 'i', `${field} = xyz.val("${field}", ${i});return xyz._col.` + sf);
-    return f(xyz, i);
-}
+// /** (inefficient) get colour for single value, mainly for debug */
+// COLS.colfor = /**
+//  * @param {TData} tdata
+//  * @param {string} field
+//  * @param {any} i
+//  */
+//  function(tdata, field, i) {
+//     const sf = COLS.gencol('???', tdata, field);
+//     const f = new Function('tdata', 'i', `${field} = tdata.val("${field}", ${i});return tdata. _col.` + sf); << tdata. _col wrong
+//     return f(tdata, i);
+// }
 
 /** random colours, result should be consumed at once, reuse of object */
 COLS.random = function() {
@@ -95,7 +121,12 @@ COLS.random = function() {
 
 COLS._colobj = new THREE.Color('white');
 /** colour from given range, result should be consumed at once, reuse of object */
-COLS.forrange = function(v, low, range) {
+COLS.forrange = /**
+ * @param {number} v
+ * @param {number} low
+ * @param {number} range
+ */
+ function(v, low, range) {
     const vv = (v - low)/range;
     return COLS._colobj.setRGB(vv, 1-vv, 1-vv);
 }
@@ -104,7 +135,7 @@ COLS.forrange = function(v, low, range) {
 COLS.writer = async function(fid = 'test') {
     if (!fid.endsWith('.cols')) fid += '.cols';
     const d = {};
-    const ns = X.currentXyz.namevseti;
+    const ns = X.currentXyz.tdata.namevseti;
     const choose = Object.keys(THREE.Color.NAMES);
 
     for (const fname in ns) {
@@ -119,8 +150,13 @@ COLS.writer = async function(fid = 'test') {
     await saveData(fid, yaml);
 }
 
-COLS.show = function(xyz = X.currentXyz, field = xyz.guiset.colourby) {
-    if (xyz.namecolnstrs[field] < xyz.namecolnnum[field]) {
+/**
+ * 
+ * @param {TData} tdata 
+ * @param {*} field 
+ */
+COLS.show = function(tdata = X.currentXyz, field = X.currentXyz.guiset.colourby) {
+    if (tdata.namecolnstrs[field] < tdata.namecolnnum[field]) {
         E.colkey.innerHTML = '';
         return;
     }

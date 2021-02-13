@@ -1,34 +1,30 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/01 12:51:11
+window.lastModified.xyz = `Last modified: 2021/02/13 13:43:09
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
 import {ggb, GraphicsBoiler} from './graphicsboiler.js'; // ggb
 
 //?? import {pdbReader} from './pdbreader.js';
-import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
+import {sleep} from './basic.js';
 import {COLS} from './cols.js';
 import {THREE} from "./threeH.js";
-import {Lasso, lassoGet} from "./lasso.js";
 import {useXShader} from './xshader.js';        // todo cleanup MD: code
-
-
-//let E = window, X = window;
+import {TData, _baseiNaN} from './tdata.js';
 
 export {
-    centrerange, // for draw centre consistency
     setPointSize,
     dataToMarkersGui,
-    filtergui, filterAdd, filterRemove, applyurl,
+    filtergui, filterAdd, filterRemove,
     // particles, // for subclass pdbreader, and particles for photoshader
     XYZ,
-    col3, _baseiNaN
+    col3, _baseiNaN,
+    centrerange // for draw centre consistency, more global than just xyz
 };
 
 const {E, X} = window;
 import {addscript, log} from './basic.js';
 
-var XLSX;
 
 // ??? to engineer below more cleanly
 const setPointSize = (a, b) => { if (X.currentXyz) X.currentXyz.setPointSize(a, b); }
@@ -37,70 +33,87 @@ const dataToMarkersGui = (type, popping) => { if (X.currentXyz) X.currentXyz.dat
 const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
 const badfun = () => -9999;
 
-//X.centrerange
-
-/***/
-//X.csvReader = csvReader;
-//X.pdbReader = pdbReader;
-addFileTypeHandler('.csv', csvReader);
-addFileTypeHandler('.txt', csvReader);
-addFileTypeHandler('.xlsx', csvReader);
-addFileTypeHandler('.yaml', csvReader);
-const binnop = () => {};
-binnop.rawhandler = true;
-binnop.hidden = true;
-addFileTypeHandler('.colbin', binnop);
-
 var usePhotoShader;
-function csvReader(data, fid) { return new XYZ(data, fid); }
-csvReader.rawhandler = true;
 const baseguiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
 
+
 class XYZ {
-
-static xyzs = {};
-static autorange = true;       // why is eslint complaining here?
-
-constructor(data, fid, owngb) {
-    const self = this;
+/**
+ * @param {any} pdata
+ * @param {string} fid
+ * @param {boolean} [owngb]
+ */
+constructor(pdata, fid, owngb) {
     X.currentXyz = X.currentThreeObj = this.xyz = this;
-    this.fid = fid;
+
+    const tdata = this.tdata = TData.get(pdata, fid, this);
+    /** @type {GraphicsBoiler} */ this.gb = owngb ? new GraphicsBoiler() : ggb;
     this._col = new THREE.Color(1,1,1);
-    this.makechainlines = undefined;
-    this.guiset = baseguiset;
-    this.pendread = {};  // pending async lazy reads
+    this._col1 = new THREE.Color(1,1,1);
+    this._ret = new Float32Array(6);        // used for return from filter function
+    // this._ccr = {_col: this._col, _col1: this._col1, _ret: this._ret};  //fixed structure for optimized call to fiterfun
     this._ids = undefined;    // ids for crossfilter
     this.fields = {};
     this._onFilter = undefined;
     this._inDataToMarkers = 0;
     this._dataToMarkersQ = [];
-    this.gb = owngb ? new GraphicsBoiler() : ggb;
-
-    // make sure control= values in URL get respected (after csvReader in case yamlReader has other ideas)
-    if (Object.keys(XYZ.xyzs).length === 0)
-        this.guiset.filterbox = E.filterbox.value;
-        
-    // colourby is dropdown, colourpick is colour picker
-    this.gb.select(fid, this);
-    XYZ.xyzs[fid] = this;
+    this.fid = fid;
+    this.makechainlines = undefined;
+    this.guiset = baseguiset;
+    this.guiset.filterbox = applyurl();
+    // this.headerSetup(); // too soon for MLV
 
     // catch our filter events from lasso and pass them on if wanted
+    const me = this;
     window.addEventListener('lassoUp', async function() {
-        const ids = await self.getCallbacks();
-        if (self._onFilter) self._onFilter(ids);
+        if (me._onFilter) {
+            const ids = await me.getCallbacks();
+            me._onFilter(ids);
+        }
     });
+    
+    // make sure control= values in URL get respected (after csvReader in case yamlReader has other ideas)
+    // #### need to check if this is right place
+    if (Object.keys(tdata.xyzs).length === 0)
+        this.guiset.filterbox = E.filterbox.value;
+    
+    // colourby is dropdown, colourpick is colour picker
+    this.gb.select(fid, this);
 
-    if (!data) return;  // called from pdbReader
-    this.csvReader(data, fid);
+    // tdata.lazyLoadCol(this.getField('X'));
+    // tdata.lazyLoadCol(this.getField('Y'));
+    // tdata.lazyLoadCol(this.getField('Z'));
 
+    if (pdata)
+        this.finalize(fid); // #### check when to do this
+
+} // XYZ constructor
+
+static autorange = true;
+
+
+finalize(fid) {
+    if (this.tdata.header) this.headerSetup(); // ####????
+    this.watchload(); // #### check when to do this
+
+    this.setup(fid);
+    this.filtergui({keyCode: 13});    // display as markers
+    this.gb.select(fid, this);
 }
 
-/** load data based on gui values */
-dataToMarkersGui(type, popping) {
+    /* load data based on gui values */
+/**
+ * 
+ * @param {string | undefined} type 
+ * @param {boolean} popping 
+ */
+dataToMarkersGui(type = undefined, popping = false) {
     if (E.xshaderbox.checked) {
         useXShader('MD:');
         return;
     }
+
+    if (!this.def) this.headerSetup();
     
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
@@ -114,96 +127,223 @@ dataToMarkersGui(type, popping) {
     }
 }
 
-/** filter ids, those not in list will not be displayed */
+/**
+     * filter ids, those not in list will not be displayed
+     * @param {{}} ids
+     */
 filter(ids) {
     console.log('filter #', Object.keys(ids).length);
     this._ids = ids;
     this.dataToMarkersGui();
 }
 
-/** hide ids, those not in list will not be displayed */
+/**
+     * hide ids, those not in list will not be displayed
+     * @param {{}} ids
+     */
 hide(ids) {
     console.log('hide #', Object.keys(ids).length);
     this._ids = ids;
     this.dataToMarkersGui();
 }
 
-/** set up callback on our filter change */
+/**
+     * set up callback on our filter change
+     * @param {any} f
+     */
 onFilter(f) { this._onFilter = f; }
 
 
 // dataToMarkers must be queued as it is async
 // in particular, we want to make sure filter canclulation is complete before it is used.
+/**
+ * 
+ * @param {string} pfilterfun 
+ * @param {boolean} popping 
+ * @param {*} cbs 
+ */
 async dataToMarkers(pfilterfun, popping, cbs) {
     this._dataToMarkersQ.push({pfilterfun, popping, cbs})
     // console.error('attempt to reenter dataToMarkers')
     if (this._inDataToMarkers) return;
 
     this._inDataToMarkers++;
-    while (true) {
-        const s = this._dataToMarkersQ.shift();
-        if (!s) break;
-        ({pfilterfun, popping, cbs} = s);
-        await this._dataToMarkers(pfilterfun, popping, cbs);
+    try {
+        while (true) {
+            const s = this._dataToMarkersQ.shift();
+            if (!s) break;
+            ({pfilterfun, popping, cbs} = s);
+            await this._dataToMarkers(pfilterfun, popping, cbs);
+        }
+    } finally {
+        this._inDataToMarkers--;
     }
-    this._inDataToMarkers--;
+}
+
+/** experimental fast simplified version of _dataToMarkers;
+ * invoked if the filter starts with  //fast
+ * 
+ * partly used as experiment towards doing core work in Rust
+ * actually the simplified cases are probably much more efficiently handled by shader implementation anyway?
+ * n.b. does not work on character heavy columns
+ */
+async _dataToMarkersFast() {
+    const st = performance.now();
+    const tdata = this.tdata;
+
+    let vert = this._svert;
+    let col = this._scol;
+    let ii = 0;
+    const xf = this.getField('X'), yf = this.getField('Y'), zf = this.getField('Z'), cf = this.getField('COL');
+    tdata.lazyLoadCol(xf);
+    tdata.lazyLoadCol(yf);
+    tdata.lazyLoadCol(zf);
+    tdata.lazyLoadCol(cf);
+
+    const xc = tdata.namecols[xf];
+    const yc = tdata.namecols[yf];
+    const zc = tdata.namecols[zf];
+    const cc = tdata.namecols[cf];
+    if (!xc || !yc || !zc || !cc) {
+        throw new Error(`at least one value not a valid column in _dataToMarkersFast, ${xf}, ${yf}, ${zf}, ${cf}`)
+    }
+    // >>> todo check here for charer heavy columns, this only works on number columns
+    
+    const sds = 1.5;
+    const r = tdata.ranges;
+    // x,y,z to range -1..1, col to range 0..1
+    const xd = r[xf].mean, xs = 1 / (r[xf].sd * sds);
+    const yd = r[yf].mean, ys = 1 / (r[yf].sd * sds);
+    const zd = r[zf].mean, zs = 1 / (r[zf].sd * sds);
+    const cd = r[cf].mean - r[cf].sd * sds, cs = 1 / (r[cf].sd * sds * 2);
+
+    tdata.showpendread();
+    const l = tdata.pendread_min;
+    for (let i = 0; i < l; i ++ ) {
+        const c =  (cc[i] - cd) * cs;
+        vert[ii] = (xc[i] - xd) * xs;
+        col[ii++] = c;
+        vert[ii] = (yc[i] - yd) * ys;
+        col[ii++] = 1-c;
+        vert[ii] = (zc[i] - zd) * zs;
+        col[ii++] = 1-c;
+    }
+    const dt = performance.now() - st;
+    E.filtcount.innerHTML = `fast filter applied: #points=${l} of ${tdata.n}, time: ${dt}ms`;
+    log(E.filtcount.innerHTML);
+    E.filterbox.classList = ['_fast'];
+    this.usevertcol(l, vert, col, false);
 }
 
 
 /** load the data with given filter and colour functions if required, and display as markers */
-async _dataToMarkers(pfilterfun, popping, cbs) {
-    const st = performance.now();
+/**
+ * 
+ * @param {string} pfilterfun 
+ * @param {boolean} popping 
+ * @param {[any]} cbs ?? 
+ */
+async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     if (!this.particles) this.setup(this.fid);  // for call from pdbReader
-    const xc = this.namecols[this.getField('X')];
-    const yc = this.namecols[this.getField('Y')];
-    const zc = this.namecols[this.getField('Z')];
+    const tdata = this.tdata;
+    const l = tdata.n; // xc.length;
+    let vert = this._svert = this._svert || new Float32Array(l*3); // <<< allow for lines ???
+    let col = this._scol = this._scol || new Float32Array(l*3);
+    const _namecols = tdata.namecols;
     
-    const l = xc.length;
+    if (pfilterfun.startsWith('//fast')) return this._dataToMarkersFast();
+    const st = performance.now();
+    const xc = _namecols[this.getField('X')];
+    const yc = _namecols[this.getField('Y')];
+    const zc = _namecols[this.getField('Z')];
+   
+
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
     if (filterfun === badfun) return;
-    let vert = this._svert = this._svert || new Float32Array(l*3);
-    let col = this._scol = this._scol || new Float32Array(l*3);
-    const geometry = this.geometry = this.geometry || new THREE.BufferGeometry();
     let ii = 0;
     let noxyz = 0;
-    for (let i = 0; i < this.pendread_min; i ++ ) {
-        if (this._ids !== undefined && !this._ids[i+1]) continue;  // handle crossfilter
-        let du;
+    let lines = false;
+    const me = this;
+    const q = this._ret;
+    const c = this._col; 
+    const c1 = this._col1;
+    for (let i = 0; i < tdata.pendread_min; i ++ ) {
+        if (me._ids !== undefined && !me._ids[i+1]) continue;  // handle crossfilter
+        q[0] = q[3] = NaN;
+        c.setRGB(0.3, 0.3, 0.3);
         if (filterfun) {
-            this._col.setRGB(0.3, 0.3, 0.3);
-            const df = filterfun(this, i);
-            if (!df) continue;
-            if (typeof df === 'object') du = df;
+            c1.setRGB(undefined, undefined, undefined);
+            const df = filterfun(this/*._ccr*/, i, _namecols);
+            if (typeof df !== 'object') continue;
+            // [q[0], q[1], q[2]] = df;
         } else {
-            this._col.setRGB(1,1,1);
+            q[0] = xc[i]; q[1] = yc[i]; q[2] = zc[i];
         }
-        if (!du) du = {_x: xc[i], _y: yc[i], _z: zc[i]};
-        let c = this._col; 
-        let _x = du._x !== undefined ? du._x : xc[i];
-        let _y = du._y !== undefined ? du._y : yc[i];
-        let _z = du._z !== undefined ? du._z : zc[i];
-        if (_x === undefined || _y === undefined || _z === undefined) {
+        if (isNaN(q[0])) { //  === undefined || q[1] === undefined || q[2] === undefined) {
             noxyz++;
         } else {            
             if (cbs) {
                 cbs[i+1] = true;
             } else {
-                vert[ii] = _x;
+                vert[ii] = q[0];
                 col[ii++] = c.r;
-                vert[ii] = _y;
+                vert[ii] = q[1];
                 col[ii++] = c.g;
-                vert[ii] = _z;
+                vert[ii] = q[2];
                 col[ii++] = c.b;
+                if (!isNaN(q[3])) {
+                    lines = true;
+                    const cx = c1.r === undefined ? c : c1;
+                    vert[ii] = q[3];
+                    col[ii++] = cx.r;
+                    vert[ii] = q[4];
+                    col[ii++] = cx.g;
+                    vert[ii] = q[5];
+                    col[ii++] = cx.b;   
+                }
             }
         }
     }
+    const dt = Math.round(performance.now() - st);
+
     if (cbs) return;
-    const ll = ii/3;
-    // if (ll !== l) {
-    //     vert = vert.slice(0, ii);
-    //     col = col.slice(0, ii);
-    // }
+    const ll = ii/(lines ? 6 : 3);
     if (noxyz) console.log('ddata/filter failed to give xyz for', noxyz, 'elements');
+    this.usevertcol(ll, vert, col, lines);
+
+    let ok = true;
+    if (filterfun) {
+        if (lines)
+            E.filtcount.innerHTML = `filter applied: #lines=${ll} of ${l}, time: ${dt}ms`;
+        else
+            E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}ms`;
+    } else if (pfilterfun) {
+        E.filtcount.innerHTML = `bad filter not applied`;        // already been marked as error                  
+        ok = false;
+    } else {
+        E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
+    }
+    log(E.filtcount.innerHTML);
+    if (ok && !popping) {
+        let ll = location.href.split('&control=')[0];
+        if (ll.indexOf('?') === -1) ll += '?';
+        if (pfilterfun)
+            ll += '&control=' + pfilterfun.split('\n').join('!!!');
+        if (ll !== location.href)
+            history.pushState({}, undefined, ll)
+    }
+    await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
+}
+
+/**
+     * @param {number} ll
+     * @param {Float32Array} vert
+     * @param {Float32Array} col
+     * @param {boolean} lines
+     */
+usevertcol(ll, vert, col, lines) {
+    const geometry = this.geometry = this.geometry || new THREE.BufferGeometry();
+
     if (ll === 0) {console.log('ddata/filter failed to give any xyz'); }
     const verta = this._verta = this._verta || new THREE.BufferAttribute(vert, 3);
     const cola = this._cola = this._cola || new THREE.BufferAttribute(col, 3);
@@ -211,42 +351,22 @@ async _dataToMarkers(pfilterfun, popping, cbs) {
     geometry.setAttribute('position', verta);
     geometry.setAttribute('color', cola);
     geometry.setDrawRange(0, ll);
-    // @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
-    this.particles.geometry = geometry;
-    const dt = Math.round(performance.now() - st);
-    let ok = true;
-    if (filterfun) {
-        E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}ms`;
-    } else if (pfilterfun) {
-        E.filtcount.innerHTML = `bad filter not applied`;        // already been marked as error                  
-        ok = false;
+    //// @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
+    //this.particles.geometry = geometry;
+
+    if (lines) {
+        this.group.remove(this.particles);
+        this.group.add(this.lines);
+        this.lines.geometry = geometry;
     } else {
-        E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
+        this.group.remove(this.lines);
+        this.group.add(this.particles);
+        this.particles.geometry = geometry;
     }
-    if (ok && !popping) {
-        let ll = location.href.split('&control=')[0];
-        if (ll.indexOf('?') === -1) ll += '?';
-        if (pfilterfun)
-            ll += '&control=' + pfilterfun.split('\n').join('!!!');
-        history.pushState({}, undefined, ll)
-    }
-    await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
+
+
 
     // return [ll,l];
-}
-
-/** extract the value for an element
- * This is largely a convenience function for generating filters.
- * TODO: It should be replaced by something more efficient (especially for pure numeric or pure alpha columns)
- * when compiling the filter functions.
- */
-val(name, i) {
-    const rv = this.namecols[name][i];
-    if (!isNaN(rv)) return rv;
-    // const k = NaN2i(rv);
-    const k = this.namevcols[name][i] - _baseiNaN;
-    if (k === -15) return '';
-    return this.namevseti[name][k];
 }
 
 /** make a function for a filter (also colouring etc)
@@ -256,7 +376,7 @@ val(name, i) {
  * or 'confirm' to confirm this filter has been applied
  * 
  * Filter understands special cases of X,Y,Z and COL
- * X,Y,Z refer to _x,_y,_z are local variables in the filter
+ * X,Y,Z refer to q[0],q[1],q[2] are local variables in the filter
  * 
  * COL: refers to xyz._col, a prepared THREE.Colour() object . _C also used
  * This is set to a default before executing the filter
@@ -266,7 +386,14 @@ val(name, i) {
  *  * reduces the risk of overriding contributing COLS object in complex filters
  * 
  */
+/**
+ * 
+ * @param {string} filtin 
+ * @param {*} box 
+ * @param {string} mode 
+ */
 async makefilterfun(filtin, box, mode='') {
+    const tdata = this.tdata;
     let filt = filtin;
     const msg = (m, col) => {
         E.filterr.innerHTML = `${m} <br><code> ${filt.split('\n').join('<br>')}<code>`;
@@ -286,37 +413,67 @@ async makefilterfun(filtin, box, mode='') {
     this.lastInputTested = filtin;
     msg('testing', '_testing');
     if (!filt) { 
-        msg('empty filter, ctrl-enter to apply', '_empty');
-        return undefined;
+        filt = '//';  // phasing out special code for empty filter, which didn't allow for scale
+        //msg('empty filter, ctrl-enter to apply', '_empty');
+        //return undefined;
     }
-    let filtfun;
+    let filterfun;
     if (typeof filt === 'function')
-        filtfun = filt;
+        filterfun = filt;
     else if (typeof filt === 'string') {
         try {
+            if (!filt.match(/^Z:/m)) filt = `Z:${this.getField('Z')}\n${filt}`;
+            if (!filt.match(/^Y:/m)) filt = `Y:${this.getField('Y')}\n${filt}`;
+            if (!filt.match(/^X:/m)) filt = `X:${this.getField('X')}\n${filt}`;
+        
             
-            for (let fn in this.ranges) { // find used fields and assign (saves risk of accidental override of d.<fn>)
+            for (let fn of tdata.header) { // find used fields and assign (saves risk of accidental override of d.<fn>)
+                
+                // these do over-global automatic choice, upset COL:
+                //const usealpha = this.namecolnstrs[fn] > this.namecolnnum[fn];
+                //let use = usealpha ? '_EN' : XYZ.autorange ? '_N' : '_R';
+                //filt = filt.replace( new RegExp('\\b(' + fn + ')\\b', 'g'), fn + use);
+
+                const sds = 1.5;
+                // const r = this.ranges[fn], l = r.mean - sds * r.sd, ss = 1 / (2 * sds * r.sd);
+                // range to -1..1
+                const r = tdata.ranges[fn], l = r.mean, ss = 1 / (sds * r.sd);
+                
+                
                 if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
-                    const usealpha = this.namecolnstrs[fn] > this.namecolnnum[fn];
-                    let fun = usealpha ? 'valEN' : XYZ.autorange ? 'valN' : 'val';
-                    filt = `const ${fn} = xyz.${fun}('${fn}', i);\n${filt}`;
-                    await this.lazyLoadCol(fn);
+                    const usealpha = tdata.namecolnstrs[fn] > tdata.namecolnnum[fn];
+                    // let fun = usealpha ? 'valEN' : XYZ.autorange ? 'valN' : 'val';
+                    // filt = `const ${fn} = xyz.${fun}('${fn}', i);\n${filt}`;
+                    if (usealpha)
+                        filt = `const ${fn} = xyz.tdata.valEN('${fn}', i);\n${filt}`;
+                    else if (XYZ.autorange)
+                        filt = `const ${fn} = (_namecols['${fn}'][i] - ${l}) * ${ss};\n${filt}`;
+                    else
+                        filt = `const ${fn} = _namecols['${fn}'][i];\n${filt}`;
+
+                    tdata.lazyLoadCol(fn);
                 }
+
                 if (filt.match( new RegExp('\\b' + fn + '_R\\b', 'g'))) {
-                    filt = `const ${fn}_N = xyz.val('${fn}', i, 1.5);\n${filt}`;
-                    await this.lazyLoadCol(fn);
+                    filt = `const ${fn}_R = xyz.tdata.val('${fn}', i, 1.5);\n${filt}`;
+                    tdata.lazyLoadCol(fn);
+                }
+                if (filt.match( new RegExp('\\b' + fn + '_C\\b', 'g'))) {
+                    filt = `const ${fn}_C = xyz.tdata.valC('${fn}', i, 1.5);\n${filt}`;
+                    tdata.lazyLoadCol(fn);
                 }
                 if (filt.match( new RegExp('\\b' + fn + '_N\\b', 'g'))) {
-                    filt = `const ${fn}_N = xyz.valN('${fn}', i, 1.5);\n${filt}`;
-                    await this.lazyLoadCol(fn);
+//                    filt = `const ${fn}_N = xyz.tdata.valN('${fn}', i, 1.5);\n${filt}`;
+                    filt = `const ${fn}_N = (_namecols['${fn}'][i] - ${l}) * ${ss};\n${filt}`;
+                    tdata.lazyLoadCol(fn);
                 }
                 if (filt.match( new RegExp('\\b' + fn + '_E\\b', 'g'))) {
-                    filt = `const ${fn}_E = xyz.valE('${fn}', i);\n${filt}`;
-                    await this.lazyLoadCol(fn);
+                    filt = `const ${fn}_E = xyz.tdata.valE('${fn}', i);\n${filt}`;
+                    await tdata.lazyLoadCol(fn);
                 }
                 if (filt.match( new RegExp('\\b' + fn + '_EN\\b', 'g'))) {
-                    filt = `const ${fn}_EN = xyz.valEN('${fn}', i);\n${filt}`;
-                    await this.lazyLoadCol(fn);
+                    filt = `const ${fn}_EN = xyz.tdata.valEN('${fn}', i);\n${filt}`;
+                    await tdata.lazyLoadCol(fn);
                 }
             }
 
@@ -328,8 +485,8 @@ async makefilterfun(filtin, box, mode='') {
             // RGB(cd3, cd4, cd16)
 
             // apply after VX() etc to reduce wrong bracketing risk
-            filt = filt.replace(/\b_L\b/g, 'xyz._lasso(_x,_y,_z)');
-            filt.replace(/\b_L([0-9])\b/g, 'xyz._lasso(_x,_y,_z,$1)')
+            filt = filt.replace(/\b_L\b/g, 'xyz._lasso(q[0],q[1],q[2])');
+            filt.replace(/\b_L([0-9])\b/g, 'xyz._lasso(q[0],q[1],q[2],$1)')
             // if (filt.match(/\b_L[0-9]\b/)) {
             //     for (let i=0; i<=9; i++)
             //         if (filt.match(new RegExp('\\b_L' + i + '\\b', 'g'))) filt = `const _L${i} = xyz._lasso(x,y,z, ${i})\n${filt}`
@@ -337,32 +494,55 @@ async makefilterfun(filtin, box, mode='') {
             
 
             filt = filt.split('\n').map(l => {
-                if (l[0] === '?') l = `if (!(${l.substring(1)})) return;`;
-                else if (l.startsWith('COL:')) {const ll = l.substring(4).trim(); l = '_C.' + COLS.gencol(this, ll)}
-                else if (l.startsWith('MD:')) l = '// ' + l;
-                else if (l.startsWith('COLX:')) {const ll = l.substring(5).trim(); l = '_C.set(' + ll + ')'}
-                else if (l.startsWith('X:')) l = `_x = ${l.substring(2)}`;
-                else if (l.startsWith('Y:')) l = `_y = ${l.substring(2)}`;
-                else if (l.startsWith('Z:')) l = `_z = ${l.substring(2)}`;
-                else if (l.startsWith('R:')) l = `_C.r = ${l.substring(2)}`;
-                else if (l.startsWith('G:')) l = `_C.g = ${l.substring(2)}`;
-                else if (l.startsWith('B:')) l = `_C.b = ${l.substring(2)}`;
+                if (l[0] === '?') return `if (!(${l.substring(1)})) return;`;
+                const [k, _ll] = l.split(':');
+                if (_ll === undefined) return l;
+                const ll = _ll.trim();
+                let done = true;
+                switch (k) {
+                    case 'COL': l = COLS.gencol('_C', tdata, ll); break;
+                    case 'COL1': l = COLS.gencol('_C1',tdata, ll); break;
+                    case 'MD': l = '// ' + l; break;
+                    case 'COLX': l = '_C.set(' + ll + ')'; break;
+                    case 'COLX1': l = '_C1.set(' + ll + ')'; break;
+                    case 'X': l = `q[0] = ${ll}`; break;
+                    case 'Y': l = `q[1] = ${ll}`; break;
+                    case 'Z': l = `q[2] = ${ll}`; break;
+                    case 'X1': l = `q[3] = ${ll}`; break;
+                    case 'Y1': l = `q[4] = ${ll}`; break;
+                    case 'Z1': l = `q[5] = ${ll}`; break;
+                    case 'R': l = `_C.r = ${ll}`; break;
+                    case 'G': l = `_C.g = ${ll}`; break;
+                    case 'B': l = `_C.b = ${ll}`; break;
+                    case 'R1': l = `_C1.r = ${ll}`; break;
+                    case 'G1': l = `_C1.g = ${ll}`; break;
+                    case 'B1': l = `_C1.b = ${ll}`; break;
+                    default: done = false;
+                }
+                if (done) this.setField(k, ll, false);
                 return l;
             }).join('\n');
 
 
             // generate filter
             // if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
-            filt += '\nreturn {_x, _y, _z};'        // note, xyz._col === _C is implicit output
+            filt += `\nreturn q;`        // note, xyz._col === _C is implicit output
+            
             // todo: make special case filters for pure number/pure alpha columns???
             filt = `"use strict";
-                var _x, _y, _z, _C = xyz._col;
+            const q = xyz._ret;
+            var _C = xyz._col, _C1 = xyz._col1;
             ` + filt;
-            this.lastCodeGenerated = filt;
+            if (this.lastCodeGenerated === filt) {
+                filterfun = this.lastFunction;
+            } else {
+                this.lastCodeGenerated = filt;
 
-            this.lastFunction = undefined;
-            filtfun = new Function('xyz', 'i', filt);
-            this.lastFunction = filtfun;
+                this.lastFunction = undefined;
+                filterfun = new Function('xyz', 'i', '_namecols', filt);
+                console.log('filtfun function rebuilt');
+                this.lastFunction = filterfun;
+            }
         } catch (e) {
             msg('invalid function: ' + e.message, '_invalid');
             return badfun;
@@ -374,429 +554,15 @@ async makefilterfun(filtin, box, mode='') {
 
     try {
         // eslint-disable-next-line no-unused-vars
-        const r = filtfun(this, 0);
+        const r = filterfun(this/*._ccr*/, 0, tdata.namecols);
     } catch(e) {
         msg('function throws exception: ' + e.message, '_exception');
         return badfun;
     }
     msg('OK: ctrl-enter to apply filter', '_OK');
-    return filtfun;
+    return filterfun;
 }
 
-/** parse xlsl */
-async xlsxReader(raw, fid) {
-    // only load this converter plugin if needed
-    if (!XLSX) {
-        await addscript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.3/xlsx.full.min.js");
-        console.log('loaded', XLSX);
-    }
-    let workbook = XLSX.read(raw, {type: 'binary'});
-    let firstSheet = workbook.SheetNames[0];
-    let ss = workbook.Sheets[firstSheet];
-    // could be made much more efficient if needed
-    // also neither this nor main line allows for empty header field name, or repeated ones
-    this.extocsv = XLSX.utils.sheet_to_csv(ss);
-    return this.csvReader(this.extocsv, fid + '!');
-}
-
-/** lazy load a columns and return it
- * May be from a File or from a url. TODO Also to handle case of FileEntry, after dropping of Directory
- * Test for which is temporary, and the split should maybe be made somewhere more generic.
- */
-async lazyLoadCol(id) {
-    let step = 2*1024*1024;
-    const t = this.namecols[id]; if (t) return t;
-    const fid = this.bfid + '_' + id + '.colbin';
-    // set up the complete buffer/views to hold all data (both Float32Array and Uint32Array views)
-    let fbuff = this.namecols[id] = new Float32Array(this.n);
-    this.namevcols[id] = new Uint32Array(fbuff.buffer);
-    const usealpha = this.namecolnstrs[id] > this.namecolnnum[id];
-    const kk = 'll' + id;
-    console.time(kk);
-
-    // find the stream so we can read the data incrementally
-    let stream;
-    if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test! will work for files from server
-        console.timeLog(kk);
-        const resp = await fetch(fid);
-        console.timeLog(kk);
-        if (resp.status !== 200)
-            throw new Error(`Column data ${id} not available: rc=${resp.status}<br>${fid}`)
-        stream = resp.body;
-    } else if (readyFiles[fid]) {   // works for a dragged drop set of files
-        // fblob = readyFiles[fid];
-        // if (!fblob) throw new Error('no ready file ' + fid);
-        stream = readyFiles[fid].stream();
-    } else if (availableFileList[fid]) {    // worked for dropped directory referenced by a file
-        const makeFile = (fileEntry) =>
-            new Promise(resolve => fileEntry.file(resolve));
-            readyFiles[fid] = await makeFile(availableFileList[fid]);
-        stream = readyFiles[fid].stream();
-    } else {
-        throw new Error('no ready file ' + fid);
-    }
-
-    // incrementally read the data stream
-    const reader = stream.getReader();
-    let p = 0;                                              // p is position, pup is position updated
-    let ut = 0;                                             // ut is last update time, set to 0 so first input causes update
-    const updateInterval = 1000;                            // update every second
-    const att = this.nameattcols[id];
-    while (true) {
-        const {done, value} = await reader.read();
-        if (done) break;
-        const fseg = new Float32Array(value.buffer);        // get the segment as Float32Array (hope value.buffer comes in multipes of 4)
-        fbuff.set(fseg, p);                                 // and save into main buffer
-        if (att) {                                          // update associated texture (if any)
-            if (usealpha) {                                 // alpha ones need the unsigned bytes array updated
-                const namevcol = this.namevcols[id];
-                const iarr = att.array;
-                for (let n = p; n < p + fseg.length; n++)
-                    iarr[n] = namevcol[n] - _baseiNaN;                
-            }
-            const t = Date.now();                           // update the texture, but not toooften
-            if (t - ut > updateInterval) {
-                att.needsUpdate = true;
-                ut = t;
-            }
-        }
-        p += fseg.length;
-        this.pendread[id] = p;
-        this.showpendread();    
-    }
-    if (att) att.needsUpdate = true;
-    console.timeLog(kk);
-}
-
-async yamlReader(raw, fid) { 
-    this.prep();
-    X.currentThreeObj = X.currentXyz = this.xyz = this;
-    // get information available in yaml
-    const yaml = typeof raw === 'string' ? raw : await raw.text();
-    Object.assign(this, X.jsyaml.safeLoad(yaml));
-
-    // and synthesize some more
-    const {namevset, namevseti, header} = this;
-    this.namecols = {};
-    this.namevcols = {};
-    for (const n in namevset)
-        namevseti[n] = Object.keys(namevset[n]);
-    this.headerSetup();  
-    
-    // maybe these could be saved as is in the yaml file --- more or less duplicate code with finalize()
-    this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
-    for (let i = 0; i < header.length; i++) {
-        this.namecolnstrs[header[i]] = this.colnstrs[i];
-        this.namecolnnum[header[i]] = this.colnnum[i];
-        this.namecolnnull[header[i]] = this.colnnull[i];
-    }
-
-    this.bfid = fid.substring(0, fid.length - 5);
-    const p = [];
-    let done = 0;
-    this.lazyLoadCol(this.getField('X')).then(() => done++);
-    this.lazyLoadCol(this.getField('Y')).then(() => done++);
-    this.lazyLoadCol(this.getField('Z')).then(() => done++);
-    // await Promise.all(p);
-
-    for (let i=0; i<100; i++) {
-        await dataToMarkersGui();
-        this.showpendread();
-        if (done === 3) break;
-        await sleep(500);
-    }
-    this.gb.select(this.bfid, this);
-}
-
-/** show pending read status; also compute min loaded value */
-showpendread() {
-    const all = [], some = [];
-    this.pendread_min = this.n;
-    for (const col in this.pendread) {
-        const p = this.pendread[col];
-        if (p === this.n) {
-            all.push(col);
-        } else {
-            some.push(`<br>${col}=${(p*100/this.n).toFixed()}%`);
-            this.pendread_min = Math.min(this.pendread_min, p);
-        }
-    }
-    E.msgbox.innerHTML = '100%: ' + all.join(' ') + some.join('');
-}
-
-/** load the data as an array of arrays, and separate out header 
- * raw may file file contents, or a File object
-*/
-async csvReader(raw, fid) {
-    log('csvReader', fid);
-    if (fid.endsWith('.xlsx')) return this.xlsxReader(raw, fid);
-    if (fid.endsWith('.yaml')) return this.yamlReader(raw, fid);
-
-    this.prep();
-    // let {cols, namecols, vset, namevset} = this;
-    
-    // newparse = false;    // separate tests rather than if else to allow both for quick performance comparison
-    var oldparse = true;
-
-    let header;
-    // csv-parser not used ... never completely integrated and slower
-    // if (newparse) {    // use csv-parser, appears to be about twice as slow as using split (but more correct for ,")
-    //     console.time('newparse');
-    //     const separator = raw.substring(0,100).indexOf('\t') === -1 ? ',' : '\t';
-
-    //     const csvp = csv({
-    //         separator, 
-    //         // quote: undefined, raw: false,
-    //         mapHeaders: ({header}) => header.toLowerCase().trim().split(',')[0]
-    //     }); // get a parser
-
-    //     csvp.on('data', (s) => {
-    //         if (!this.header) this.addHeader(Object.keys(s));
-    //         this.addRow(Object.values(s));  // what a waste making an object and destroying it again, but ...
-    //     });
-    //     // process in chunks, simulate continiuous read, and maybe avoid some sillies in parser?
-    //     const chl = 1000;
-    //     for (let i=0; i < raw.length; i += chl)
-    //         csvp.write(raw.substr(i, chl));
-    //     csvp.end();
-    //     header = this.header = csvp.headers;
-    //     console.timeEnd('newparse');
-    //     // csvp.destroy();
-    // }
-    const me = this;  // the this references inside this.lien = linex  were ok, but typescript s=does not seem to like them so use me
-    if (oldparse) {
-        X.currentThreeObj = X.currentXyz = this; this.xyz = this;
-        let sep;
-        const st = Date.now();
-        let byteLength;
-        const linex = function linex(row, numLines, bytesProcessedSoFar, bytesReadSoFar, length) {
-            byteLength = length;
-            if (row.trim() === '') return;
-            // TODO proper comma parsing
-            if (!sep) {                     // first non-empty row is treated as header
-                sep = row.indexOf('\t') === -1 ? ',' : '\t';
-                header = me.header = row.split(sep).map(x=>x.trim().toLowerCase().split(',')[0]);
-                me.addHeader(header);
-                return;
-            }
-            const rowa = row.split(sep);    // rowa row as array
-            me.addRow(rowa);
-            if (me.n % me.tellUpdateInterval === 0) {
-                const dt = ((Date.now() - st)/1000).toFixed();
-                E.msgbox.innerHTML = `reading file ${fid}, line ${me.n}, bytes ${bytesProcessedSoFar} of ${length}, ${(bytesProcessedSoFar/length*100).toFixed()}%, ${dt} secs`;
-            }
-            if (me.n % me.graphicsUpdateInterval === 0 || me.n === me.firstUpdate)
-                me.finalize(fid, true); // needs some but NOT all
-        }
-
-        if (raw instanceof File) {
-            console.time('oldparsestream');
-            await fileReader(raw, lineSplitter((line, numLines, bytesProcessedSoFar, bytesReadSoFar, length) => 
-                linex(line, numLines, bytesProcessedSoFar, bytesReadSoFar, length)));
-            console.timeEnd('oldparsestream');
-        } else {
-            console.time('oldparse');
-            const length = raw.length;
-            //console.profile('oldparse');
-            const data = raw.split('\n');           // data is array of rows as strings
-            let bytesProcessedSoFar = 0;
-            for (let row of data) {             // row is row as string
-                bytesProcessedSoFar += row.length + 1;
-                linex(row, me.n, bytesProcessedSoFar, length, length);
-            }
-            //console.profileEnd('oldparse');
-            console.timeEnd('oldparse');
-        }
-        const dt = ((Date.now() - st)/1000).toFixed();
-        E.msgbox.innerHTML = `read ${fid} lines ${me.n}, bytes ${byteLength}, ${dt} secs`;
-        setTimeout( () => E.msgbox.innerHTML = '', 5000);
-    }
-
-    console.time('finalize');
-    me.finalize(fid);
-    console.timeEnd('finalize');
-}   // csvReader
-
-// prepare to add header/data
-prep() {
-    this.cols = [],         // column arrays (Float32), by number
-    this.colsv = [],        // column arrays (Uint32), by number    
-    this.namecols = {},     // columns arrays (Float32), by name
-    this.nameattcols = {};  // column buffer attributes
-    this.vset = [],         // value set, by number
-    this.namevset = {};     // value set, by name, string => value set id 
-    this.vsetlen = [];      // size of value set, by number
-    this.namevsetlen = {};  // size of value set (# discrete string values), by name
-    this.colnstrs = [];     // number of string value instances in each column
-    this.colnnull = [];     // number of null string instances in each column
-    this.colnnum = [];      // number of numeric values in each column
-    this.namevseti = {};    // value set, value set id => string
-    this.n = 0;             // count
-    this.tellUpdateInterval = 10000;    // inform update insterval during long load
-    this.firstUpdate = 10000;
-    this.graphicsUpdateInterval = 250000;
-}
-
-// set up using input JSON object, eg injected from MLV
-useJson(d) {
-    this.prep();
-    const header = Object.keys(d[0]);
-    this.addHeader(header);
-    for (const o of d) {
-        // Object.values(o) almost the same,
-        // but inefficient anyway and may not be reliable
-        this.addRow(header.map(x => o[x]));
-    }
-    this.finalize('fromMLV');
-}
-
-// add header, array of names
-addHeader(header) {
-    header = this.header = header.map(x=>x.trim().toLowerCase().split(',')[0]);
-    // experiments with saving as array, not tuple
-    this.xi = header.indexOf('x');
-    this.yi = header.indexOf('y');
-    this.zi = header.indexOf('z');
-    for (let i = 0; i < header.length; i++) {
-        this.colsv[i] = new Uint32Array(1000);
-        this.cols[i] = new Float32Array(this.colsv[i].buffer);
-        this.vset[i] = {};
-        this.vsetlen[i] = 0;
-        this.colnstrs[i] = 0;
-        this.colnnull[i] = 0;
-        this.colnnum[i] = 0;
-    }
-    this.headerSetup();
-}
-
-// add a row, array of values, return new n
-addRow(rowa) {
-    const {cols, header, colsv} = this;
-    if (!this.header) {
-        this.addHeader(rowa);
-        return 0;
-    }
-    const n = this.n;
-    
-    // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
-    // with testing 300 => 500
-    // TODO: consider whether we want any xyz testing if those columns ARE present
-    const xyztest = (this.fid.startsWith('StarCarr')) ? +rowa[this.xi] + +rowa[this.yi] : 99; // only test for StarCarr
-
-    if (xyztest === 0) {
-        // log('odd position', s.oid, s.x, s.y, s.z);
-    } else if (isNaN(xyztest)) {
-        log('odd data');
-    } else {
-        // extend column arrays if necessary
-        const ll = cols[0].length;
-        if (n >= ll) {
-            for (let i = 0; i < header.length; i++) {
-                const na = new Uint32Array(ll*2);
-                na.set(colsv[i]);
-                colsv[i] = na;
-                cols[i] = new Float32Array(na.buffer);
-            }
-        }
-
-        // fill in data values, allowing for number/text and hybrid columns
-        for (let i = 0; i < header.length; i++) {
-            let v = rowa[i];
-            if (v === '') {          // '' value
-                this.colnnull[i]++;
-                colsv[i][n] = NaN4null;
-            } else if (isNaN(v)) {   // text value
-                let k = this.vset[i][v];
-                if (k === undefined) {
-                    k = this.vset[i][v] = this.vsetlen[i];
-                    this.vsetlen[i]++;
-                }
-                this.colnstrs[i]++;
-                colsv[i][n] = k + _baseiNaN;
-            } else {                 // number value
-                v = +v;
-                this.colnnum[i]++;
-                cols[i][n] = v;
-            }
-        }
-        this.n++;
-        this.pendread_min = this.n;
-    }
-    return this.n;
-} // addRow
-
-// finalize and show graphics, partial if part way through
-finalize(fid, partial = false) {
-    const me = this;
-    const {header, cols, namecols, vset, namevset, vsetlen, namevsetlen} = this;
-
-    this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
-    this.namevcols = {};
-
-    // now we have collected the data trim the columns and prepare helper derived data
-    for (let i = 0; i < header.length; i++) {
-        cols[i] = cols[i].slice(0, this.n);
-        namecols[header[i]] = cols[i];
-        this.namevcols[header[i]] = new Uint32Array(cols[i].buffer);
-        namevset[header[i]] = vset[i];
-        namevsetlen[header[i]] = vsetlen[i];
-        this.namevseti[header[i]] = Object.keys(vset[i]);
-
-        this.namecolnstrs[header[i]] = this.colnstrs[i];
-        this.namecolnnum[header[i]] = this.colnnum[i];
-        this.namecolnnull[header[i]] = this.colnnull[i];
-    }
-
-    // delete some number based fields; they have done their work during preparation, no longer needed
-    // they aren't using much space as the big things they point to are pointed to from namecols etc
-    if (!partial) {
-        delete this.cols;
-        delete this.vset;
-        delete this.vsetlen;
-    }
-    
-    
-    if (!this.ranges || !partial) {
-        this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
-    }
-    
-    function finish(col) {
-        if (me.header.includes(col)) {
-            me.rebase(col);
-        } else {
-            // console.error('data does not have expected column to rebase', col, fid);
-        }
-    }
-    if (!partial) {
-        finish('x');
-        finish('y');
-        finish('z');
-    }
-
-    this.ranges.forEach = this.sForEach;
-    this.setup(fid);
-    this.filtergui({keyCode: 13});    // display as markers
-    this.gb.select(fid, this);
-}
-
-/** rebase a field based on centrerange (no longer set o_ values) */
-rebase(fn) {
-    const c = centrerange[fn];
-    // we used to keep extra columns for original data
-    // and also three vectors for position, but overhead too high
-    const col = this.namecols[fn];
-    for (let i = 0; i < col.length; i++) col[i] -= c;
-    this.ranges[fn] = this.genstats(fn);     // could be more efficient here and just modify old stats
-}
-
-/** convenience function for iterating fields of an object  */
-sForEach(fun) {
-    const s = this;
-    for (let i in s) {
-        const v = s[i];
-        fun(v);
-    }
-}
 
 // code below enables hover to perform temporary spotsize change
 
@@ -805,6 +571,7 @@ TODO, allow for number of pixels so value has similar effect on different device
 setPointSize(eventsize, temp='') {
     let size = eventsize.srcElement ? +eventsize.srcElement.id.substring(4) : +eventsize;
     if (temp === 'out') size = this.permspotsize || this.guiset.spotsize;
+    if (temp === 'in' && size*size * this.tdata.n > 400000) return;  // don't do overexpensive hover, could give feedback?
     this.permspotsize = (temp === 'in') ? this.guiset.spotsize : size;
     this.guiset.spotsize = size;
     if (usePhotoShader) {
@@ -831,72 +598,13 @@ async filtergui(evt = {}) {
     try {
         const fun = await this.makefilterfun(boxv, box);
         if (fun === badfun) return;
-        if (evt.keyCode === 13) {
+        if (evt.keyCode === 13 && evt.ctrlKey) {
             this.dataToMarkersGui();
         }
     } catch (e) {
         box.style.background='#ffffd0';
         filterr.innerHTML = e.message;
     }
-}
-
-/** generate colourby and initial filter*/
-headerSetup() {
-    this.def = {};
-    this.def.X = this.header.includes('x') ? 'x' : this.header[0];
-    this.def.Y = this.header.includes('y') ? 'y' : this.header[1];
-    this.def.Z = this.header.includes('z') ? 'z' : this.header[2];
-    this.setField('X', this.getField('X'), false);
-    this.setField('Y', this.getField('Y'), false);
-    this.setField('Z', this.getField('Z'), false);
-
-    const s = [`<option value="fixed">fixed</option>`];
-    s.push(`<option value="random">random</option>`);
-    for (const name of this.header)
-        s.push(`<option value="${name}">${name}</option>`);
-    E.colourby.innerHTML = s.join('');
-}
-
-/** generate stats from given data for a given field, or for all fields (no longer also compute three.js position) */
-genstats(name = undefined) {
-    // function tothreepos(datals) {
-    //     for (const d of datals) { 
-    //         d.pos = new THREE.Vector3(d.x, d.y, d.z); 
-    //         d.o_pos = d.pos.clone(); 
-    //     };
-    // }
-    // tothreepos(datals); // do not keep pos, overhead of all those Vector3 too high
-    if (!name) {   // repeat for all fields
-        const lranges = {};
-        for (name of this.header)  {
-            lranges[name] = this.genstats(name);
-        }
-        if (centrerange.x === Infinity && lranges.x)  // centrerange is static set on first file, and use same for all subsequent files
-            centrerange.set(lranges.x.mean, lranges.y.mean, lranges.z.mean);
-        return lranges;
-    }
-
-    const data = this.namecols[name];   // just extract this field
-    let sum = 0, sum2 = 0, n = 0;
-    let min = Number.MAX_VALUE;
-    let max = Number.MIN_VALUE;
-    if (isNaN(data[0])) {min = max = data[0]}
-    data.forEach(v => {
-        if (!v) return;  // '' or 0 are sometimes used for missing/undefined (not for pdb chains, never mind ...!!!)
-        if (isNaN(v)) {
-            //
-        } else {
-            sum += +v;
-            sum2 += v*v;
-            n++;
-            if (v < min) min = v;  // do not use Math.max as doesn't work for alpha
-            if (v > max) max = v;
-            max = Math.max(max, v);
-        }
-    });
-
-    const sd = Math.sqrt((sum2 - 1/n * sum*sum) / n);
-    return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n};
 }
 
 setup(fid) {
@@ -923,67 +631,24 @@ setup(fid) {
             this.material.needsUpdate = true;
         });
     }
+    
+    // to handle lines and points we prepare for both
+    // and create a group which will hold whichever is valid at a particular time
+    X.currentThreeObj = this.group = new THREE.Group(); this.group.name = fid + 'group'; this.group.xyz = this;
     const size = 0.3;
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ 
         depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
-    X.currentThreeObj = this.particles = new THREE.Points(new THREE.Geometry(), this.material);
+    this.linematerial = new THREE.LineBasicMaterial( { depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
+    this.particles = new THREE.Points(new THREE.Geometry(), this.material);
     this.particles.frustumCulled = false;
     this.particles.xyz = this;
-    this.gb.addToMain( this.particles, fid, undefined, this );
+    this.lines = new THREE.LineSegments(new THREE.Geometry(), this.linematerial);
+    this.lines.frustumCulled = false;
+    this.lines.xyz = this;
+    this.gb.addToMain( this.group, fid, undefined, this );
     // xyzs[this.name] = this;
 } // setup
 
-// save the xyz as separate column files
-async savefiles() {
-    const saver = saveData; // for download eg to downloads, could be writeFile if we have local server
-    // make an object with most metadata but no data
-    var xxx = this;
-    var obj = Object.assign({}, xxx);
-    delete obj.cols;
-    delete obj.namecols;
-    delete obj.xyz;
-    for (const k in obj) if (k[0] === '_') delete obj[k];
-//     delete obj.namevset;
-//     delete obj.namevsetlen;
-    delete obj.namevseti;    
-    delete obj.vset;
-    delete obj.vsetlen;
-    delete obj.nameattcols;
-//    delete obj.vseti;       // ???
-       
-    delete obj.material;
-    delete obj.geometry;
-    delete obj.particles;
-    delete obj.gb;
-    var yaml = X.jsyaml.safeDump(obj, {skipInvalid: true})
-    console.log('yaml size', yaml.length);
-
-    saver(this.fid + '.yaml', yaml);
-    for (const n in this.namecols) {
-        await sleep(200);
-        const fid = this.fid + '_' + n + '.colbin';
-        log('save', fid);
-        await saver(fid, this.namecols[n]);
-    }
-    log('saves done');
-}  // savefiles
-
-/** normalized values to sds (assumed numeric values) */
-valN(f, i, sds=1.5) {
-    const r = this.ranges[f];
-    return (this.namecols[f][i] - r.mean) / (r.sd * sds * 2) + 0.5;
-}
-
-/** enum value (assumed alpha values) */
-valE(f,i) {
-    return this.namevcols[f][i] - _baseiNaN;
-}
-
-/** normalized enum value (assumed alpha values) */
-valEN(f,i) {
-    return (this.namevcols[f][i] - _baseiNaN) / this.namevsetlen[f];
-}
-// X.en umI = en umI; X.en umF = en umF; 
 
 // /** screen position; working towards lasso filter */
 // spos(x,y,z) {
@@ -994,7 +659,7 @@ valEN(f,i) {
 // }
 /** lasso value, can be used for filter or color */
 _lasso(x,y,z,id) {
-    return lassoGet(x,y,z,id);
+    return this.gb.lasso.lassoGet(x,y,z,id);
 }
 
 /** get ids from lasso for callback */
@@ -1004,7 +669,7 @@ async getCallbacks() {
 X:${this.getField('X')}
 Y:${this.getField('Y')}
 Z:${this.getField('Z')}
-if (!xyz._lasso(_x, _y, _z)) return;
+if (!xyz._lasso(q[0], q[1], q[2])) return;
 `
     await this.dataToMarkers(f, undefined, cbs);
     console.log('filtered OK ', Object.keys(cbs).length);
@@ -1012,56 +677,91 @@ if (!xyz._lasso(_x, _y, _z)) return;
     return cbs;
 }
 
-/** make a proxy, experiment that may help with MLV */
-makeProxy() {
-    this.pvals = [];
-    for (let i=0; i < this.n; i++) {
-        this.pvals[i] = new Proxy(this, {get: (targ, prop) => targ.val(prop, i)});
+/**
+     * set the field to use for a particular role
+     * TODO, handle ranges, _N, etc
+     * @param {string} fieldRole
+     * @param {string} fieldName
+     * @param {boolean} update
+     */
+    setField(fieldRole, fieldName, update=true) {
+        fieldName = fieldName.trim();
+        if (this.fields[fieldRole] === fieldName) return;
+        this.fields[fieldRole] = fieldName; // .replace('_ N', '');
+        const ofilt = '\n' + E.filterbox.value + '\n';
+        const rx = new RegExp('^(.*)\\n' + fieldRole + ':(.*?)\\n(.*)', 's');  // was /^(.*)\nCOL:(.*?)\n(.*)/s
+        let g = ofilt.match(rx);
+        if (g)
+            E.filterbox.value = `${g[1]}\n${fieldRole}:${fieldName}\n${g[3]}`.trim();
+        else
+            E.filterbox.value = `${ofilt.trim()}\n${fieldRole}:${fieldName}`.trim();
+        if (update) this.dataToMarkersGui();
     }
-}
-
-/** set the field to use for a particular role */
-/** TODO, handle ranges, _N, etc */
-setField(fieldRole, fieldName, update=true) {
-    this.fields[fieldRole] = fieldName; // .replace('_ N', '');
-    const ofilt = '\n' + E.filterbox.value + '\n';
-    const rx = new RegExp('^(.*)\\n' + fieldRole + ':(.*?)\\n(.*)', 's');  // was /^(.*)\nCOL:(.*?)\n(.*)/s
-    let g = ofilt.match(rx);
-    if (g)
-        E.filterbox.value = `${g[1]}\n${fieldRole}:${fieldName}\n${g[3]}`.trim();
-    else
-        E.filterbox.value = `${ofilt.trim()}\n${fieldRole}:${fieldName}`.trim();
-    if (update) this.dataToMarkersGui();
-}
-
-getField(fieldRole) {
-    const f = this.fields[fieldRole];
-    if (f) return f; // .replace('_ N', '');
-    const filt = new RegExp(`${fieldRole}:(.*)`);
-    const m = E.filterbox.value.match(filt);
-    if (m) return m[1]; // .replace('_ N', '');
     
-    const v =this.def[fieldRole];
-    E.filterbox.value = `${fieldRole}:${v}\n` + E.filterbox.value;
-    return v;
+    /**
+         * @param {string} fieldRole
+         * @returns {any}
+         */
+    getField(fieldRole) {
+        const f = this.fields[fieldRole];
+        if (f) return f.trim(); // .replace('_ N', '');
+        const filt = new RegExp(`${fieldRole}:(.*)`);
+        const m = E.filterbox.value.match(filt);
+        if (m) return m[1].trim(); // .replace('_ N', '');
+        
+        const v =this.def[fieldRole];
+        E.filterbox.value = `${E.filterbox.value}\n${fieldRole}:${v}`;
+        return v;
+    }
+    
+    setColor(fieldName, details) { this.setField('COL', fieldName); }
+    
+    /** delegate various functions to (single for now) graphicsBoider/renderer */
+    setBackground(r = 0, g = r, b = r, alpha = 1) { this.gb.setBackground(r, g, b, alpha); }
+    setHostDOM(host) {  host.appendChild(this.gb.renderer.domElement); }
+    getHostDOM() { return this.gb.renderer.domElement.parentElement; }
+    
+    setSize(x, y) { this.gb.setSize(x, y); }
+
+    /** generate colourby and initial filter*/
+headerSetup() {
+    const tdata = this.tdata;
+    this.def = {};
+    this.def.X = tdata.header.includes('x') ? 'x' : tdata.header[0];
+    this.def.Y = tdata.header.includes('y') ? 'y' : tdata.header[1];
+    this.def.Z = tdata.header.includes('z') ? 'z' : tdata.header[2];
+    this.setField('X', this.getField('X'), false);
+    this.setField('Y', this.getField('Y'), false);
+    this.setField('Z', this.getField('Z'), false);
+
+    const s = [`<option value="fixed">fixed</option>`];
+    s.push(`<option value="random">random</option>`);
+    for (const name of tdata.header)
+        s.push(`<option value="${name}">${name}</option>`);
+    E.colourby.innerHTML = s.join('');
 }
 
-setColor(fieldName, details) { this.setField('COL', fieldName); }
-
-/** delegate various functions to (single for now) graphicsBoider/renderer */
-setBackground(r = 0, g = r, b = r, alpha = 1) { this.gb.setBackground(r, g, b, alpha); }
-setHostDOM(host) {  host.appendChild(this.gb.renderer.domElement); }
-getHostDOM() { return this.gb.renderer.domElement.parentElement; }
-
-setSize(x, y) { this.gb.setSize(x, y); }
-
-/** pending, dispose of resources */
-dispose() {
-
+async watchload() {
+    // watch while they load, 
+    // and update the graphics every now and then
+    // when this.pendread_min === tdata.n they are all fully loaded
+    const tdata = this.tdata;
+    for (let i=0; i<100; i++) {
+        if (!tdata.header) {await sleep(10); continue;}  // eg from MLV
+        tdata.showpendread();
+        await dataToMarkersGui();
+        log('pending', i, tdata.pendread_min, tdata.n);
+        if (tdata.pendread_min === tdata.n) break;
+        await sleep(500);
+    }
+    this.gb.select(tdata.bfid, this);
 }
 
+useJson(j) {return this.tdata.useJson(j); }
+   
 
-} // end class XYZ
+} // class XYZ
+
 
 function filterAdd(s, end=false) {
     const l = E.filterbox.value.split('\n');
@@ -1086,63 +786,14 @@ function filterRemove(s) {
 
 function applyurl() {
     const con = decodeURI(location.href).split('&control=')[1] || ''; // location.search is terminated by '#' character
-    E.filterbox.value = con.split('!!!').join('\n');
-    dataToMarkersGui(undefined, true);
+    return con.split('!!!').join('\n');
+    // E.filterbox.value = con.split('!!!').join('\n');
+    // dataToMarkersGui(undefined, true);
 }
 
-window.onpopstate = applyurl;
 //const sv3 = new THREE.Vector3();
-
-// for now these are intentionally INSIDE the xyz module but OUTSIDE the XYZ class.
-/** code for encoding integers with NaNs, first 16 reserved */
-const _kkk = new Float32Array([NaN]);
-const _iii = new Uint32Array(_kkk.buffer);
-// eslint-disable-next-line no-unused-vars
-const _bbb = new Uint8Array(_kkk.buffer)
-const iNaN = _iii[0];
-const _baseiNaN = iNaN + 16;
-const NaN4null = iNaN + 1;
-
-// The functions below did not work with Firefox,
-// so we are using the parallel Unit32Array/Float32Array views instead.
-// function i2NaN(i) {
-//     _kkk[0] = NaN;
-//     _iii[0] += i+16;
-//     return _kkk[0];
-// }
-// // eslint-disable-next-line no-unused-vars
-// function NaN2i(f) {
-//     _kkk[0] = f;
-//     return _iii[0] - iNaN - 16;
-// }
-
-// // eslint-disable-next-line no-unused-vars
-// var NaN4null = i2NaN(-15);  // const does not get seen as window.NaN4null
 
 /** convenience function for rgb colour */
 function col3(r, g=r, b=g) { return new THREE.Color().setRGB(r, g, b); }
 // // eslint-disable-next-line no-unused-vars
 // function hsv(h, s, v) { return new THREE.Color().setHSV(h, s, v); }
-
-
-/* reminder to me
-nb 
-http://localhost:8800/,,/xyz/xyz.html?startdata=/!C:/Users/Organic/Downloads/small_test_UMAP3A.csv
-http://localhost:8800/,,/xyz/xyz.html?startdata=https://files.rcsb.org/download/6Z9P.pdb
-https://sjpt.github.io/xyz/xyz.html?startdata=data/4bcufullCA.pdb
-https://sjpt.github.io/xyz/xyz.html?startdata=data/small_test.csv
-https://sjpt.github.io/xyz/xyz?startdata=https://sjpt.github.io/xyz/data/small_test.csv
-
-http://localhost:8800/,,/xyz/xyz.html?startdata=/remote/https://userweb.molbiol.ox.ac.uk//public/staylor/cyto/Steve_test_UMAP3_cyto_xyz.txt
-
-also
-https://gitcdn.link/cdn/sjpt/xyzviewer/master/xyz.html
-https://combinatronics.com/sjpt/xyzviewer/master/xyz.html?arch 
-   (better, but corrupted the circle.png file) 
-   BAD https://combinatronics.com/sjpt/xyzviewer/master/sprites/circle.png
-   GOOD https://sjpt.github.io/xyz/sprites/circle.png
-   GOOD https://gitcdn.link/cdn/sjpt/xyzviewer/master/sprites/circle.png
-
-
-http://localhost:8800/,,/xyz/xyz.html?startdata=,,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml
-*/

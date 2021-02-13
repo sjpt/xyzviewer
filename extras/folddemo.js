@@ -2,7 +2,7 @@
 
 // export {makevirchains, virchaindists};
 /** dynamic expansion, todo add easier scripting */
-import {centrerange, col3, dataToMarkersGui, setPointSize} from '../xyz.js';
+import {centrerange, col3, dataToMarkersGui, setPointSize, XYZ} from '../xyz.js';
 import {posturiasync, log} from '../basic.js';
 
 import {pdbReader} from '../plugins/pdbreader.js';
@@ -13,7 +13,13 @@ const {E} = window;
 
 let folddemo_st;  // folddemo start time to help script
 let virchains = [];
-let polygonmesh, rlines, groupgeom, myxyz;
+let polygonmesh, rlines, groupgeom;
+/** @type {XYZ} */ let myxyz;
+
+XYZ.autorange = false;
+ggb.defaultDistance = 400;
+ggb.defaultFov = 50;
+ggb.home();
 
 
 function folddemofun(tt = 10000, gap = 2000) {
@@ -29,7 +35,6 @@ function folddemofun(tt = 10000, gap = 2000) {
 
     setPointSize(5);
     COLS.set('resname');
-    ggb.orbcamera.position.set(0,0,250);
     ggb.fullcanvas(true);
 
     if (!folddemo_st) requestAnimationFrame(foldframe);
@@ -65,8 +70,8 @@ folddemofun();
 /** make chains based on backbone distances > l, and compute centroids and other chain stats
  * only relevant to virus/folddemo; assumes we only have CA atoms, and chains aren't sensibly defined
  */
-function makevirchains(l = 5, cols = myxyz.namecols, ) {
-    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'];
+function makevirchains(l = 5, cols = myxyz.tdata.namecols, ) {
+    const xc = cols['x'], yc = cols['y'], zc = cols['z'];
     // const chainc = cols.chainn = new Float32Array(xc.length);
     const chainc = cols.chain; // just override the all 'A' chain field
     virchains = [];
@@ -101,7 +106,7 @@ function makevirchains(l = 5, cols = myxyz.namecols, ) {
     }
 
     console.log('number of chains for separation', l, 'is',  c);
-    myxyz.ranges.chain = myxyz.genstats('chain');
+    myxyz.tdata.ranges.chain = myxyz.tdata.genstats('chain');
     return virchains;
 }
 
@@ -234,16 +239,18 @@ function virchaindists(sc = 1) {
     return dds;
 }
 
+let opos;   // original position, used to make expanded variants
+
 /** expand all the chains out from their trimer, pentagon and centroid
  * only relevent to folddemo. should be moved if possible
  */
 function expandchain(trik = 0, pentk = 0, cenk = 0) {
-    const xc = myxyz.namecols['x'], yc = myxyz.namecols['y'], zc = myxyz.namecols['z'], chainc = myxyz.namecols['chain'];
-    let opos = myxyz.opos;
+    const tdata = myxyz.tdata;
+    const xc = tdata.namecols['x'], yc = tdata.namecols['y'], zc = tdata.namecols['z'], chainc = tdata.namecols['chain'];
     if (!opos) {
-        opos = myxyz.opos = [];
+        opos = [];
         for (let i = 0; i < xc.length; i++)
-            myxyz.opos[i] = new THREE.Vector3(xc[i], yc[i], zc[i]);
+        opos[i] = new THREE.Vector3(xc[i], yc[i], zc[i]);
     }
 
     if (!rlines) virchaindists();
@@ -268,5 +275,4 @@ function virusshow() {
         E.colourby.value = 'random';
     }
     dataToMarkersGui();
-    if (!ggb.renderer.xr.getSession()) ggb.orbcamera.position.z = 200;
 }

@@ -1,20 +1,16 @@
 'use strict';
 // export {start, stop, map, paint, lassoGet, setrun, setColour, setFilter, lassos};
-export {Lasso, lassos, setrun, setFilter, setColour, lassoGet};  // lassos temorary?
+export {Lasso};  // lassos temorary?
 // import {ggb} from './graphicsboiler.js'; // camera, renderer, addToMain, controls, nocamscene, maingroup
 import {dataToMarkersGui, filterAdd, filterRemove} from './xyz.js';
 import {THREE} from "./threeH.js";
+
+const {X} = window;
 
 let startx, lastx, starty, lasty; // assume these won't get confused between different lassos
 const sv3 = new THREE.Vector3();
 
 // temporary as we move to multiple xyzs etc
-const lassos = [];
-function setrun(c) { return glasso.setrun(c) }
-function setFilter(bool) { return glasso.setFilter(bool); }
-function setColour(bool) { return glasso.setColour(bool); }
-function lassoGet(x,y,z, id=glasso.lassos.length-1) { return glasso.lassoGet(x,y,z,id); }
-
 
 // end temp
 
@@ -22,22 +18,27 @@ function lassoGet(x,y,z, id=glasso.lassos.length-1) { return glasso.lassoGet(x,y
 class Lasso {
     constructor(gb) {
         this._gb = gb;
-        this.size = new THREE.Vector2();
         this.flag = undefined;                                 
 
-        // let map, mapt, size = new THREE.Vector2(), startx, starty, lastx, lasty, flag, canvas;
-        this.lassos = lassos;   // temporary
-        // this.lassos = [];  // array of saved lassos, with camera. map etc
+        this.lassos = []; // array of saved lassos, with camera. map etc, temp, temporarily limited to zero or one
+
+        // make the mousedown etc available even when not called as this.
+        // ??? is there a better pattern for this ???
+        const self = this;
+        this.rmousedown = e => self.mousedown(e);
+        this.rmousemove = e => self.mousemove(e);
+        this.rmouseup = () => self.mouseup();
+        this.rdblclick = () => self.dblclick();
     }
 
-    get gb() { return window.currentXyz.gb; }  // <<< temp, wrong
+    get gb() { return X.currentXyz.gb; }  // <<< temp, wrong
 
 
 mousedown(e) {
     startx = lastx = e.offsetX, starty = lasty = e.offsetY;
 
-    this.gb.renderer.domElement.addEventListener('mousemove', e => this.mousemove(e));
-    this.gb.renderer.domElement.addEventListener('mouseup', () => this.mouseup());
+    this.gb.renderer.domElement.addEventListener('mousemove', this.rmousemove);
+    this.gb.renderer.domElement.addEventListener('mouseup', this.rmouseup);
     e.preventDefault();     // otherwise the double-click somehow selects msgbox text
 }
 
@@ -45,6 +46,7 @@ setrun(c) {c ? this.start() : this.stop() }
 
 /** paint a triangle */
 paint(x1,y1, x2,y2, x3,y3, v = 0xff, type = 'xor') {
+    const {size, map, mapt} = this.lassos[0];
     const miny = Math.min(y1, y2, y3), maxy = Math.max(y1, y2, y3);
     // console.log('paint', x1,y1, x2,y2, x3,y3, 'y...', miny, maxy, Math.ceil(miny), Math.ceil(maxy))
     for (let y = Math.ceil(miny); y < Math.ceil(maxy); y++) {
@@ -62,14 +64,14 @@ paint(x1,y1, x2,y2, x3,y3, v = 0xff, type = 'xor') {
             minx = Math.min(minx, x); maxx = Math.max(maxx, x);
         }
         for (let x = Math.ceil(minx); x < Math.ceil(maxx); x++) {
-            const o = (this.size.y - y) * this.size.x + x;
+            const o = (size.y - y) * size.x + x;
             if (type === 'xor')
-                this.map[o] ^= v;
+                map[o] ^= v;
             else
-                this.map[o] = v;
+                map[o] = v;
         }
     }
-    this.mapt.needsUpdate = true;
+    mapt.needsUpdate = true;
 }
 
 mousemove(e) {
@@ -87,66 +89,86 @@ mousemove(e) {
 }
 
 mouseup() {
+    this.canvas.removeEventListener('mousemove', this.rmousemove);
     window.dispatchEvent(new Event('lassoUp'));
-    this.canvas.removeEventListener('mousemove', this.mousemove);
     dataToMarkersGui();
     // stop();
 }
 
 dblclick() {
-    this.map.fill(0);
-    this.mapt.needsUpdate = true;
+    const {map, mapt} = this.lassos[0];
+    map.fill(0);
+    mapt.needsUpdate = true;
+}
+
+clear() {
+    this.stop();
+    this.lassos = [];
 }
 
 start(pflag = 0xff) {
     this.flag = pflag;
     const canvas = this.canvas = this.gb.renderer.domElement;
-    canvas.addEventListener('mousedown', e => this.mousedown(e));
-    canvas.addEventListener('dblclick', () => this.dblclick());
+    canvas.addEventListener('mousedown', this.rmousedown);
+    canvas.addEventListener('dblclick', this.rdblclick);
     this.gb.controls.enabled = false;
 
-    this.gb.renderer.getSize(this.size);
-    this.gb.setSize(this.size.x, this.size.y);    // get nocamcamera set up right ... NOT the correct way?
-    this.map = new Uint8Array(this.size.x * this.size.y);
-    this.mapt = new THREE.DataTexture(this.map, this.size.x, this.size.y, THREE.LuminanceFormat, THREE.UnsignedByteType);
+    // temp arrangement so we only get one lasso per Lasso
+    if (this.lassos[0]) {
+        // this.mesh.visible = true;
+        this.gb.nocamscene.add(this.mesh);
+        return this.gb.restoreview(this._saveview);
+    }
+    const size = new THREE.Vector2();
+    this.gb.renderer.getSize(size);
+    this.gb.setSize(size.x, size.y);    // get nocamcamera set up right ... NOT the correct way?
+    const map = new Uint8Array(size.x * size.y);
+    const mapt = new THREE.DataTexture(map, size.x, size.y, THREE.LuminanceFormat, THREE.UnsignedByteType);
     let material = new THREE.MeshBasicMaterial();
     material.transparent = true;
     material.opacity = 0.04;
-    material.map = this.mapt;
-    let geometry = new THREE.PlaneGeometry(this.size.x, this.size.y);
-    let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(this.size.x/2, this.size.y/2, 0);
-    this.gb.addToMain(mesh, 'lasso_' + this.lassos.length, this.gb.nocamscene);
+    material.map = mapt;
+    let geometry = new THREE.PlaneGeometry(size.x, size.y);
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.position.set(size.x/2, size.y/2, 0);
+    // this.gb.addToMain(this.mesh, 'lasso_' + this.lassos.length, this.gb.nocamscene);
+    this.gb.nocamscene.add(this.mesh);
     // mesh.scale.set(0.08,0.08,1)
 
     // compute the complete object position => screen (map) position matrix
-    const totmat = new THREE.Matrix4();
+    const totmat = this.totmat = new THREE.Matrix4();
     const m = () => new THREE.Matrix4();
-    totmat.multiply(m().makeTranslation(this.size.x/2, this.size.y/2, 0));
-    totmat.multiply(m().makeScale(this.size.x/2, this.size.y/2, 0));
+    totmat.multiply(m().makeTranslation(size.x/2, size.y/2, 0));
+    totmat.multiply(m().makeScale(size.x/2, size.y/2, 0));
     totmat.multiply(this.gb.camera.projectionMatrix);
     totmat.multiply(this.gb.camera.matrixWorldInverse);
     totmat.multiply(this.gb.maingroup.matrixWorld);
 
-    this.lassos.push({map: this.map, size: this.size, totmat, mapt: this.mapt})
+    this._saveview = this.gb.saveview(); // save for reestablish
+
+    this.lassos.push({map, size, totmat, mapt, saveview: this._saveview});
 }
 
 stop() {
-    this.canvas.removeEventListener('mousemove', this.mousemove);
-    this.canvas.removeEventListener('mousedown', this.mousedown);
-    this.canvas.removeEventListener('mouseup', this.mouseup);
-    this.canvas.removeEventListener('mouseup', this.dblclick);
+    this.canvas.removeEventListener('mousemove', this.rmousemove);
+    this.canvas.removeEventListener('mousedown', this.rmousedown);
+    this.canvas.removeEventListener('mouseup', this.rmouseup);
+    this.canvas.removeEventListener('mouseup', this.rdblclick);
+    // this.mesh.visible = false;
+    this.gb.nocamscene.remove(this.mesh);
+
     
     this.gb.controls.enabled = true;
     window.dispatchEvent(new Event('lassoStop'));
     dataToMarkersGui();
-
 }
 
 
-/** get the lasso value for a point x,y,z,  */
+/** get the lasso value for a point x,y,z */
 lassoGet(x,y,z, id=this.lassos.length-1) {
-    const {map, size, totmat} = this.lassos[id];
+    const l = this.lassos[id];
+    if (l === undefined) return 255;
+    const {map, size, totmat} = l;
     sv3.set(x,y,z).applyMatrix4(totmat);
     sv3.x = Math.round(sv3.x);
     sv3.y = Math.round(sv3.y);
@@ -164,5 +186,3 @@ setFilter(bool) {
 }
 
 }   // end class Lasso
-
-let glasso = new Lasso();

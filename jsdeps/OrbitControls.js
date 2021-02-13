@@ -23,7 +23,7 @@
 //      controls.target.z = 150;
 // Simple substitute "OrbitControls" and the control should work as-is.
 
-var defaultDistance;
+var {GG} = window;
 
 export {OrbitControls};
 import {THREE} from "../threeH.js";
@@ -494,13 +494,16 @@ const OrbitControls = function ( object, domElement ) {
 	}
 	
 	this.home = function() {
-		var camera  = scope.object;
+		var orbcamera  = scope.object;
 		var p = scope.object.position;
 		scope.reset();
-		p.set(0, 0, defaultDistance);  // add cleaner way ?
-		camera.setRotationFromMatrix(new THREE.Matrix4());
-		camera.up = new THREE.Vector3(0,1,0);
-		camera.updateMatrix();
+		p.set(0, 0, GG.gb.defaultDistance);  // add cleaner way ?
+		orbcamera.setRotationFromMatrix(new THREE.Matrix4());
+		orbcamera.up = new THREE.Vector3(0,1,0);
+		orbcamera.updateMatrix();
+		const camera = GG.gb.camera;
+		camera.fov = GG.gb.defaultFov;
+		camera.updateProjectionMatrix();
 		scope.update();
 	}
         

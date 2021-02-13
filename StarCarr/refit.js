@@ -3,8 +3,10 @@
 export {refit};
 import {ggb} from '../graphicsboiler.js'; // addToMain
 import {col3} from '../xyz.js';
-const { X} = window;
 import {THREE} from "../threeH.js";
+import {XYZ} from "../xyz.js";
+
+const {X} = window;
 
 let rgroups, rlines;
 
@@ -13,9 +15,11 @@ let rgroups, rlines;
 // compute refit from preloaded data held in xyz cols, make a refit set for each group
 // and display as lines from flints to centroid of group
 function refit() {
+    /** @type {XYZ} */
     const xyz = X.currentXyz;
-    const refitcol = xyz.namecols.refit_grou;
-    const xc = xyz.namecols.x, yc = xyz.namecols.y, zc = xyz.namecols.z;
+    const tdata = xyz.tdata;
+    const refitcol = tdata.namecols.refit_grou;
+    const xc = tdata.namecols.x, yc = tdata.namecols.y, zc = tdata.namecols.z;
     if (!refitcol) {setTimeout(refit, 100); return; }
     // data prep, find groups
     rgroups = {};

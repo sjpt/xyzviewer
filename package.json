@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/sjpt/xyzviewer#readme",
   "devDependencies": {
-    "eslint": "^7.14.0",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^6.0.1",
@@ -25,8 +24,9 @@
     "eslint-plugin-standard": "^3.1.0"
   },
   "dependencies": {
-    "csv-parser": "^2.3.3",
-    "esbuild": "^0.8.24",
+    "csv-parser": "^2.3.5",
+    "esbuild": "^0.8.43",
+    "eslint": "^7.19.0",
     "mathjs": "^8.1.1",
     "three": "^0.123.0"
   },
