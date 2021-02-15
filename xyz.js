@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/13 13:43:09
+window.lastModified.xyz = `Last modified: 2021/02/15 12:33:03
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -34,10 +34,11 @@ const centrerange = new THREE.Vector3(Infinity);  // ranges for external use
 const badfun = () => -9999;
 
 var usePhotoShader;
-const baseguiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
-
 
 class XYZ {
+
+static baseguiset = {spotsize: 0.2, colourby: 'fixed', colourpick: '#ffffff', filterbox: ''};
+
 /**
  * @param {any} pdata
  * @param {string} fid
@@ -59,7 +60,7 @@ constructor(pdata, fid, owngb) {
     this._dataToMarkersQ = [];
     this.fid = fid;
     this.makechainlines = undefined;
-    this.guiset = baseguiset;
+    this.guiset = XYZ.baseguiset;
     this.guiset.filterbox = applyurl();
     // this.headerSetup(); // too soon for MLV
 
@@ -87,23 +88,30 @@ constructor(pdata, fid, owngb) {
     if (pdata)
         this.finalize(fid); // #### check when to do this
 
+    if (XYZ.constructorDone) XYZ.constructorDone(this);
+
 } // XYZ constructor
 
 static autorange = true;
 
+static constructorDone = undefined;
 
+/**
+ * Once data understood, prepare graphics and display
+ * (maybe incrementally as real data is loaded)
+ * @param {string} fid 
+ */
 finalize(fid) {
     if (this.tdata.header) this.headerSetup(); // ####????
-    this.watchload(); // #### check when to do this
 
-    this.setup(fid);
-    this.filtergui({keyCode: 13});    // display as markers
+    this.setupGraphics(fid);
     this.gb.select(fid, this);
+    this.watchload(); // #### check when to do this
+    // this.filtergui({keyCode: 13});    // display as markers
 }
 
-    /* load data based on gui values */
 /**
- * 
+ * load data based on gui values
  * @param {string | undefined} type 
  * @param {boolean} popping 
  */
@@ -117,7 +125,7 @@ dataToMarkersGui(type = undefined, popping = false) {
     
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
-        if (!this.guiset) this.guiset = baseguiset;   // in case of pdbreader ... todo proper subclass
+        if (!this.guiset) this.guiset = XYZ.baseguiset;   // in case of pdbreader ... todo proper subclass
         Object.assign(this.guiset, {colourby: E.colourby.value, filterbox: E.filterbox.value, colourpick: E.colourpick.value});
         if (this.makechainlines)
             this.makechainlines(E.filterbox.value);
@@ -153,10 +161,10 @@ hide(ids) {
      */
 onFilter(f) { this._onFilter = f; }
 
-
-// dataToMarkers must be queued as it is async
-// in particular, we want to make sure filter canclulation is complete before it is used.
 /**
+ * draw the data according to the filter rules
+ * dataToMarkers must be queued as it is async
+ * in particular, we want to make sure filter canclulation is complete before it is used.
  * 
  * @param {string} pfilterfun 
  * @param {boolean} popping 
@@ -244,7 +252,7 @@ async _dataToMarkersFast() {
  * @param {[any]} cbs ?? 
  */
 async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
-    if (!this.particles) this.setup(this.fid);  // for call from pdbReader
+    if (!this.particles) this.setupGraphics(this.fid);  // for call from pdbReader
     const tdata = this.tdata;
     const l = tdata.n; // xc.length;
     let vert = this._svert = this._svert || new Float32Array(l*3); // <<< allow for lines ???
@@ -259,6 +267,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
    
 
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
+    tdata.showpendread();
     if (filterfun === badfun) return;
     let ii = 0;
     let noxyz = 0;
@@ -273,7 +282,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
         c.setRGB(0.3, 0.3, 0.3);
         if (filterfun) {
             c1.setRGB(undefined, undefined, undefined);
-            const df = filterfun(this/*._ccr*/, i, _namecols);
+            const df = filterfun(this/*. _ccr*/, i, _namecols);
             if (typeof df !== 'object') continue;
             // [q[0], q[1], q[2]] = df;
         } else {
@@ -335,7 +344,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     await this.makefilterfun(pfilterfun, E.filterbox, 'confirm');                 // get gui display right
 }
 
-/**
+/** once vert and col are computed, use them to populate the graphics
      * @param {number} ll
      * @param {Float32Array} vert
      * @param {Float32Array} col
@@ -363,10 +372,6 @@ usevertcol(ll, vert, col, lines) {
         this.group.add(this.particles);
         this.particles.geometry = geometry;
     }
-
-
-
-    // return [ll,l];
 }
 
 /** make a function for a filter (also colouring etc)
@@ -526,7 +531,7 @@ async makefilterfun(filtin, box, mode='') {
 
             // generate filter
             // if (filt.indexOf('return') === -1) filt = 'return (' + filt + ')';
-            filt += `\nreturn q;`        // note, xyz._col === _C is implicit output
+            filt += `\nreturn q;`        // note, xyz. _col === _C is implicit output
             
             // todo: make special case filters for pure number/pure alpha columns???
             filt = `"use strict";
@@ -554,7 +559,7 @@ async makefilterfun(filtin, box, mode='') {
 
     try {
         // eslint-disable-next-line no-unused-vars
-        const r = filterfun(this/*._ccr*/, 0, tdata.namecols);
+        const r = filterfun(this/*. _ccr*/, 0, tdata.namecols);
     } catch(e) {
         msg('function throws exception: ' + e.message, '_exception');
         return badfun;
@@ -607,7 +612,11 @@ async filtergui(evt = {}) {
     }
 }
 
-setup(fid) {
+/**
+ * set up the graphics for this XYZ view.
+ * @param {string} fid 
+ */
+setupGraphics(fid) {
     if (this.material) return;
     // options for sprite1:
     // 1: load as image defined in html, will not work for file: from chrome unless you set the flag --allow-file-access-from-files will do it but inconvenient
@@ -649,14 +658,6 @@ setup(fid) {
     // xyzs[this.name] = this;
 } // setup
 
-
-// /** screen position; working towards lasso filter */
-// spos(x,y,z) {
-//     sv3.set(x,y,z).project(camera);
-//     sv3.x = (sv3.x + 1) * 0.5 * window.innerWidth;
-//     sv3.y = (sv3.y + 1) * 0.5 * window.innerHeight;
-//     return sv3;
-// }
 /** lasso value, can be used for filter or color */
 _lasso(x,y,z,id) {
     return this.gb.lasso.lassoGet(x,y,z,id);
@@ -718,7 +719,18 @@ if (!xyz._lasso(q[0], q[1], q[2])) return;
     
     /** delegate various functions to (single for now) graphicsBoider/renderer */
     setBackground(r = 0, g = r, b = r, alpha = 1) { this.gb.setBackground(r, g, b, alpha); }
-    setHostDOM(host) {  host.appendChild(this.gb.renderer.domElement); }
+    setHostDOM(host) {  
+        host.appendChild(this.gb.renderer.domElement);
+        const gb = this.gb;
+        const renderer = gb.renderer;
+        host.addEventListener('resize', gb.onWindowResize);
+        gb.onWindowResize();
+        renderer.domElement.style.zIndex = 999;
+        renderer.domElement.style.position = 'relative';
+        // give access to our GUI, toggled by double-click on our canvas
+        renderer.domElement.ondblclick = () => E.xyzviewergui.style.display = E.xyzviewergui.style.display ? '' : 'none';
+    
+    }
     getHostDOM() { return this.gb.renderer.domElement.parentElement; }
     
     setSize(x, y) { this.gb.setSize(x, y); }
@@ -746,9 +758,9 @@ async watchload() {
     // and update the graphics every now and then
     // when this.pendread_min === tdata.n they are all fully loaded
     const tdata = this.tdata;
+    while (!tdata.header) {await sleep(10);}  // eg from MLV
     for (let i=0; i<100; i++) {
-        if (!tdata.header) {await sleep(10); continue;}  // eg from MLV
-        tdata.showpendread();
+        // tdata.showpendread(); // done better in dataToMarkersGui()
         await dataToMarkersGui();
         log('pending', i, tdata.pendread_min, tdata.n);
         if (tdata.pendread_min === tdata.n) break;

@@ -1,9 +1,9 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/13 17:40:36
+window.lastModified.tdata = `Last modified: 2021/02/14 14:33:55
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
-import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList} from './basic.js';
+import {fileReader, lineSplitter, saveData, sleep, readyFiles, addFileTypeHandler, availableFileList, queryVariables} from './basic.js';
 import {XYZ, centrerange} from './xyz.js';
 
 
@@ -33,6 +33,7 @@ csvReader.rawhandler = true;
 class TData {
 
 static tdatas = {};
+// reminder, useful regexp for wrongly used _ fields:  (?<![this|me])\._
 
 /**
      * @param {any} data
@@ -46,7 +47,7 @@ constructor(data, fid) {
     this._cols = [],         // column arrays (Float32), by number
     this._colsv = [],        // column arrays (Uint32), by number    
     this.namecols = {},     // columns arrays (Float32), by name
-    this.nameattcols = {};  // column buffer attributes
+    this.nameattcols = {};  // column buffer attributes; created outside TData but held by  TData for sharing
     this._vset = [],         // value set, by number
     this.namevset = {};     // value set, by name, string => value set id 
     this._vsetlen = [];      // size of value set, by number
@@ -147,7 +148,9 @@ async lazyLoadCol(id) {
     let stream;
     if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test! will work for files from server
         console.timeLog(kk, 'use server');
-        const resp = await fetch(fid);
+        let xfid = fid;
+        if (queryVariables.nodatacache) xfid += '?' + Date.now();
+        const resp = await fetch(xfid);
         console.timeLog(kk, 'await fetch done');
         if (resp.status !== 200)
             throw new Error(`Column data ${id} not available: rc=${resp.status}<br>${fid}`)
@@ -223,19 +226,31 @@ async yamlReader(raw, fid) {
     Object.assign(this, X.jsyaml.safeLoad(yaml));
 
     // and synthesize some more
-    const {namevset, namevseti, header} = this;
+    const {namevset, namevseti, header, namevsetlen} = this;
     this.namecols = {};
     this.namevcols = {};
-    for (const n in namevset)
+    for (const n in namevset) {
         namevseti[n] = Object.keys(namevset[n]);
+        namevsetlen[n] = namevseti[n].length;
+    }
     // ?? this.headerSetup();  
     
-    // maybe these could be saved as is in the yaml file --- more or less duplicate code with finalize()
-    this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
-    for (let i = 0; i < header.length; i++) {
-        this.namecolnstrs[header[i]] = this._colnstrs[i];
-        this.namecolnnum[header[i]] = this._colnnum[i];
-        this.namecolnnull[header[i]] = this._colnnull[i];
+    // for backward compatibility, older files (eg cytof_1.5million_anonymised.txt.yaml for ?ox) saved in different format
+    if (!this.namecolnstrs) {
+        this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
+        for (let i = 0; i < header.length; i++) {
+            // if it is an old yaml file the namecolnstrs etc will be missing,
+            // and the _colnstrs etc will have an old name colnstrs etc.
+            // @ts-ignore
+            this.namecolnstrs[header[i]] = this.colnstrs[i];
+            // @ts-ignore
+            this.namecolnnum[header[i]] = this.colnnum[i];
+            // @ts-ignore
+            this.namecolnnull[header[i]] = this.colnnull[i];
+        }
+        // @ts-ignore
+        delete this.colnstrs; delete this.colnnum; delete this.colnnull;
+
     }
 
     this.bfid = fid.substring(0, fid.length - 5);
@@ -282,7 +297,6 @@ async csvReader(raw, fid) {
     if (fid.endsWith('.yaml')) return this.yamlReader(raw, fid);
 
     this.prep();     // obsolete ?
-    // let {cols, namecols, vset, namevset} = this;
     
     // newparse = false;    // separate tests rather than if else to allow both for quick performance comparison
     var oldparse = true;
@@ -314,7 +328,7 @@ async csvReader(raw, fid) {
     // }
     const me = this;  // the this references inside this.lien = linex  were ok, but typescript s=does not seem to like them so use me
     if (oldparse) {
-        X.currentThreeObj = X.currentXyz = this; this.xyz = this;
+        X.currentThreeObj = X.currentXyz = this; // this.xyz = this;
         let sep;
         const st = Date.now();
         let byteLength;
@@ -597,17 +611,19 @@ async savefiles() {
     // make an object with most metadata but no data
     var xxx = this;
     var obj = Object.assign({}, xxx);
-    delete obj._cols;
-    delete obj.namecols;
-    delete obj.xyz;
-    for (const k in obj) if (k[0] === '_') delete obj[k];
-//     delete obj.namevset;
-//     delete obj.namevsetlen;
-    delete obj.namevseti;    
-    delete obj._vset;
-    delete obj._vsetlen;
-    delete obj.nameattcols;
-//    delete obj.vseti;       // ???
+
+    delete obj.namecols;        // namecols will be saved in separate column files
+    delete obj.xyzs;            // xyzs will by dynamic in each session
+    for (const k in obj) if (k[0] === '_') delete obj[k];   // delete all private
+    delete obj.namevsetlen;     // recreate in yamlReader from namevset
+    delete obj.namevseti;       // recreate in yamlReader from namevset   
+    delete obj.nameattcols;     // THREE attributes will be created by user programs, but shared through nameattcols
+
+    // delete obj._cols;        _* done above
+    // delete obj._vset;        _* done above
+    // delete obj._vsetlen;     _* done above
+    // delete obj.namevset;     DO NOT delete
+    // delete obj.vseti;        field does not exist any more
        
     var yaml = X.jsyaml.safeDump(obj, {skipInvalid: true})
     console.log('yaml size', yaml.length);
@@ -677,12 +693,14 @@ valC(f, i) {
 }
 // X.en umI = en umI; X.en umF = en umF; 
 
-/** make a proxy, experiment that may help with MLV */
+/** make a proxy, strictly an array of proxies, to look like JSon data
+ * experiment that may help with MLV */
 makeProxy() {
-    this.pvals = [];
+    const p = this.pvals = [];
     for (let i=0; i < this.n; i++) {
-        this.pvals[i] = new Proxy(this, {get: (targ, prop) => targ.val(prop, i)});
+        p[i] = new Proxy(this, {get: (targ, prop) => targ.val(prop, i)});
     }
+    return p;
 }
 
 

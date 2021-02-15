@@ -2,28 +2,28 @@
 //
 // see comments in https://docs.google.com/document/d/18CteOxpaPWIA2zRnd3FJBw5ybBWwSESFct4IEoE6Hyw/edit#heading=h.1eek8clfzs4s
 
-
 /*
-// to get it to work
+patchxyz itself does not load significant xyz code, so can be imported with very little overhead
+For patching MLV it is loaded from the conditional breakpoint;
+and then register() arranges to capture keystroke '3'
+and the keystroke then calls makexyz() which converts scatterplot to xyz
+ 
+The code loading (xyzviewer + support such as THREE) is done by init() on the first call to makexyz().
+*/
 
+/* for CORS, to get it to work with remote xyz version different from MLV
 run
-"%LOCALAPPDATA%\Google\Chrome SxS\Application\chrome.exe"  --disable-web-security --user-data-dir=%temp%\mlvxyz
+%LOCALAPPDATA%\Google\Chrome SxS\Application\chrome.exe"  --disable-web-security --user-data-dir=%temp%\mlvxyz
+
+no need for local xyz version served from our server, it allows CORS
 
 // in graph.js after 'class WGLScatterPlot extends WGLChart{' ... 'self = this;'
-// add conditional breakpoint as below
-loc = 'http://localhost:8800/,,/xyz/'; 
-import(loc + 'patchxyz.js').then(x => x.register(loc, self)); 
-console.log('importing', div)
+// set localStorage and add conditional breakpoint as below
 
-or:
-loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/'; 
-import(loc + 'patchxyz.js').then(x => x.register(loc, self)); 
-console.log('importing', div)
-
-or:
 localStorage.loc = 'http://localhost:8800/,,/xyz/'
 localStorage.loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/'
 
+// breakpoint code
 loc = localStorage.loc; 
 import(loc + 'patchxyz.js').then(x => x.register(loc, self)); 
 console.log('importing', div)
@@ -43,12 +43,15 @@ const {E} = window;
 console.log('patchxyz.js execute, window W set');
 
 // init called lazily once on first intercept, to load up all the xyz code, and then perform intercept
-async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', plotobj) {
+async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
+    const GG = window.GG;   // this gives access to various parts of xysviewer
+    if (initdone) return await awaitGGLoaded(); // first time in has initialized it, but we must wait till that one is ready
 
+    initdone = true;
     const hh = await(await fetch(loc + 'xyz.html')).text();
 
     // extract the gui body from the html file and insert into running file, hidden by default
-    // we need to gui in the short term (even if hidden) as filter
+    // we need the gui in the short term (even if hidden) as filter
     const guibody = hh.split('<body>')[1].split('</body>')[0];
     const guidiv = document.createElement('div');
     guidiv.innerHTML = guibody;
@@ -63,6 +66,7 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', p
     guidiv.style.zIndex = '99999';
 
     // extract the style sheet from the html file and insert into running file
+    // n.b. this can have typical nasty css side-effects
     let style = hh.split('<style>')[1].split('</style>')[0];
     style = style.replace('body {', 'xbody {')
     const sdiv = document.createElement('style');
@@ -75,64 +79,61 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/', p
     await addscript(loc + "jsdeps/js-yaml.js")
     await addscript(loc + "jsdeps/math.js")
 
-    // importing graphicsboiler will import all of the xyz files
-    // it will also set up renderer, etc
-    // ? TODO: xyzviewer currently assumes a single canvas/renderer
-    // ? We may want to allow multiple separate ones.
-    // ? Will need to consider how datatextures etc are shared
-    await import(loc + 'graphicsboiler.js');
+    // const bbb = await import(loc + 'basic.js');
 
     window.addEventListener('GGLoaded', ()=>ggloaded = true);
+    // importing graphicsboiler will import all of the xyz files
+    // it will also set up renderer, etc
+    await import(loc + 'graphicsboiler.js');
+
+    await awaitGGLoaded();
 }
 
+// permit await sleep(xxx)
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 let initdone, ggloaded;
+async function awaitGGLoaded() { 
+    while (!ggloaded) {await sleep(100)}
+}
+
 // intercept the captured pane and convert it to xyz object: capturing done by breakpoint for now
 // plotobj holds the 'donor' object, from which we can extract data, columns, etc
 async function makexyz(loc, plotobj) {
-    // if (!(plotobj.div)) return;
     const GG = window.GG;   // this gives access to various parts of xysviewer
-    if (!initdone) {initdone = true; await init(loc, plotobj);}  // first time in will load first, then recall makexyz
-    const bbb = await import(loc + 'basic.js');
-    while (!ggloaded) {await bbb.sleep(100)}
+    await init(loc);
+
     // create a XYZ object and populate it with the captured data
     let hhh;
     /* * @type {XYZ} */ let xyzobj;  // don't use types while this is patch
-    if (plotobj.div) {
-        xyzobj = new GG.xyz.XYZ(undefined, 'fromMLV', true); // true
-        xyzobj.useJson(plotobj.ndx.getOriginalData());
+    xyzobj = new GG.xyz.XYZ(undefined, 'fromMLV', true); // true
+    xyzobj.useJson(plotobj.ndx.getOriginalData());
 
-        // find the captured div, and display the domElement inside it
-        hhh = plotobj.div[0];
-        // window.hhh = hhh;               // debug
-        const ch = hhh.children;
-        for (let i = 0; i < ch.length; i++) {
-            if (ch[i].className !== 'mlv-chart-label')
-                ch[i].style.display = 'none';
-        }
-
-        const cols = plotobj.config.param;
-        xyzobj.setField('X', cols[0], false);
-        xyzobj.setField('Y', cols[1], false);
-        xyzobj.setField('Z', 'field35', false);
-        xyzobj.setColor(plotobj.config.color_by.column.id, false);
-
-    } else {
-        const fid = ',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
-        xyzobj = new GG.xyz.XYZ(await fetch(fid), fid, true)
-        hhh = plotobj;
-        // cols = ['x', 'y', 'z']
+    // find the captured div, and display the domElement inside it
+    hhh = plotobj.div[0];
+    // window.hhh = hhh;               // debug
+    const ch = hhh.children;
+    for (let i = 0; i < ch.length; i++) {
+        if (ch[i].className !== 'mlv-chart-label')
+            ch[i].style.display = 'none';
     }
-    const gb = xyzobj.gb;
-    const renderer = gb.renderer;
 
+    const cols = plotobj.config.param;
+    xyzobj.setField('X', cols[0], false);
+    xyzobj.setField('Y', cols[1], false);
+    xyzobj.setField('Z', 'field35', false);
+    xyzobj.setColor(plotobj.config.color_by.column.id, false);
+
+ 
     xyzobj.setHostDOM(hhh);
-    hhh.addEventListener('resize', gb.onWindowResize);
-    // renderer.setSize(hhh.offsetWidth, hhh.offsetHeight);
-    gb.onWindowResize();
-    renderer.domElement.style.zIndex = 999;
-    renderer.domElement.style.position = 'relative';
-    // give access to our GUI, toggled by double-click on our canvas
-    renderer.domElement.ondblclick = () => E.xyzviewergui.style.display = E.xyzviewergui.style.display ? '' : 'none';
+    const gb = xyzobj.gb;
+    // now done by setHostDOM
+    // const renderer = gb.renderer;
+    // hhh.addEventListener('resize', gb.onWindowResize);
+    // gb.onWindowResize();
+    // renderer.domElement.style.zIndex = 999;
+    // renderer.domElement.style.position = 'relative';
+    // // give access to our GUI, toggled by double-click on our canvas
+    // renderer.domElement.ondblclick = () => E.xyzviewergui.style.display = E.xyzviewergui.style.display ? '' : 'none';
 
     // set up some sensible view etc
     gb.plan();
@@ -148,7 +149,6 @@ async function makexyz(loc, plotobj) {
     // handle incoming crossfilter
     plotobj._filter = ids => xyzobj.filter(ids); // ???
     plotobj._hide = ids => xyzobj.hide(ids);
-
 
     // colour change (field name only supported)
     plotobj.colorByField = param => {

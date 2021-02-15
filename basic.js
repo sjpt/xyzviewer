@@ -1,10 +1,11 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2021/02/13 17:26:59
+window.lastModified.basic = `Last modified: 2021/02/15 10:57:20
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
 import {ggb} from './graphicsboiler.js'; // plan, orbcamera
+import {XYZ} from './xyz.js';
 const queryVariables = {};
 var readyFiles = {};
 
@@ -31,7 +32,12 @@ function getQueryVariables() {
 
     for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
-        queryVariables[decodeURIComponent(pair[0])] = pair[1] ? decodeURIComponent(pair[1]) : true;
+        /** @type {any} */ let p = pair[1];
+        if (p === undefined) p = true;
+        else if (!isNaN(p)) p = +p;
+        else if (p === 'true') p = true;
+        else if (p === 'false') p = false;
+        queryVariables[decodeURIComponent(pair[0])] = p;
     }
 }
 getQueryVariables();
@@ -55,11 +61,12 @@ async function showfirstdata() {
             else
                 queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
 
-            setTimeout(async () => {
-                // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
-                X.currentXyz.setPointSize(0.02);
-                ggb.plan();
-            }, 1000);
+            XYZ.baseguiset.spotsize = 0.02;
+            // XYZ.baseconstructorDone =async () => {
+            //     // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
+            //     X.currentXyz.setPointSize(0.02);
+            //     ggb.plan();
+            // };
     } 
 
     const {startcode, startdata, pdb} = queryVariables;

@@ -1,17 +1,29 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/12 17:38:33
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/15 12:42:46
 `
 var GG = {};
 GG.starttime = Date.now();
-setTimeout(async () => {
-    pp = await import('./patchxyz.js'); 
-    pp.makexyz('./', a);
-    setTimeout( () => {
-        pp.makexyz('./', b)
-        pp.makexyz('./', c)
-        pp.makexyz('./', d)
-    }, 500)
-}, 500);
+window.onload  = async () => {
+    console.log('loading patchxyz');
+    pp = await import('./patchxyz.js');
+    console.log('patchxyz loaded');
+    await pp.init('./');
+    
+    makexyz('./', a);
+    makexyz('./', b)
+    makexyz('./', c)
+    makexyz('./', d)
+}
+
+async function makexyz(_loc, host) {
+    const fid = (location.host.startsWith('csynth')) ?
+            '../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml' :
+            ',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
+    const xyz = await import('./xyz.js');
+    const xyzobj = new xyz.XYZ(await fetch(fid), fid, true);
+    xyzobj.setHostDOM(host);
+}
+
 </script>
 <html lang="en">
 	<head>
