@@ -1,6 +1,6 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2021/02/12 17:25:05
+window.lastModified.graphicsboiler = `Last modified: 2021/02/15 19:49:49
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -22,30 +22,8 @@ let gbid = 0;
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 class GraphicsBoiler {
-    constructor(id = 'gb' + gbid++) {
-        this.id = id;
-        this.init();
-    }
-
-// this.xyzcontainer
-// let this.stats;
-// let this.camera, this.main3group, this.outerscene, this.renderer,
-//     this.controls, this.canvas, this.orbcamera, this.camscene, display,
-//     this.usePhotoShader = false, this.light0, this.light1;
-//const this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
-//const this.nocamscene = new THREE.Scene(); this.nocamscene.name = this.id + 'nocamscene';
-// let this.autoClear = false;
-// let this.xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
-setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
-
-// window.onload = init;  // do in html
-
-
-
-//?? let i; // very odd, to check
-/** initial call to read data and set up graphics */
-init() {
-    // const self = this;
+constructor(id = 'gb' + gbid++) {
+    this.id = id;
     this.framenum = 0;
     this.addvisList = {};
     this.defaultDistance = 10;
@@ -59,7 +37,6 @@ init() {
         e.onclick = setPointSize;
     });
 
-    // interpretSearchString();
     this.xyzcontainer = document.getElementById('xyzcontainer');
 
     this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
@@ -78,7 +55,7 @@ init() {
 
     this.maingroup = new THREE.Group(); this.maingroup.name = this.id + 'maingroup';
     this.maingroup.rotateX(3.14159/2);   // so we see elevation z up by default
-	// scene.background = new THREE.Color( 0x505050 );
+    // scene.background = new THREE.Color( 0x505050 );
     // scene.add(camera);
 
     this.outerscene = new THREE.Scene(); this.outerscene.name = this.id + 'outerscene';
@@ -99,8 +76,6 @@ init() {
     this.outerscene.add(this.light1);
     this.vrdisplay = undefined;
 
-    // showfirstdata();
-
     this.renderer = new THREE.WebGLRenderer( {antialias: false, alpha: true, preserveDrawingBuffer: false} );  
     // <<< without the 'antialias' setting the monitor canvas flashes while in VR
     // preserveDrawingBuffer can help copy image to another canvas
@@ -112,10 +87,24 @@ init() {
     this.renderer.autoClear = this.autoClear;
     this.canvas = this.renderer.domElement;
     this.xyzcontainer.appendChild(this.canvas);
-    this.canvas.id = 'xyzcanvas';
+    this.canvas.id = 'xyzcanvas' + this.id;
     this.canvas.style.position = 'fixed';
     this.canvas.style.top = '0';
-    this.canvas.onclick = () => document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
+    const me = this;
+    ggb = me;
+    this.canvas.onclick = () => {
+        document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
+        const av = me.addvisList;
+        X.currentXyz = Object.values(av)[0].xyz;
+        ggb = me;
+        console.log('click', X.currentXyz.fid, me.id);
+    }
+    // this.canvas.addEventListener('blur', () => console.log('blur', this.id));
+    // this.canvas.addEventListener('focus', () => {
+    //     console.log('focus', this.id);
+    //     const av = this.addvisList;
+    //     X.currentXyz = Object.values(av)[0].xyz;
+    // });
 
     if (Stats) {
         this.stats = new Stats();
@@ -139,12 +128,21 @@ init() {
 
     this.lasso = new Lasso();
 
+    document.body.appendChild(VRButton.createButton(this.renderer));
+    this.animate();
     
-//    setTimeout(() => {  // temp test for startup with esbuild
-        document.body.appendChild(VRButton.createButton(this.renderer));
-        this.animate();
-//    }, 100);
-}   // init
+}
+
+// this.xyzcontainer
+// let this.stats;
+// let this.camera, this.main3group, this.outerscene, this.renderer,
+//     this.controls, this.canvas, this.orbcamera, this.camscene, display,
+//     this.usePhotoShader = false, this.light0, this.light1;
+//const this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
+//const this.nocamscene = new THREE.Scene(); this.nocamscene.name = this.id + 'nocamscene';
+// let this.autoClear = false;
+// let this.xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
+setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
 
 // add an object to parent, default this.maingroup, and add a selection/visibility icon
 addToMain(obj, name, parent = this.maingroup, xyz) {
@@ -389,9 +387,6 @@ function start() {
     E.lastmod.textContent = window.lastModified.xyzhtml;
     ggb = new GraphicsBoiler();
     vrstart();
-
-    // ggb.init();
-    // setTimeout(init, 1000); // temp test for esbuild
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive')

@@ -32,7 +32,7 @@ console.log('importing', div)
 Also capture (most, not all) fields at graph.js 180 setColumns()
 
 */
-export {register, init, makexyz}
+export {register, init, makexyz, awaitGGLoaded}
 
 // set up the window proxies used by the rest of xyzviewer
 // @ts-ignore
@@ -60,7 +60,7 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
     guidiv.id = 'xyzviewergui';
     guidiv.style.display = 'none';
     guidiv.style.position = 'absolute';
-    guidiv.style.left = '50%';
+    guidiv.style.right = '0%';
     guidiv.style.top = '0%';
     guidiv.style.background = 'rgba(40,40,40,255)';
     guidiv.style.zIndex = '99999';
@@ -89,8 +89,7 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
     await awaitGGLoaded();
 }
 
-// permit await sleep(xxx)
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }  // permit await sleep(xxx)
 let initdone, ggloaded;
 async function awaitGGLoaded() { 
     while (!ggloaded) {await sleep(100)}
@@ -100,6 +99,7 @@ async function awaitGGLoaded() {
 // plotobj holds the 'donor' object, from which we can extract data, columns, etc
 async function makexyz(loc, plotobj) {
     const GG = window.GG;   // this gives access to various parts of xysviewer
+    GG.plotobj = plotobj; GG.ndx = plotobj.ndx; // for debug poking
     await init(loc);
 
     // create a XYZ object and populate it with the captured data

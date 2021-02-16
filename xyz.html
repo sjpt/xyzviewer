@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/11 11:55:38
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/15 16:04:21
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -162,7 +162,7 @@ GG.starttime = Date.now();
 
                 <span>
                     <b>lasso: </b>
-                    <input type="checkbox" id="lassobox" onchange="GG.gb.lasso.setrun(this.checked)"/>
+                    <input type="checkbox" id="lassobox" onchange="currentXyz.gb.lasso.setrun(this.checked)"/>
                 </span>
                 <span class="help">check for lasso creation
                     <br>normal mode is additive
@@ -171,7 +171,7 @@ GG.starttime = Date.now();
                 </span>
 
                 <span>
-                    <button id="lassoclearbut" onclick="GG.gb.lasso.clear(); lassobox.checked=false;">clear</button>
+                    <button id="lassoclearbut" onclick="currentXyz.gb.lasso.clear(); lassobox.checked=false;">clear</button>
                 </span>
                 <span class="help">check for lasso creation
                     <br>normal mode is additive
@@ -181,14 +181,14 @@ GG.starttime = Date.now();
 
                 <span>
                     <b>filter: </b>
-                    <input type="checkbox" id="lassofilterbox" onchange="GG.gb.lasso.setFilter(this.checked)"/>
+                    <input type="checkbox" id="lassofilterbox" onchange="currentXyz.gb.lasso.setFilter(this.checked)"/>
                 </span>
                 <span class="help">check lasso to work as filter on points
                 </span>
 
                 <span>
                     <b>colour: </b>
-                    <input type="checkbox" id="lassocolourbox" onchange="GG.gb.lasso.setColour(this.checked)"/>
+                    <input type="checkbox" id="lassocolourbox" onchange="currentXyz.gb.lasso.setColour(this.checked)"/>
                 </span>
                 <span class="help">check for lasso to apply colouring
                 </span>
@@ -270,17 +270,17 @@ GG.starttime = Date.now();
                     <div>
                         <span>
                             <b>Z scale:</b>
-                            1<input type="radio" id="zsc1" name="zscale" onclick="GG.gb.scale(1,1,1);"/>
-                            2<input type="radio" id="zsc2" name="zscale" onclick="GG.gb.scale(1,1,2);"/>
-                            5<input type="radio" id="zsc5" name="zscale" onclick="GG.gb.scale(1,1,5);"/>
-                            10<input type="radio" id="zsc10" name="zscale" onclick="GG.gb.scale(1,1,10);"/>
+                            1<input type="radio" id="zsc1" name="zscale" onclick="currentXyz.gb.scale(1,1,1);"/>
+                            2<input type="radio" id="zsc2" name="zscale" onclick="currentXyz.gb.scale(1,1,2);"/>
+                            5<input type="radio" id="zsc5" name="zscale" onclick="currentXyz.gb.scale(1,1,5);"/>
+                            10<input type="radio" id="zsc10" name="zscale" onclick="currentXyz.gb.scale(1,1,10);"/>
                         </span>
                         <span class="help">select amount to exaggerate depth</span>
                         <br>
                         <b>View:</b>
-                        elevation:<input type="radio" id="elev" name="zscale" onclick="GG.gb.elevation()"/>
+                        elevation:<input type="radio" id="elev" name="zscale" onclick="currentXyz.gb.elevation()"/>
                         <span class="help">jump to elevation view</span>
-                        plan:<input type="radio" id="plan" name="zscale" onclick="GG.gb.plan()"/>
+                        plan:<input type="radio" id="plan" name="zscale" onclick="currentXyz.gb.plan()"/>
                         <span class="help">jump to plan view</span>
                         <br>
 

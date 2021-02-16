@@ -159,6 +159,7 @@ stop() {
 
     
     this.gb.controls.enabled = true;
+    window.dispatchEvent(new Event('lassoUp'));
     window.dispatchEvent(new Event('lassoStop'));
     dataToMarkersGui();
 }

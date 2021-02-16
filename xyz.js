@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/15 12:33:03
+window.lastModified.xyz = `Last modified: 2021/02/16 12:41:11
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -276,8 +276,9 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     const q = this._ret;
     const c = this._col; 
     const c1 = this._col1;
+    const did = _namecols.id;
     for (let i = 0; i < tdata.pendread_min; i ++ ) {
-        if (me._ids !== undefined && !me._ids[i+1]) continue;  // handle crossfilter
+        if (me._ids !== undefined && !me._ids[did[i]]) continue;  // handle crossfilter
         q[0] = q[3] = NaN;
         c.setRGB(0.3, 0.3, 0.3);
         if (filterfun) {
@@ -624,7 +625,8 @@ setupGraphics(fid) {
     // 3: load from base4, seems to work always, but not very convenient
     // 4: leave undefined, we see squares of approriate size on screen
     let sprite;
-    if (location.href.startsWith('file:') || location.host.startsWith('combinatronics.com')|| location.host.startsWith('mlv.') || navigator.userAgent.indexOf("Edge") > -1) {
+    if (location.href.startsWith('file:') || location.host.startsWith('combinatronics.com')
+        || location.host.startsWith('mlv.') || location.href.indexOf('CIV') !== -1 || navigator.userAgent.indexOf("Edge") > -1) {
         // Chrome is too fussy with file: loading, so use this instead
         // the data was converted from circle.png using https://www.base64-image.de/
         // Edge did not assume sprite subdirectory authenticated even when higher level one OK
