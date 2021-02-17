@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/14 14:33:55
+window.lastModified.tdata = `Last modified: 2021/02/17 17:53:03
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -67,12 +67,12 @@ constructor(data, fid) {
 }
 
 /** get a tdata object keyed by fid, so different XYZ objects can share single data repository
- * @param {any} data
+ * @param {any} data  may be ready-made tdata, or somehting that can be turned into pdata
  * @param {string} fid
  * @returns {TData}
  */
 static get(data, fid, xyz) {
-    /** @type TData */ let tdata = TData.tdatas[fid];
+    /** @type TData */ let tdata = (data instanceof TData) ? data : TData.tdatas[fid];
     if (!tdata) tdata = TData.tdatas[fid] = new TData(data, fid);
     tdata.xyzs.push(xyz);
     return tdata;
@@ -86,11 +86,13 @@ static get(data, fid, xyz) {
  */
 /**
  * 
- * @param {string | number | symbol} name 
+ * @param {string} name 
  * @param {number} i 
  */
 val(name, i) {
-    const rv = this.namecols[name][i];
+    const nc = this.namecols[name];
+    if (!nc) { this.lazyLoadCol(name); return NaN; }
+    const rv = nc[i];
     if (!isNaN(rv)) return rv;
     // const k = NaN2i(rv);
     const k = this.namevcols[name][i] - _baseiNaN;
@@ -128,7 +130,11 @@ async xlsxReader(raw, fid) {
      */
 async lazyLoadCol(id) {
     let step = 2*1024*1024;
-    const t = this.namecols[id]; if (t) return t;
+    const t = this.namecols[id]; 
+    if (t) {    // do not complete till really loaded, todo use events
+        while (this.pendread[id] !== this.n) await sleep(100);
+        return t;
+    }
     if (!this.ranges[id]) {
         const msg = `lazyLoadCol cannot load column ${id}, not a known column`;
         console.error(msg);
