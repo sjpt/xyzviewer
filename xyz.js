@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/16 12:41:11
+window.lastModified.xyz = `Last modified: 2021/02/17 14:02:33
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -278,7 +278,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     const c1 = this._col1;
     const did = _namecols.id;
     for (let i = 0; i < tdata.pendread_min; i ++ ) {
-        if (me._ids !== undefined && !me._ids[did[i]]) continue;  // handle crossfilter
+        if (me._ids !== undefined && !me._ids[did[i]]) continue;  // handle incoming crossfilter
         q[0] = q[3] = NaN;
         c.setRGB(0.3, 0.3, 0.3);
         if (filterfun) {
@@ -293,7 +293,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
             noxyz++;
         } else {            
             if (cbs) {
-                cbs[i+1] = true;
+                cbs[did[i]] = true;     // outgoing crossfilter
             } else {
                 vert[ii] = q[0];
                 col[ii++] = c.r;
