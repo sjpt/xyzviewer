@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/17 17:53:03
+window.lastModified.tdata = `Last modified: 2021/02/18 10:09:12
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -136,6 +136,12 @@ async lazyLoadCol(id) {
         return t;
     }
     if (!this.ranges[id]) {
+        if (id === 'id') {  // special case to help out crossfilter
+            this.namecols[id] = new Float32Array(this.n);
+            this.namecols[id].forEach( (x,i,a) => a[i] = i);        // silly forEach not chainable
+            this.pendread[id] = this.n;
+            return;
+        }
         const msg = `lazyLoadCol cannot load column ${id}, not a known column`;
         console.error(msg);
         throw new Error(msg);

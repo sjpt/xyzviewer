@@ -1,10 +1,9 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
-    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev};
-window.lastModified.basic = `Last modified: 2021/02/15 10:57:20
+    writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
+window.lastModified.basic = `Last modified: 2021/02/18 15:46:51
 `
 const {E, X} = window;
 import {THREE} from './threeH.js';
-import {ggb} from './graphicsboiler.js'; // plan, orbcamera
 import {XYZ} from './xyz.js';
 const queryVariables = {};
 var readyFiles = {};
@@ -42,24 +41,23 @@ function getQueryVariables() {
 }
 getQueryVariables();
 
-/** load and show the initial data, called from the graphics boilerplate code at startup  */
-async function showfirstdata() {
+/** find startdata string based on ?ox etc */
+function getStartdata() {
     const wls = window.location.search;
-    if (wls.startsWith('?arch')) await import("./StarCarr/archstart.js");
-    if (wls.startsWith('?fold')) await import('./extras/folddemo.js');
+    let r;
     if (wls.startsWith('?ox')) {      
         if (location.host.startsWith('csynth'))
             if (wls.startsWith('?ox7m'))
-                queryVariables.startdata='../xyzdata/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml"';
+                r = '../xyzdata/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml';
             else
-                queryVariables.startdata='../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
+                r = '../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
         if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) 
             if (wls.startsWith('?ox7m'))
-                queryVariables.startdata=',,/,,/,,/,,/BigPointData/t1-data/user/erepapi/Fellowship/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml"';
+                r = ',,/,,/,,/,,/BigPointData/t1-data/user/erepapi/Fellowship/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml';
             else if (wls.startsWith('?oxm'))
-                queryVariables.startdata=',,/,,/,,/,,/BigPointData/fromMLV/fromMLV.yaml';
+                r = ',,/,,/,,/,,/BigPointData/fromMLV/fromMLV.yaml';
             else
-                queryVariables.startdata=',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
+                r = ',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
 
             XYZ.baseguiset.spotsize = 0.02;
             // XYZ.baseconstructorDone =async () => {
@@ -67,7 +65,18 @@ async function showfirstdata() {
             //     X.currentXyz.setPointSize(0.02);
             //     ggb.plan();
             // };
-    } 
+    }
+    return r;
+}
+
+/** load and show the initial data, called from the graphics boilerplate code at startup  */
+async function showfirstdata() {
+    const wls = window.location.search;
+    if (wls.startsWith('?arch')) await import("./StarCarr/archstart.js");
+    if (wls.startsWith('?fold')) await import('./extras/folddemo.js');
+    const sd = getStartdata();
+    if (sd) queryVariables.startdata = sd;
+
 
     const {startcode, startdata, pdb} = queryVariables;
     if (startcode) eval(startcode);
