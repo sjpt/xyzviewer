@@ -1,4 +1,4 @@
-window.lastModified.threeH = `Last modified: 2021/01/20 11:53:18
+window.lastModified.threeH = `Last modified: 2021/02/18 20:03:43
 `;
 // everyone can import THREE from here using  'import {THREE} from "./threeH.js";'
 // which helps ensure everyone is using the same THREE as we switch to modules

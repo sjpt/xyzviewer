@@ -497,12 +497,12 @@ const OrbitControls = function ( object, domElement ) {
 		var orbcamera  = scope.object;
 		var p = scope.object.position;
 		scope.reset();
-		p.set(0, 0, GG.gb.defaultDistance);  // add cleaner way ?
+		p.set(0, 0, GG.gb().defaultDistance);  // add cleaner way ?
 		orbcamera.setRotationFromMatrix(new THREE.Matrix4());
 		orbcamera.up = new THREE.Vector3(0,1,0);
 		orbcamera.updateMatrix();
-		const camera = GG.gb.camera;
-		camera.fov = GG.gb.defaultFov;
+		const camera = GG.gb().camera;
+		camera.fov = GG.gb().defaultFov;
 		camera.updateProjectionMatrix();
 		scope.update();
 	}

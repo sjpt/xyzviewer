@@ -1,6 +1,6 @@
 'use strict';
 export {filelist};
-window.lastModified.archstart = `Last modified: 2021/02/12 14:51:29
+window.lastModified.archstart = `Last modified: 2021/02/18 22:05:14
 `
 const {E, GG} = window;
 import {posturiasync, addToFilelist} from '../basic.js';
@@ -8,9 +8,9 @@ import {ggb, GraphicsBoiler} from '../graphicsboiler.js'; // plan
 import {refit} from './refit.js';
 import {XYZ} from '../xyz.js';
 XYZ.autorange = false;
-ggb.defaultDistance = 50;
-ggb.defaultFov = 50;
-ggb.home();
+ggb().defaultDistance = 50;
+ggb().defaultFov = 50;
+ggb().home();
 var filelist = `
 Flint.csv
 Fungi.csv
@@ -36,7 +36,7 @@ document.title = 'Star Carr: xyzviewer';
 const starturi = 'StarCarr/Flint.csv';
 (async function start() {
     await posturiasync(starturi);
-    ggb.plan();
+    ggb().plan();
     refit();
     await posturiasync('StarCarr/contours.geojson');
     E.msgbox.innerHTML = 'StarCarr load time: ' + (Date.now() - GG.starttime);

@@ -66,6 +66,6 @@ function refit() {
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true /*THREE.VertexColors*/ } );
     //if (rlines) maingroup.remove(rlines);
     rlines = new THREE.LineSegments(linegeom, linemat);
-    ggb.addToMain(rlines, 'refits');
+    ggb().addToMain(rlines, 'refits');
 }
 

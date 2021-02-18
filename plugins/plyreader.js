@@ -75,7 +75,7 @@ meshmaker ( geometry, fid ) {
 //    mesh.receiveShadow = true;
 
     obj.xyz = this;
-    ggb.addToMain(obj, fid);
+    ggb().addToMain(obj, fid);
     return obj;
 }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/17 15:46:54
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/18 21:01:50
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -8,117 +8,14 @@ GG.starttime = Date.now();
 	<head>
 		<title>xyzviewer</title>
 		<meta charset="utf-8">
-        <style>
-            td {text-align: center; border: solid 1px; }
-			body {
-				font-family: Monospace;
-				background-color: #101010;
-				color: #fff;
-				margin: 0px;
-				overflow: hidden;
-			}
-			a {	color: #f00; }
-            #gui {
-                position: relative;
-                top: 10px;
-                z-index: 100;
-                pointer-events: none;
-            }
-            .gui * { pointer-events: all;}
-            .gui >* { background: #2226;}  /* not .gui *, as that can give multiple layers of transparency */
-            #msgbox { pointer-events: none; }
-            #narrow { width: 25em }
-            #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
-            #ack { z-index: 100; }
-            input[type="checkbox"] { margin-left: -0.5em; }
-            /* select, button {color: white} */
-
-            #filterbox {color: white; opacity: 0.8; }
-            #filterr {color: white; opacity: 0.6; }
-            ._applied {background: #000;}
-            ._testing {background: #002;}
-            ._empty {background: #020;}
-            ._invalid {background: #200;}
-            ._unexpected {background: #200;}
-            ._exception {background: #200;}
-            ._OK {background: #020;}
-            ._fast {background: #220;}
-
-            .help, .helpabove {
-                display: none;  /* overridden on :hover on previous element */
-                background-color: #333e;
-                border-color: lightgreen;
-                border-style: solid;
-                color: lightgreen;
-                border-radius: 5px;
-                opacity: 1.0;
-                border-width: 1px 1px 1px 1px;
-                clear: left;
-                font-style: normal;
-                left: 0px;
-                margin: 10px;
-                padding: 5px;
-                position: absolute;
-                text-align: left;
-                /* top: 60px; */ /* leaving out seems best compromise, bottom odd on 'Save Main Image' */
-                z-index: 2000;
-                white-space: normal;
-                pointer-events: none;
-                text-indent: 0;
-                min-width: 25em;
-            }
-
-            .helpabove {position: fixed; top: 0.5em; height: fit-content }  /* for help that hovers above the item, not below */
-
-            :hover + .help, :hover + .helpabove {
-                display: block;
-            }
-
-            code {color: greenyellow}
-
-            /** below for fold/unfold ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-
-            .hidebelow > :not(:first-child) { display : none; } /* hidden, simple version no hover */
-
-            legend:before { content : "-"; }
-            .hidebelow > *:first-child:before, .hidebelow legend:before { content : "+"; }
-
-            legend, .genehide {
-                margin-bottom: 0px;
-                font-weight: bold;
-            }  /* when expanded */
-
-            /** below extra details if we want hover flyout * /
-            /* .hidebelow > :first-child {/* color: red; *-/}  /* when collapsed *-/ */
-            /* :hover.hidebelow > legend { color: green; }  /* when flyout */
-
-            /* hidden except for legend, until hover flyot * /
-            .hidebelow:not(:hover) > :not(:first-child) { display : none; } 
-
-            /* flyout of single * /
-            .hidebelow:hover > legend:first-child +* { 
-                display: block;
-                left: 10em;
-                top: 1em;
-                position:absolute;
-                border: 1px solid #080;
-                margin: 0 -4004px 0 4px;
-                padding: 12px;
-                z-index: 2000;
-                background-color: #2f2f2f;
-                border-radius: 6px;
-                min-width: 360px;
-                width: 360px;
-            }
-            /* flyout */
-        </style>
         <script>
             function globalPollution() {return Object.keys(window).filter(x => !globalPollution.init.includes(x))};
             globalPollution.init = Object.keys(window);
         </script>
+        <link rel="stylesheet" type="text/css" href="xyz.css">
+
 	</head>
 	<body>
-        <span id="lastmod"></span>
         <span style="text-align:center">Press 'Q' key to toggle help information</span>
         <span id="ack" style="position: fixed; right: 0px"></span>
         <div id="info" style="display:none">
@@ -151,192 +48,6 @@ GG.starttime = Date.now();
         </p>
         </div>
 
-        <div id="xyzcontainer">
-            <div id="gui" class="gui">
-                <span>
-                    <b>speech: </b>
-                    <input type="checkbox" id="speechbox" onchange="GG.ospeech.isRunning=this.checked"/>
-                </span>
-                <span class="help" id="speechhelp">check for speech input</span>
-                <br>
-
-                <span>
-                    <b>lasso: </b>
-                    <input type="checkbox" id="lassobox" onchange="currentXyz.gb.lasso.setrun(this.checked)"/>
-                </span>
-                <span class="help">check for lasso creation
-                    <br>normal mode is additive
-                    <br>alt key for subtractive
-                    <br>ctrl key for xor
-                </span>
-
-                <span>
-                    <button id="lassoclearbut" onclick="currentXyz.gb.lasso.clear(); lassobox.checked=false;">clear</button>
-                </span>
-                <span class="help">check for lasso creation
-                    <br>normal mode is additive
-                    <br>alt key for subtractive
-                    <br>ctrl key for xor
-                </span>
-
-                <span>
-                    <b>filter: </b>
-                    <input type="checkbox" id="lassofilterbox" onchange="currentXyz.gb.lasso.setFilter(this.checked)"/>
-                </span>
-                <span class="help">check lasso to work as filter on points
-                </span>
-
-                <span>
-                    <b>colour: </b>
-                    <input type="checkbox" id="lassocolourbox" onchange="currentXyz.gb.lasso.setColour(this.checked)"/>
-                </span>
-                <span class="help">check for lasso to apply colouring
-                </span>
-
-                <span>
-                    <b>use shader: </b>
-                    <input type="checkbox" id="lassoshaderbox" onchange="GG.lassoshader.useLassoShader(this.checked)"/>
-                </span>
-                <span class="help">use lasso shader for lasso implementation (w.i.p.)
-                </span>
-
-                <span>
-                    <b>xshader: </b>
-                    <input type="checkbox" id="xshaderbox" onchange="GG.xshader.useXShader(this.checked)"/>
-                </span>
-                <span class="help">use multidimensional shader (very much w.i.p.)
-                </span>
-
-                <span>
-                    <b>tumble: </b>
-                    <input type="checkbox" id="tumblebox" onchange="GG.xshader.settubmlerot(this.checked * 0.005)"/>
-                </span>
-                <span class="help">perform multidimensional tumble (very much w.i.p.)
-                </span>
-
-                <br>
-                <b>loaded files: </b>
-                <span id="visibles"></span>
-
-                <span><span><br><b>available files: </b>
-                    <select onchange="GG.basic.loaddrop(event);" id="filedropbox">
-                        <option value="!none!">none available</option>
-                    </select></span>
-                    <span class="help">Load additional datasets from those available at our host.
-                    <br>
-                    The dropdown has a list of all such available datasets.
-                    <br>
-                    <br>
-                    You can also load additional datasets from your local filesystem
-                    <br>
-                    by drag/drop from explorer or similar onto the canvas.
-                    <br>
-                    <br>
-                    For some odd reason copy/paste works for text (including URLs), but does NOT work for files.
-                    <br>
-                    <br>
-                    In future we also hope to be able to drag/drop or copy/paste URLs from the Star Carr archive.
-                </span></span>
-
-                <span>
-                    <b>Colour by:</b>
-                    <select onchange="GG.cols.set(event.srcElement.value)" id="colourby">
-                        <!-- will be filled in dynamically -->
-                    </select>
-                </span>
-                <span class="help">Select a colouring strategy for this dataset from the dropdown.</span>
-                <!-- can't find reliable single event or even events for when OK clicked with no change  -->
-                <input type="color" id="colourpick" value="#c0c0c0"
-                    oninput="GG.cols.set(event.srcElement.value, true)"/>
-                <span class="help">Select a fixed colour for this dataset.</span>
-                <br>
-                <span>
-                <b>Spot size:</b>
-                    0.01<input type="radio" name="spotsize" id="spot0.01"/>
-                    0.02<input type="radio" name="spotsize" id="spot0.02"/>
-                    0.05<input type="radio" name="spotsize" id="spot0.05"/>
-                    0.1<input type="radio" name="spotsize" id="spot0.1"/>
-                    0.2<input type="radio" name="spotsize" id="spot0.2"/>
-                    0.5<input type="radio" name="spotsize" id="spot0.5"/>
-                    1<input type="radio" name="spotsize" id="spot1"/>
-                    2<input type="radio" name="spotsize" id="spot2"/>
-                    5<input type="radio" name="spotsize" id="spot5"/>
-                    10<input type="radio" name="spotsize" id="spot10"/>
-                </span>
-                <span class="help">Choose size of each point.<br>Hover to preview, click to select.</span>
-
-                <fieldset style="width:20em">
-                    <legend onclick="toggleFold(this)">details...</legend>
-                    <div>
-                        <span>
-                            <b>Z scale:</b>
-                            1<input type="radio" id="zsc1" name="zscale" onclick="currentXyz.gb.scale(1,1,1);"/>
-                            2<input type="radio" id="zsc2" name="zscale" onclick="currentXyz.gb.scale(1,1,2);"/>
-                            5<input type="radio" id="zsc5" name="zscale" onclick="currentXyz.gb.scale(1,1,5);"/>
-                            10<input type="radio" id="zsc10" name="zscale" onclick="currentXyz.gb.scale(1,1,10);"/>
-                        </span>
-                        <span class="help">select amount to exaggerate depth</span>
-                        <br>
-                        <b>View:</b>
-                        elevation:<input type="radio" id="elev" name="zscale" onclick="currentXyz.gb.elevation()"/>
-                        <span class="help">jump to elevation view</span>
-                        plan:<input type="radio" id="plan" name="zscale" onclick="currentXyz.gb.plan()"/>
-                        <span class="help">jump to plan view</span>
-                        <br>
-
-                        <br>
-                        <span><span><b>photos:</b> <input id="photoscheck" type="checkbox" onclick="GG.ps.photoShader_clicked(event)"/></br>
-                        </span>
-                        <span class="help">Select to impose photographs on each data point.<br>
-                        Experimental, no sensible photos currently available in this demo.</span>
-                        </span>
-
-                        <span><span><b>raycast:</b> <input id="raycastcheck" type="checkbox" onclick="GG.raycast.enableRaycast(this.checked)"/></br>
-                        </span>
-                        <span class="help">Select to impose photographs on each data point.<br>
-                        Experimental, no sensible photos currently available in this demo.</span>
-                        </span>
-
-                        <br>
-                        <span><button onclick="currentXyz.tdata.savefiles()">save columns</button></span>
-                        <span class="help">Save the columns files for current xys object.<br>
-                            These can be loaded by drag-drop from Explorer or equivalent.
-                        </span>
-                        <br>
-                        <div id="narrow">
-                            <p id="filtcount"></p>
-                            <span>
-                                <b>Control:</b><br>
-                                <textarea id="filterbox" rows="4" cols="40" onkeyup="GG.xyz.filtergui(event);" onchange="GG.xyz.filtergui();"></textarea>
-                            </span>
-                            <span class="helpabove">Type custom javascript here for selection of points from dataset, and possibly colouring.
-                                <ul style="margin:0">
-                                    <li>ctrl-enter to apply.</li>
-                                    <li>green background indicates correct javascript but is pending application.</li>
-                                    <li>white background indicates javascript has been applied.</li>
-                                    <li>pink background indicates incorrect javascript.</li>
-                                    <li>blusih background indicates javascript inappropriate for this context.</li>
-                                    <li></li>
-                                    <li>The control box may have 'special format lines based on a prefix:</li>
-                                    <li><b>'?'</b>: filter the data set according to the filter in the rest of the line</li>
-                                    <li><b>'COL:'</b>: choose a column or three.js (css) colour value for colouring the data set</li>
-                                    <li><b>'X:', 'Y:', 'Z:'</b>: choose an expression to override the default x,y,z columns for position</li>
-                                </ul>
-                            </span>
-
-                            <br>
-                            <p id="filterr"></p>
-                            <br>
-                            <p id="msgbox"></p>
-                            <input type="file" id="fileChooser" style="display:none" multiple="multiple"/>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <p id="colkey"></p>
-
-            </div>
-        </div>
 		<script src="jsdeps/three121.js"></script>
         <!-- <script type="module" src="./jsdeps/three123.module.js"></script> -->
 
@@ -347,9 +58,9 @@ GG.starttime = Date.now();
         <script src="gldebug.js"></script>
         
         <!-- loading this explicitly here rather than waiting saves near 1 second of load time-->
-        <script src="graphicsboiler.js" type="module"></script>
-
-        <script>console.log('graphicsboiler read, window=', window)</script>
+        <!-- we need to check cirular dependencies -->
+        <script src="xyzspeech.js" type="module"></script>
+        <script>console.log('xyzspeech read, window=', window)</script>
 
 
         <!-- <script src="js/Detector.js"></script> -->

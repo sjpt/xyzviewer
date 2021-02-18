@@ -1,10 +1,31 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/02/18 15:46:51
+window.lastModified.basic = `Last modified: 2021/02/18 22:05:14
 `
-const {E, X} = window;
+if (!window.GG) window.GG = {}; if (!window.E) window.E = window;
+const {E, X} = window; 
+var {GG} = window;
 import {THREE} from './threeH.js';
 import {XYZ} from './xyz.js';
+
+// sample import * as xyz from './xyz.js'; GG.xyz = xyz;
+
+import * as GGcols from './cols.js'; GG.cols = GGcols.COLS;
+import * as GGps from './photoshader.js'; GG.ps = GGps;
+import * as GGtdata from './tdata.js'; GG.tdata = GGtdata;
+import * as GGxyz from './xyz.js'; GG.xyz = GGxyz;
+import * as GGbasic from './basic.js'; GG.basic = GGbasic;
+import * as GGlasso from './lasso.js'; GG.lasso = GGlasso;
+import * as GGlassoshader from './lassoshader.js'; GG.lassoshader = GGlassoshader;
+import * as GGxshader from './xshader.js'; GG.xshader = GGxshader;
+import * as GGraycast from './raycast.js'; GG.raycast = GGraycast;
+import * as GGgb from './graphicsboiler.js'; GG.gboi = GGgb; GG.gb = GGgb.ggb;
+GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
+// put off speech till last, Firefox does not support it
+import * as GGospeech from './speech.js'; GG.ospeech = GGospeech.OrganicSpeech;
+import * as GGxyzspeech from './xyzspeech.js'; GG.xyzspeech = GGxyzspeech;;
+
+
 const queryVariables = {};
 var readyFiles = {};
 
@@ -63,7 +84,7 @@ function getStartdata() {
             // XYZ.baseconstructorDone =async () => {
             //     // (await import('./cols.js')).COLS.set('batch'); // no, leave that to url
             //     X.currentXyz.setPointSize(0.02);
-            //     ggb.plan();
+            //     ggb().plan();
             // };
     }
     return r;
@@ -433,22 +454,22 @@ function killev(event) {
 
 // GG gives the handlers in this file access to necessary functions
 // while limiting pollution to the global scope.
-var {GG} = window;
+//var {GG} = window;
 (async function() {
-    GG.gb = (await import('./graphicsboiler.js')).ggb;
-    GG.cols = (await import('./cols.js')).COLS;
-    GG.ps = await import('./photoshader.js');
-    GG.tdata = await import('./tdata.js');
-    GG.xyz = await import('./xyz.js');
-    GG.basic = await import('./basic.js');
-    GG.lasso = (await import('./lasso.js'));
-    GG.lassoshader = (await import('./lassoshader.js'));
-    GG.xshader = (await import('./xshader.js'));
-    GG.raycast = (await import('./raycast.js'));
-    GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
-    // put off speech till last, Firefox does not support it
-    GG.ospeech = (await import('./speech.js')).OrganicSpeech;
-    GG.xyzspeech = (await import('./xyzspeech.js'));
+    // GG.gb = (await import('./graphicsboiler.js')).ggb;
+    // GG.cols = (await import('./cols.js')).COLS;
+    // GG.ps = await import('./photoshader.js');
+    // GG.tdata = await import('./tdata.js');
+    // GG.xyz = await import('./xyz.js');
+    // GG.basic = await import('./basic.js');
+    // GG.lasso = (await import('./lasso.js'));
+    // GG.lassoshader = (await import('./lassoshader.js'));
+    // GG.xshader = (await import('./xshader.js'));
+    // GG.raycast = (await import('./raycast.js'));
+    // GG.expose = () => { for (const f in GG) Object.assign(window, GG[f]) } // expose lots of details as global for debug
+    // // put off speech till last, Firefox does not support it
+    // GG.ospeech = (await import('./speech.js')).OrganicSpeech;
+    // GG.xyzspeech = (await import('./xyzspeech.js'));
 
     GG.test = () => {
         let s = location.href.split('?')[0] + '?';

@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/17 14:02:33
+window.lastModified.xyz = `Last modified: 2021/02/18 22:05:14
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -48,7 +48,7 @@ constructor(pdata, fid, owngb) {
     X.currentXyz = X.currentThreeObj = this.xyz = this;
 
     const tdata = this.tdata = TData.get(pdata, fid, this);
-    /** @type {GraphicsBoiler} */ this.gb = owngb ? new GraphicsBoiler() : ggb;
+    /** @type {GraphicsBoiler} */ this.gb = owngb ? new GraphicsBoiler() : ggb();
     this._col = new THREE.Color(1,1,1);
     this._col1 = new THREE.Color(1,1,1);
     this._ret = new Float32Array(6);        // used for return from filter function

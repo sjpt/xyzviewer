@@ -32,7 +32,7 @@ console.log('importing', div)
 Also capture (most, not all) fields at graph.js 180 setColumns()
 
 */
-export {register, init, makexyz, awaitGGLoaded}
+export {register, init, makexyz, awaitGGLoaded, xyzhtml}
 
 // set up the window proxies used by the rest of xyzviewer
 // @ts-ignore
@@ -42,12 +42,7 @@ const {E} = window;
 
 console.log('patchxyz.js execute, window W set');
 
-// init called lazily once on first intercept, to load up all the xyz code, and then perform intercept
-async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
-    const GG = window.GG;   // this gives access to various parts of xysviewer
-    if (initdone) return await awaitGGLoaded(); // first time in has initialized it, but we must wait till that one is ready
-
-    initdone = true;
+async function xyzhtml(loc) {
     const hh = await(await fetch(loc + 'xyz.html')).text();
 
     // extract the gui body from the html file and insert into running file, hidden by default
@@ -71,7 +66,17 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
     style = style.replace('body {', 'xbody {')
     const sdiv = document.createElement('style');
     sdiv.innerHTML = style + '\n#xyzviewergui * {background: rgba(120,120,120,255); opacity: 1}';
-    document.head.appendChild(sdiv);
+    document.head.appendChild(sdiv);    
+}
+
+// init called lazily once on first intercept, to load up all the xyz code, and then perform intercept
+async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
+    const GG = window.GG;   // this gives access to various parts of xysviewer
+    if (initdone) return await awaitGGLoaded(); // first time in has initialized it, but we must wait till that one is ready
+
+    initdone = true;
+
+    xyzhtml(loc);
     
     // these js files are not currently implemented as modules so must be loaded as scripts
     await addscript(loc + "jsdeps/three121.js")

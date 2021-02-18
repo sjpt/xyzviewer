@@ -59,7 +59,7 @@ function ascReader(rawdata, fid) {
     mesh.scale.set(cellsize, cellsize, -1);
     mesh.material.side = THREE.DoubleSide;
     // window.ascmesh = mesh;
-    ggb.addToMain(mesh, fid);
+    ggb().addToMain(mesh, fid);
 
 }
 

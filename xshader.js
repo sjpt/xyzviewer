@@ -378,9 +378,9 @@ async function useXShader(pcols, id) {
     if (lastid !== id) particles.material = xmaterial = xShader(id);
 
     if (cols) {
-        ggb.controls.enabled = false;
-        ggb.plan();
-        ggb.orbcamera.position.z = 3;
+        ggb().controls.enabled = false;
+        ggb().plan();
+        ggb().orbcamera.position.z = 3;
 
         particles.material = xmaterial = xmaterial || xShader(id);  // cache and set lasso material
         particles.onBeforeRender = () => {
@@ -449,13 +449,13 @@ async function useXShader(pcols, id) {
                 vmap[i].x = 1e40;
             }
         }
-        ggb.renderer.domElement.addEventListener('mousedown', mousedown);
+        ggb().renderer.domElement.addEventListener('mousedown', mousedown);
     } else {
         particles.material = noxmaterial;
         particles.onBeforeRender = ()=>{};
         mouseup({buttons:0});
-        ggb.renderer.domElement.removeEventListener('mousedown', mousedown);
-        ggb.controls.enabled = true;
+        ggb().renderer.domElement.removeEventListener('mousedown', mousedown);
+        ggb().controls.enabled = true;
     }
     makeshowxmat();
 }
@@ -478,16 +478,16 @@ function mousemove(e) {
 }
 function mousedown(e) {
     if (lastx === Infinity) {
-        ggb.renderer.domElement.addEventListener('mousemove', mousemove);
-        ggb.renderer.domElement.addEventListener('mouseup', mouseup);
+        ggb().renderer.domElement.addEventListener('mousemove', mousemove);
+        ggb().renderer.domElement.addEventListener('mouseup', mouseup);
     }
     lastx = e.clientX;
     lasty = e.clientY;
 }
 function mouseup(e) {
     if (e.buttons === 0) {
-        ggb.renderer.domElement.removeEventListener('mousemove', mousemove);
-        ggb.renderer.domElement.removeEventListener('mouseup', mouseup);
+        ggb().renderer.domElement.removeEventListener('mousemove', mousemove);
+        ggb().renderer.domElement.removeEventListener('mouseup', mouseup);
         lastx = Infinity;
     }
 }

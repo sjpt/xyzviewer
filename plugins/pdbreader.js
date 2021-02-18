@@ -69,9 +69,9 @@ function pdbReader(data, fid) {
     XYZ.autorange = false;
     const r = myxyz.tdata.ranges;
     const max = Math.max(r.x.range, r.y.range, r.z.range);
-    ggb.defaultDistance = max*2;
-    ggb.defaultFov = 50;
-    ggb.home();
+    ggb().defaultDistance = max*2;
+    ggb().defaultFov = 50;
+    ggb().home();
     myxyz.setPointSize(2);
 
     myxyz.dataToMarkersGui();
@@ -112,7 +112,7 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
     // maingroup.remove(chainlines);
     if (!chainlines) {
         chainlines = new THREE.LineSegments(geom, linemat);
-        ggb.addToMain(chainlines, 'chainlines');
+        ggb().addToMain(chainlines, 'chainlines');
     }
 
     const xc = tdata.namecols['x'], yc = tdata.namecols['y'], zc = tdata.namecols['z']; // , residc = myxyz.namecols['resid'];

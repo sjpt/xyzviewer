@@ -6,7 +6,7 @@ import {ggb} from './graphicsboiler.js'; // renderer, maingroup, outerscene, con
 
 let controller1, controller2;
 function vrstart() {
-    controller1 = ggb.renderer.xr.getController( 0 );
+    controller1 = ggb().renderer.xr.getController( 0 );
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
 
@@ -25,12 +25,12 @@ function vrstart() {
     //     this.remove( this.children[ 0 ] );
     // } );
 
-    ggb.maingroup.add( controller1 );
+    ggb().maingroup.add( controller1 );
 
-    controller2 = ggb.renderer.xr.getController( 1 );
+    controller2 = ggb().renderer.xr.getController( 1 );
     controller2.addEventListener( 'selectstart', onSelectStart2 );
     controller2.addEventListener( 'selectend', onSelectEnd2 );
-    ggb.outerscene.add( controller2 );
+    ggb().outerscene.add( controller2 );
 }
 
 let select = false;
@@ -44,17 +44,17 @@ function onSelectEnd() {
 }
 
 function onSelectStart2() {
-    controller2.attach(ggb.maingroup);
+    controller2.attach(ggb().maingroup);
 }
 function onSelectEnd2() {
-    ggb.outerscene.attach(ggb.maingroup);
+    ggb().outerscene.attach(ggb().maingroup);
 }
 
 
 // various interactions for camera and object move, two controllers
 function vrframe() {
     let panDelta = -0.3, zoomDelta = -0.01;
-    const session = ggb.renderer.xr.getSession();
+    const session = ggb().renderer.xr.getSession();
     if (!session || !session.inputSources || session.inputSources.length === 0) return;
     // the gamepad style information such as buttons comes (when available) from the session inputSources
     const igp1 = session.inputSources[0].gamepad;
@@ -68,7 +68,7 @@ function vrframe() {
     if (igp1 && igp1.axes && igp1.buttons[2].pressed) d *= -igp1.axes[1];  // works for Vive on Chrome
     else if (!select) d = 0;                     // plain select works with very basic three.js choices
 
-    ggb.controls.pan3(m[8]*d, m[9]*d, m[10]*d);
+    ggb().controls.pan3(m[8]*d, m[9]*d, m[10]*d);
 
     // ~~ rotate object, second controller select botton, see onSelectStart2 and onSelectEnd2 above
     
@@ -77,7 +77,7 @@ function vrframe() {
         const igp2 = session.inputSources[1].gamepad;
         if (!igp2) return;
         if (igp2.axes && igp2.buttons[2].pressed) 
-        ggb.maingroup.scale.multiplyScalar(1 + zoomDelta * igp2.axes[1]);
+        ggb().maingroup.scale.multiplyScalar(1 + zoomDelta * igp2.axes[1]);
     }
 
 }

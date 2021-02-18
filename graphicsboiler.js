@@ -1,6 +1,7 @@
 'use strict';
 
-window.lastModified.graphicsboiler = `Last modified: 2021/02/15 19:49:49
+
+window.lastModified.graphicsboiler = `Last modified: 2021/02/18 22:05:17
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -19,6 +20,11 @@ export {ggb, GraphicsBoiler};
 //     this.camera as camera, this.usePhotoShader as usePhotoShader, this.orbcamera as orbcamera, this.outerscene as outerscene, plan, elevation, scale, addvis_clicked, select, this.controls as controls, onWindowResize};
 const {E, X, Stats} = window;
 let gbid = 0;
+
+/** ggb is static function that returns 'current' graphicsboiler */
+function ggb() {return _ggb};
+/** @type{any} */ let _ggb = 99;
+
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 class GraphicsBoiler {
@@ -91,12 +97,12 @@ constructor(id = 'gb' + gbid++) {
     this.canvas.style.position = 'fixed';
     this.canvas.style.top = '0';
     const me = this;
-    ggb = me;
+    _ggb = me;
     this.canvas.onclick = () => {
         document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
         const av = me.addvisList;
         X.currentXyz = Object.values(av)[0].xyz;
-        ggb = me;
+        _ggb = me;
         console.log('click', X.currentXyz.fid, me.id);
     }
     // this.canvas.addEventListener('blur', () => console.log('blur', this.id));
@@ -141,8 +147,8 @@ constructor(id = 'gb' + gbid++) {
 //const this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
 //const this.nocamscene = new THREE.Scene(); this.nocamscene.name = this.id + 'nocamscene';
 // let this.autoClear = false;
-// let this.xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
-setxyzspeechupdate(f) {this.xyzspeechupdate = f;}
+static xyzspeechupdate;        // called each frame for speech control. ? todo arrange event mechanism
+static setxyzspeechupdate(f) {GraphicsBoiler.xyzspeechupdate = f;}
 
 // add an object to parent, default this.maingroup, and add a selection/visibility icon
 addToMain(obj, name, parent = this.maingroup, xyz) {
@@ -169,7 +175,7 @@ render() {
         this.controls.update(); // ??? (0.1);
         if (document.activeElement === document.body) this.controls.usekeys();  // use keys becuase of continuous mode
         this.orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
-        if (this.xyzspeechupdate) this.xyzspeechupdate();
+        if (GraphicsBoiler.xyzspeechupdate) GraphicsBoiler.xyzspeechupdate();
     }
     //    outerscene.matrixAutoUpdate = false;
     //    outerscene.matrix.getInverse(orbcamera.matrix);
@@ -302,7 +308,7 @@ addvis(obj, bname, xyz) {
 
 /** select given object, w.i.p */
 select(fid, xyz) {
-    if (this !== ggb) return;       // for now, we don't support multiple xyz etc objects in the non-global graphics boiler
+    if (this !== _ggb) return;       // for now, we don't support multiple xyz etc objects in the non-global graphics boiler
     for (const f in this.addvisList)
         E[f+'_k'].style.color = f === fid ? 'lightgreen' : 'white';
     const avl = this.addvisList[fid];
@@ -381,11 +387,10 @@ restoreview(s = this.lastsave) {
 
 } // end class
 
-let ggb;
 function start() {
     console.log('document loaded');
     E.lastmod.textContent = window.lastModified.xyzhtml;
-    ggb = new GraphicsBoiler();
+    _ggb = new GraphicsBoiler();
     vrstart();
 }
 

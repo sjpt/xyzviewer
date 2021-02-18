@@ -34,7 +34,7 @@ async function dxfReader(data, fid) {
         lsegs.name = fid + ent.handle;
         dxfscene.add(lsegs);
     }
-    ggb.addToMain(dxfscene, fid);
+    ggb().addToMain(dxfscene, fid);
     console.log(`added ${nent} entities with total ${nvert} vertices`)
 }
 
