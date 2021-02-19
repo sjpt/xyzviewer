@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/02/18 20:55:48
+window.lastModified.main = `Last modified: 2021/02/19 15:52:46
 `
 
 // @ts-ignore
@@ -212,10 +212,35 @@ const html = /*html*/`
     </div>
 </div>
 `
-const e = document.createElement('div');
-e.innerHTML = html;
-document.body.appendChild(e);
+const guidiv = document.createElement('div');
+guidiv.innerHTML = html;
+document.body.appendChild(guidiv);
 console.log('main.js execute, window W set', W.closed, E.colourpick.value, X.raywidth);
+guidiv.id = 'xyzviewergui';
+guidiv.style.display = 'none';
+guidiv.style.position = 'absolute';
+guidiv.style.right = '0%';
+guidiv.style.top = '0%';
+guidiv.style.background = 'rgba(40,40,40,255)';
+guidiv.style.zIndex = '99999';
+
 // }
+
+// arrange for F10 to make any chart fullscreen
+// (works for patchxyz, but independent)    
+let mouseev;
+document.addEventListener('mousemove', e => mouseev = e)
+document.addEventListener('keydown', e => {
+    if (e.key !== 'F10') return;
+    setTimeout(() => X.currentXyz.gb.onWindowResize(), 100); // used to just happen???
+    if (document.fullscreenElement) return document.exitFullscreen();
+    let div = document.elementFromPoint(mouseev.clientX, mouseev.clientY);
+    while (!div.classList.contains('grid-stack-item-content')) {
+        div = div.parentElement;
+        if (!div) return;
+    }
+    div.requestFullscreen();
+});
+
 
 
