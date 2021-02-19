@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/02/18 22:05:14
+window.lastModified.basic = `Last modified: 2021/02/19 09:55:44
 `
 if (!window.GG) window.GG = {}; if (!window.E) window.E = window;
 const {E, X} = window; 
@@ -92,6 +92,7 @@ function getStartdata() {
 
 /** load and show the initial data, called from the graphics boilerplate code at startup  */
 async function showfirstdata() {
+    if (location.href.indexOf('xyz.html') === -1) return;   // not for LMV etc
     const wls = window.location.search;
     if (wls.startsWith('?arch')) await import("./StarCarr/archstart.js");
     if (wls.startsWith('?fold')) await import('./extras/folddemo.js');
