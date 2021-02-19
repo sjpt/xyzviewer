@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/02/19 10:38:17
+window.lastModified.basic = `Last modified: 2021/02/19 16:23:13
 `
 if (!window.GG) window.GG = {}; if (!window.E) window.E = window;
 const {E, X} = window; 
@@ -70,6 +70,8 @@ function getStartdata() {
         if (location.host.startsWith('csynth'))
             if (wls.startsWith('?ox7m'))
                 r = '../xyzdata/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml';
+            else if (wls.startsWith('?oxm'))
+                r = '../xyzdata/fromMLV/fromMLV.yaml';
             else
                 r = '../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
         if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) 

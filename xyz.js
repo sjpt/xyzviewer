@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/19 15:00:12
+window.lastModified.xyz = `Last modified: 2021/02/19 16:26:08
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -344,7 +344,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
         E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
     }
     log(E.filtcount.innerHTML);
-    if (ok && !popping) {
+    if (ok && !popping && location.href.indexOf('xyz.html') !== -1) {
         let ll = location.href.split('&control=')[0];
         if (ll.indexOf('?') === -1) ll += '?';
         if (pfilterfun)
