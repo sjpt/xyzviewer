@@ -135,12 +135,11 @@ void main() {
 
 let nolassomaterial, lassomaterial;
 /**
- * @param {boolean | any[]} cols
+ * @param {boolean | any[]} cols // may be false
  * @param {number} id
+ * @param {XYZ} xyz
  */
-async function useLassoShader(cols, id) {
-    /** @type {XYZ} */
-    const xyz = X.currentXyz;
+async function useLassoShader(cols, id, xyz = X.currentXyz) {
     const tdata =xyz.tdata;
     if (cols === true) cols = [xyz.getField('X') || 'cd3', xyz.getField('Y') || 'cd4', xyz.getField('Z') || 'cd16'];
     const particles = xyz.particles;
@@ -194,4 +193,5 @@ async function useLassoShader(cols, id) {
         particles.material = nolassomaterial;
         particles.onBeforeRender = ()=>{};
     }
+    E.lassoshaderbox.checked = !!cols;
 }

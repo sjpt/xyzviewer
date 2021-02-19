@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/18 22:05:14
+window.lastModified.xyz = `Last modified: 2021/02/19 11:55:03
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -89,6 +89,15 @@ constructor(pdata, fid, owngb) {
         this.finalize(fid); // #### check when to do this
 
     if (XYZ.constructorDone) XYZ.constructorDone(this);
+
+    // make sure all spotsize elements ready for appropriate events
+    // NOT probably the best place
+    document.getElementsByName('spotsize').forEach(e => {
+        e.onmouseenter = (e) => setPointSize(e, 'in'); 
+        e.onmouseleave = (e) => setPointSize(e, 'out'); 
+        e.onclick = setPointSize;
+    });
+
 
 } // XYZ constructor
 
@@ -352,7 +361,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
      * @param {boolean} lines
      */
 usevertcol(ll, vert, col, lines) {
-    const geometry = this.geometry = this.geometry || new THREE.BufferGeometry();
+    const geometry = this.geometry;
 
     if (ll === 0) {console.log('ddata/filter failed to give any xyz'); }
     const verta = this._verta = this._verta || new THREE.BufferAttribute(vert, 3);
@@ -367,11 +376,9 @@ usevertcol(ll, vert, col, lines) {
     if (lines) {
         this.group.remove(this.particles);
         this.group.add(this.lines);
-        this.lines.geometry = geometry;
     } else {
         this.group.remove(this.lines);
         this.group.add(this.particles);
-        this.particles.geometry = geometry;
     }
 }
 
@@ -650,10 +657,11 @@ setupGraphics(fid) {
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ 
         depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
     this.linematerial = new THREE.LineBasicMaterial( { depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
-    this.particles = new THREE.Points(new THREE.Geometry(), this.material);
+    this.geometry = new THREE.BufferGeometry();
+    this.particles = new THREE.Points(this.geometry, this.material);
     this.particles.frustumCulled = false;
     this.particles.xyz = this;
-    this.lines = new THREE.LineSegments(new THREE.Geometry(), this.linematerial);
+    this.lines = new THREE.LineSegments(this.geometry, this.linematerial);
     this.lines.frustumCulled = false;
     this.lines.xyz = this;
     this.gb.addToMain( this.group, fid, undefined, this );

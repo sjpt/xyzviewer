@@ -1,11 +1,11 @@
 'use strict';
 
 
-window.lastModified.graphicsboiler = `Last modified: 2021/02/19 10:44:28
+window.lastModified.graphicsboiler = `Last modified: 2021/02/19 11:53:43
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
-import {setPointSize, col3} from './xyz.js';
+import {col3} from './xyz.js';
 import {THREE} from "./threeH.js";
 import {} from "./raycast.js";
 import {Lasso} from './lasso.js';
@@ -36,14 +36,6 @@ constructor(id = 'gb' + gbid++) {
     this.addvisList = {};
     this.defaultDistance = 10;
     this.defaultFov = Math.atan2(1.5,this.defaultDistance) * 360/Math.PI;  // gives a view of y in -1.5..1.5 for z = 0
-
-
-    // make sure all spotsize elements ready for appropriate events
-    document.getElementsByName('spotsize').forEach(e => {
-        e.onmouseenter = (e) => setPointSize(e, 'in'); 
-        e.onmouseleave = (e) => setPointSize(e, 'out'); 
-        e.onclick = setPointSize;
-    });
 
     this.xyzcontainer = document.getElementById('xyzcontainer');
 
