@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/19 11:55:03
+window.lastModified.xyz = `Last modified: 2021/02/19 15:00:12
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -10,6 +10,8 @@ import {sleep} from './basic.js';
 import {COLS} from './cols.js';
 import {THREE} from "./threeH.js";
 import {useXShader} from './xshader.js';        // todo cleanup MD: code
+// import {useLassoShader} from './lassoshader.js'
+
 import {TData, _baseiNaN} from './tdata.js';
 
 export {
@@ -125,10 +127,10 @@ finalize(fid) {
  * @param {boolean} popping 
  */
 dataToMarkersGui(type = undefined, popping = false) {
-    if (E.xshaderbox.checked) {
-        useXShader('MD:');
-        return;
-    }
+    this.group.remove(this.lines);  // may be overridden for default shader
+    this.group.add(this.particles);
+    if (E.xshaderbox.checked) { useXShader('MD:'); return; }
+    // if (E.lassoshaderbox.checked) { useLassoShader(true, undefined, this); return; } // no, this does need CPU position etc
 
     if (!this.def) this.headerSetup();
     
@@ -249,7 +251,7 @@ async _dataToMarkersFast() {
     E.filtcount.innerHTML = `fast filter applied: #points=${l} of ${tdata.n}, time: ${dt}ms`;
     log(E.filtcount.innerHTML);
     E.filterbox.classList = ['_fast'];
-    this.usevertcol(l, vert, col, false);
+    this.usevertcol(l, false);
 }
 
 
@@ -264,8 +266,8 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     if (!this.particles) this.setupGraphics(this.fid);  // for call from pdbReader
     const tdata = this.tdata;
     const l = tdata.n; // xc.length;
-    let vert = this._svert = this._svert || new Float32Array(l*3); // <<< allow for lines ???
-    let col = this._scol = this._scol || new Float32Array(l*3);
+    let vert = this._svert;
+    let col = this._scol;
     const _namecols = tdata.namecols;
     
     if (pfilterfun.startsWith('//fast')) return this._dataToMarkersFast();
@@ -274,7 +276,6 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     const yc = _namecols[this.getField('Y')];
     const zc = _namecols[this.getField('Z')];
    
-
     const filterfun = await this.makefilterfun(pfilterfun, E.filterbox, 'force');
     tdata.showpendread();
     if (filterfun === badfun) return;
@@ -328,7 +329,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     if (cbs) return;
     const ll = ii/(lines ? 6 : 3);
     if (noxyz) console.log('ddata/filter failed to give xyz for', noxyz, 'elements');
-    this.usevertcol(ll, vert, col, lines);
+    this.usevertcol(ll, lines);
 
     let ok = true;
     if (filterfun) {
@@ -356,22 +357,16 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
 
 /** once vert and col are computed, use them to populate the graphics
      * @param {number} ll
-     * @param {Float32Array} vert
-     * @param {Float32Array} col
      * @param {boolean} lines
      */
-usevertcol(ll, vert, col, lines) {
+usevertcol(ll, lines) {
     const geometry = this.geometry;
 
     if (ll === 0) {console.log('ddata/filter failed to give any xyz'); }
-    const verta = this._verta = this._verta || new THREE.BufferAttribute(vert, 3);
-    const cola = this._cola = this._cola || new THREE.BufferAttribute(col, 3);
+    const verta = this._verta;
+    const cola = this._cola;
     verta.needsUpdate = cola.needsUpdate = true;
-    geometry.setAttribute('position', verta);
-    geometry.setAttribute('color', cola);
     geometry.setDrawRange(0, ll);
-    //// @ts-ignore geometry is BufferGeometry, particles.geometry might want Geometry
-    //this.particles.geometry = geometry;
 
     if (lines) {
         this.group.remove(this.particles);
@@ -656,6 +651,9 @@ setupGraphics(fid) {
     const size = 0.3;
     this.material = new THREE.PointsMaterial( { size: size, map: sprite, /** blending: THREE.AdditiveBlending, **/ 
         depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
+    this.defaultMaterial = this.material;
+    this.lassoMaterial = undefined;
+    this.XMaterial = undefined;
     this.linematerial = new THREE.LineBasicMaterial( { depthTest: true, transparent : true, alphaTest: 0.3, vertexColors: true } );
     this.geometry = new THREE.BufferGeometry();
     this.particles = new THREE.Points(this.geometry, this.material);
@@ -665,6 +663,19 @@ setupGraphics(fid) {
     this.lines.frustumCulled = false;
     this.lines.xyz = this;
     this.gb.addToMain( this.group, fid, undefined, this );
+
+    let l = this.tdata.n;
+    let vert = this._svert = new Float32Array(l*3); // <<< allow for lines ???
+    let col = this._scol = new Float32Array(l*3);
+
+    // owing to stupidities in three.js we need a position attribute even for shaders that don't use it
+    // so just set up these now
+    const verta = this._verta = new THREE.BufferAttribute(vert, 3);
+    const cola = this._cola = new THREE.BufferAttribute(col, 3);
+    verta.needsUpdate = cola.needsUpdate = true;
+    this.geometry.setAttribute('position', verta);
+    this.geometry.setAttribute('color', cola);
+
     // xyzs[this.name] = this;
 } // setup
 

@@ -130,24 +130,24 @@ void main() {
     shader = new THREE.ShaderMaterial(
         {vertexShader, fragmentShader, uniforms}
     );
+    shader.name = 'lasso';
     return shader;
 }
 
-let nolassomaterial, lassomaterial;
 /**
- * @param {boolean | any[]} cols // may be false
- * @param {number} id
- * @param {XYZ} xyz
+ * @param {boolean | any[]} cols    // may be false, true, or list of columns
+ * @param {any} id                  // not used, to allow multiple versions
+ * @param {XYZ} xyz                 // xyz to which this applies
  */
 async function useLassoShader(cols, id, xyz = X.currentXyz) {
     const tdata =xyz.tdata;
     if (cols === true) cols = [xyz.getField('X') || 'cd3', xyz.getField('Y') || 'cd4', xyz.getField('Z') || 'cd16'];
     const particles = xyz.particles;
-    if (!nolassomaterial) nolassomaterial = particles.material;
-    if (lastid !== id) particles.material = lassomaterial = lassoShader(id);
+
 
     if (cols) {
-        particles.material = lassomaterial = lassomaterial || lassoShader(id);  // cache and set lasso material
+        if (!xyz.lassoMaterial) xyz.lassoMaterial = lassoShader(id);
+        particles.material = xyz.lassoMaterial;
         particles.onBeforeRender = () => {
             // handle lasso details every frame, could just do when lasso changes?
             const lasso = xyz.gb.lasso.lassos[0];
@@ -190,7 +190,7 @@ async function useLassoShader(cols, id, xyz = X.currentXyz) {
         }
 
     } else {
-        particles.material = nolassomaterial;
+        particles.material = xyz.defaultMaterial;
         particles.onBeforeRender = ()=>{};
     }
     E.lassoshaderbox.checked = !!cols;

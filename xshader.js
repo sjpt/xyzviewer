@@ -344,10 +344,10 @@ void main() {
     shader = new THREE.ShaderMaterial(
         {vertexShader, fragmentShader, uniforms}
     );
+    shader.name = 'xshader';
     return shader;
 }
 
-let noxmaterial, xmaterial;
 async function useXShader(pcols, id, /** @type {XYZ} */ xyz = X.currentXyz) {
     ///** @type {XYZ} */
     //const xyz = X.currentXyz;
@@ -374,15 +374,14 @@ async function useXShader(pcols, id, /** @type {XYZ} */ xyz = X.currentXyz) {
     }
     cols = typeof pcols === 'string' ? pcols.split(' ') : pcols;
     const particles = xyz.particles;
-    if (!noxmaterial) noxmaterial = particles.material;
-    if (lastid !== id) particles.material = xmaterial = xShader(id);
 
     if (cols) {
         ggb().controls.enabled = false;
         ggb().plan();
         ggb().orbcamera.position.z = 3;
 
-        particles.material = xmaterial = xmaterial || xShader(id);  // cache and set lasso material
+        if (!particles.xmaterial) particles.xmaterial = xShader(id);
+        particles.material = particles.xmaterial;
         particles.onBeforeRender = () => {
             // handle lasso details every frame, could just do when lasso changes?
             const lasso = xyz.gb.lasso.lassos[0];
@@ -451,12 +450,13 @@ async function useXShader(pcols, id, /** @type {XYZ} */ xyz = X.currentXyz) {
         }
         ggb().renderer.domElement.addEventListener('mousedown', mousedown);
     } else {
-        particles.material = noxmaterial;
+        particles.material = particles.defaultMaterial;
         particles.onBeforeRender = ()=>{};
         mouseup({buttons:0});
         ggb().renderer.domElement.removeEventListener('mousedown', mousedown);
         ggb().controls.enabled = true;
     }
+    E.xshaderbox.checked = !!cols;
     makeshowxmat();
 }
 
