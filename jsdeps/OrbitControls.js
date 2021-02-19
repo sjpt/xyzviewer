@@ -27,6 +27,7 @@ var {GG} = window;
 
 export {OrbitControls};
 import {THREE} from "../threeH.js";
+import {ggb} from '../graphicsboiler.js';
 
 
 const OrbitControls = function ( object, domElement ) {
@@ -497,12 +498,13 @@ const OrbitControls = function ( object, domElement ) {
 		var orbcamera  = scope.object;
 		var p = scope.object.position;
 		scope.reset();
-		p.set(0, 0, GG.gb().defaultDistance);  // add cleaner way ?
+		const g = ggb();
+		p.set(0, 0, g.defaultDistance);  // add cleaner way ?
 		orbcamera.setRotationFromMatrix(new THREE.Matrix4());
 		orbcamera.up = new THREE.Vector3(0,1,0);
 		orbcamera.updateMatrix();
-		const camera = GG.gb().camera;
-		camera.fov = GG.gb().defaultFov;
+		const camera = g.camera;
+		camera.fov = g.defaultFov;
 		camera.updateProjectionMatrix();
 		scope.update();
 	}

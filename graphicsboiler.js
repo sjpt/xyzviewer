@@ -1,7 +1,7 @@
 'use strict';
 
 
-window.lastModified.graphicsboiler = `Last modified: 2021/02/18 22:05:17
+window.lastModified.graphicsboiler = `Last modified: 2021/02/19 10:44:28
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -21,9 +21,11 @@ export {ggb, GraphicsBoiler};
 const {E, X, Stats} = window;
 let gbid = 0;
 
-/** ggb is static function that returns 'current' graphicsboiler */
+/** ggb is static function that returns 'current' graphicsboiler
+ @returns {GraphicsBoiler} 
+*/
 function ggb() {return _ggb};
-/** @type{any} */ let _ggb = 99;
+/** @type{any} */ let _ggb;
 
 
 //?if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -282,12 +284,12 @@ addvis(obj, bname, xyz) {
     obj.name = this.id + name;
     const sfid = name.split('\\').pop().split('/').pop();
     E.visibles.innerHTML += `
-        <span id="${name}_k" onclick="GG.gb.select('${name}')">${sfid}:</span>
+        <span id="${name}_k" onclick="currentXyz.gb.select('${name}')">${sfid}:</span>
         <span class="help">click on the item to select for filter/colour etc selection</span>
-        <input type="checkbox" checked="checked" id="${name}_cb" onclick="GG.gb.addvis_clicked(event)" name="${name}"/>
+        <input type="checkbox" checked="checked" id="${name}_cb" onclick="currentXyz.gb.addvis_clicked(event)" name="${name}"/>
         <span class="help">make item visible/invisible</span>
     `;
-    // attempt to add them later and avoid global GG.gb can sometimes create them,
+    // attempt to add them later and avoid global GG .gb can sometimes create them,
     // only to have them taken away again soon after.
     // const cbs = () => {
     //     if ((!E[`${name}_k`]) || (!E[`${name}_cb`])) return setTimeout(cbs,10);
@@ -390,8 +392,11 @@ restoreview(s = this.lastsave) {
 function start() {
     console.log('document loaded');
     E.lastmod.textContent = window.lastModified.xyzhtml;
-    _ggb = new GraphicsBoiler();
-    vrstart();
+    // greate the global ggb if needed (todo, arrange this more cleanly, eg in xyz.html)
+    if (location.href.indexOf('xyz.html') !== -1) {
+        _ggb = new GraphicsBoiler();
+        vrstart(); // don't know which one to start on
+    }
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive')

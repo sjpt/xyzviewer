@@ -348,9 +348,9 @@ void main() {
 }
 
 let noxmaterial, xmaterial;
-async function useXShader(pcols, id) {
-    /** @type {XYZ} */
-    const xyz = X.currentXyz;
+async function useXShader(pcols, id, /** @type {XYZ} */ xyz = X.currentXyz) {
+    ///** @type {XYZ} */
+    //const xyz = X.currentXyz;
     const tdata = xyz.tdata;
     if (pcols === true || pcols === undefined) {
         pcols = 'sample_id cd3 cd4 hla_dr broad ir191di'.split(' ');
