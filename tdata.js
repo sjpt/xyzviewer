@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/18 10:09:12
+window.lastModified.tdata = `Last modified: 2021/02/20 11:19:50
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -158,7 +158,7 @@ async lazyLoadCol(id) {
 
     // find the stream so we can read the data incrementally
     let stream;
-    if (fid.startsWith(',,') || fid.startsWith('..')) { // NOT correct test! will work for files from server
+    if (fid.startsWith(',,') || fid.startsWith('..') || fid.startsWith('/remote/')) { // NOT correct test! will work for files from server
         console.timeLog(kk, 'use server');
         let xfid = fid;
         if (queryVariables.nodatacache) xfid += '?' + Date.now();

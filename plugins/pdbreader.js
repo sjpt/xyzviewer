@@ -62,7 +62,7 @@ function pdbReader(data, fid) {
     // push data to main graphics
     // maingroup.remove(rlines);
     myxyz.tdata.finalize(fid);
-    myxyz.setField('COL', 'resname');
+    myxyz.setField('COL', 'resname', false);
     
     // finalize will do this ... dataToMarkersGui();
     document.title = 'xyzviewer: ' + fid;

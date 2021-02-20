@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/19 16:26:08
+window.lastModified.xyz = `Last modified: 2021/02/20 11:36:16
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -127,12 +127,13 @@ finalize(fid) {
  * @param {boolean} popping 
  */
 dataToMarkersGui(type = undefined, popping = false) {
+    if (!this.def) this.headerSetup();
+    if (!this.group) this.setupGraphics();
+
     this.group.remove(this.lines);  // may be overridden for default shader
     this.group.add(this.particles);
     if (E.xshaderbox.checked) { useXShader('MD:'); return; }
     // if (E.lassoshaderbox.checked) { useLassoShader(true, undefined, this); return; } // no, this does need CPU position etc
-
-    if (!this.def) this.headerSetup();
     
     if (X.currentThreeObj.xyz) {
         if (type) E.colourby.value = type;
@@ -619,7 +620,7 @@ async filtergui(evt = {}) {
  * set up the graphics for this XYZ view.
  * @param {string} fid 
  */
-setupGraphics(fid) {
+setupGraphics(fid = this.fid) {
     if (this.material) return;
     // options for sprite1:
     // 1: load as image defined in html, will not work for file: from chrome unless you set the flag --allow-file-access-from-files will do it but inconvenient

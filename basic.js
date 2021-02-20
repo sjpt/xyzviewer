@@ -1,8 +1,8 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/02/19 16:23:13
+window.lastModified.basic = `Last modified: 2021/02/20 11:16:26
 `
-if (!window.GG) window.GG = {}; if (!window.E) window.E = window;
+if (!window.GG) window.GG = {}; if (!window.E) window.E = /**@type{any}*/ window;
 const {E, X} = window; 
 var {GG} = window;
 import {THREE} from './threeH.js';
@@ -64,23 +64,26 @@ getQueryVariables();
 
 /** find startdata string based on ?ox etc */
 function getStartdata() {
-    const wls = window.location.search;
-    let r;
-    if (wls.startsWith('?ox')) {      
-        if (location.host.startsWith('csynth'))
+    const wls = window.location.search || '';
+    let r = '';
+    if (wls.startsWith('?ox')) {
+        if  (location.host.startsWith('csynth') || queryVariables.remote) {
+            const p = queryVariables.remote ? '/remote/https://csynth.molbiol.ox.ac.uk/csynthstatic/xyzdata/' : '../xyzdata/'
             if (wls.startsWith('?ox7m'))
-                r = '../xyzdata/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml';
+                r = 'COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml';
             else if (wls.startsWith('?oxm'))
-                r = '../xyzdata/fromMLV/fromMLV.yaml';
+                r = 'fromMLV/fromMLV.yaml';
             else
-                r = '../xyzdata/cytof/cytof_1.5million_anonymised.txt.yaml';
-        if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) 
+                r = 'cytof/cytof_1.5million_anonymised.txt.yaml';
+            r = p + r;
+        } else if (location.host.startsWith('localhost') || location.href.startsWith('127.0.0.1')) {
             if (wls.startsWith('?ox7m'))
                 r = ',,/,,/,,/,,/BigPointData/t1-data/user/erepapi/Fellowship/COVID19_CyTOF/_Steve_UMAP3_allcells.txt.yaml';
             else if (wls.startsWith('?oxm'))
                 r = ',,/,,/,,/,,/BigPointData/fromMLV/fromMLV.yaml';
             else
                 r = ',,/,,/,,/,,/BigPointData/cytof/cytof_1.5million_anonymised.txt.yaml';
+        }
 
             XYZ.baseguiset.spotsize = 0.02;
             // XYZ.baseconstructorDone =async () => {

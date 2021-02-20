@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/02/19 15:52:46
+window.lastModified.main = `Last modified: 2021/02/20 11:27:39
 `
 
 // @ts-ignore
@@ -217,12 +217,14 @@ guidiv.innerHTML = html;
 document.body.appendChild(guidiv);
 console.log('main.js execute, window W set', W.closed, E.colourpick.value, X.raywidth);
 guidiv.id = 'xyzviewergui';
-guidiv.style.display = 'none';
-guidiv.style.position = 'absolute';
-guidiv.style.right = '0%';
-guidiv.style.top = '0%';
-guidiv.style.background = 'rgba(40,40,40,255)';
-guidiv.style.zIndex = '99999';
+if (!location.href.match('xyz/xyz.html')) {
+    guidiv.style.display = 'none';
+    guidiv.style.position = 'absolute';
+    guidiv.style.right = '0%';
+    guidiv.style.top = '0%';
+    guidiv.style.background = 'rgba(40,40,40,255)';
+    guidiv.style.zIndex = '99999';
+}
 
 // }
 
