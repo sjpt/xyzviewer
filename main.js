@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/02/20 11:27:39
+window.lastModified.main = `Last modified: 2021/02/20 12:09:35
 `
 
 // @ts-ignore
@@ -224,9 +224,12 @@ if (!location.href.match('xyz/xyz.html')) {
     guidiv.style.top = '0%';
     guidiv.style.background = 'rgba(40,40,40,255)';
     guidiv.style.zIndex = '99999';
-}
+    const e = E.msgbox;
+    document.body.prepend(e);
+    e.style.fontSize = '150%'
+    e.style.margin = '0'
 
-// }
+}
 
 // arrange for F10 to make any chart fullscreen
 // (works for patchxyz, but independent)    

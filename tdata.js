@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/20 11:19:50
+window.lastModified.tdata = `Last modified: 2021/02/20 18:16:51
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -60,7 +60,7 @@ constructor(data, fid) {
     this.tellUpdateInterval = 10000;    // inform update insterval during long load
     this.firstUpdate = 10000;
     this.graphicsUpdateInterval = 250000;
-
+    TData.tdatas[fid] = this;
 
     if (!data) return;  // called from pdbReader
     this.csvReader(data, fid);
@@ -72,8 +72,9 @@ constructor(data, fid) {
  * @returns {TData}
  */
 static get(data, fid, xyz) {
-    /** @type TData */ let tdata = (data instanceof TData) ? data : TData.tdatas[fid];
-    if (!tdata) tdata = TData.tdatas[fid] = new TData(data, fid);
+    /** @type TData */ let tdata = (data instanceof TData) ? data : data.tdata || TData.tdatas[fid];
+    if (!tdata) tdata = new TData(data, fid);
+    TData.tdatas[fid] = tdata;
     tdata.xyzs.push(xyz);
     return tdata;
 }
@@ -708,7 +709,7 @@ valC(f, i) {
 /** make a proxy, strictly an array of proxies, to look like JSon data
  * experiment that may help with MLV */
 makeProxy() {
-    const p = this.pvals = [];
+    const p = this.pvals = new Array(this.n);
     for (let i=0; i < this.n; i++) {
         p[i] = new Proxy(this, {get: (targ, prop) => targ.val(prop, i)});
     }

@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/20 11:36:16
+window.lastModified.xyz = `Last modified: 2021/02/20 12:35:40
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -10,6 +10,7 @@ import {sleep} from './basic.js';
 import {COLS} from './cols.js';
 import {THREE} from "./threeH.js";
 import {useXShader} from './xshader.js';        // todo cleanup MD: code
+import {queryVariables} from './basic.js';
 // import {useLassoShader} from './lassoshader.js'
 
 import {TData, _baseiNaN} from './tdata.js';
@@ -214,7 +215,7 @@ async _dataToMarkersFast() {
     let vert = this._svert;
     let col = this._scol;
     let ii = 0;
-    const xf = this.getField('X'), yf = this.getField('Y'), zf = this.getField('Z'), cf = this.getField('COL');
+    const xf = this.getField('X'), yf = this.getField('Y'), zf = this.getField('Z'), cf = this.getField('COL') || xf;
     tdata.lazyLoadCol(xf);
     tdata.lazyLoadCol(yf);
     tdata.lazyLoadCol(zf);
@@ -266,12 +267,12 @@ async _dataToMarkersFast() {
 async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     if (!this.particles) this.setupGraphics(this.fid);  // for call from pdbReader
     const tdata = this.tdata;
-    const l = tdata.n; // xc.length;
+    const fulll = tdata.n; // xc.length;
     let vert = this._svert;
     let col = this._scol;
     const _namecols = tdata.namecols;
     
-    if (pfilterfun.startsWith('//fast')) return this._dataToMarkersFast();
+    if (pfilterfun.startsWith('//fast') || queryVariables.fast) return this._dataToMarkersFast();
     const st = performance.now();
     const xc = _namecols[this.getField('X')];
     const yc = _namecols[this.getField('Y')];
@@ -288,7 +289,8 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     const c = this._col; 
     const c1 = this._col1;
     const did = _namecols.id;
-    for (let i = 0; i < tdata.pendread_min; i ++ ) {
+    const pendl = tdata.pendread_min;
+    for (let i = 0; i < pendl; i ++ ) {
         if (me._ids !== undefined && !me._ids[did[i]]) continue;  // handle incoming crossfilter
         q[0] = q[3] = NaN;
         c.setRGB(0.3, 0.3, 0.3);
@@ -335,14 +337,14 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     let ok = true;
     if (filterfun) {
         if (lines)
-            E.filtcount.innerHTML = `filter applied: #lines=${ll} of ${l}, time: ${dt}ms`;
+            E.filtcount.innerHTML = `filter applied: #lines=${ll} of ${pendl} of ${fulll}, time: ${dt}ms`;
         else
-            E.filtcount.innerHTML = `filter applied: #points=${ll} of ${l}, time: ${dt}ms`;
+            E.filtcount.innerHTML = `filter applied: #points=${ll} of ${pendl} of ${fulll}, time: ${dt}ms`;
     } else if (pfilterfun) {
         E.filtcount.innerHTML = `bad filter not applied`;        // already been marked as error                  
         ok = false;
     } else {
-        E.filtcount.innerHTML = `no filter applied: #points=${l} , time: ${dt}ms`;
+        E.filtcount.innerHTML = `no filter applied: #points=${pendl} of ${fulll}, time: ${dt}ms`;
     }
     log(E.filtcount.innerHTML);
     if (ok && !popping && location.href.indexOf('xyz.html') !== -1) {
