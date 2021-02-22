@@ -62,11 +62,12 @@ async function xyzhtml(loc) {
 
     // extract the style sheet from the html file and insert into running file
     // n.b. this can have typical nasty css side-effects
-    let style = hh.split('<style>')[1].split('</style>')[0];
-    style = style.replace('body {', 'xbody {')
-    const sdiv = document.createElement('style');
-    sdiv.innerHTML = style + '\n#xyzviewergui * {background: rgba(120,120,120,255); opacity: 1}';
-    document.head.appendChild(sdiv);    
+    // style now done as seprate css file
+    // let style = hh.split('<style>')[1].split('</style>')[0];
+    // style = style.replace('body {', 'xbody {')
+    // const sdiv = document.createElement('style');
+    // sdiv.innerHTML = style + '\n#xyzviewergui * {background: rgba(120,120,120,255); opacity: 1}';
+    // document.head.appendChild(sdiv);    
 }
 
 // init called lazily once on first intercept, to load up all the xyz code, and then perform intercept

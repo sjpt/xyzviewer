@@ -104,7 +104,7 @@ function pdbcol(d) {
 async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 80) {
     if (chainlines && chainlines.visible === false) return;
     const tdata = myxyz.tdata;
-    if (!tdata.namecols) return;
+    if (!tdata.fvals) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
     var geom = new THREE.Geometry;
 
@@ -115,7 +115,7 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
         ggb().addToMain(chainlines, 'chainlines');
     }
 
-    const xc = tdata.namecols['x'], yc = tdata.namecols['y'], zc = tdata.namecols['z']; // , residc = myxyz.namecols['resid'];
+    const xc = tdata.fvals['x'], yc = tdata.fvals['y'], zc = tdata.fvals['z'];
 
     for (let i = 0; i < tdata.n - 1; i++) {
         if (myxyz.tdata.val('chain', i) !== myxyz.tdata.val('chain', i+1)) continue;
@@ -124,10 +124,10 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
         // if ((xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 > maxdsq) continue;
 
         myxyz._col.setRGB(0.3, 0.3, 0.3);
-        if (filterfun) if (!filterfun(myxyz, i, tdata.namecols)) continue;
+        if (filterfun) if (!filterfun(myxyz, i, tdata.fvals)) continue;
         const col1 = myxyz._col.clone();
         myxyz._col.setRGB(0.3, 0.3, 0.3);
-        if (filterfun) if (!filterfun(myxyz, i+1, tdata.namecols)) continue;
+        if (filterfun) if (!filterfun(myxyz, i+1, tdata.fvals)) continue;
         const col2 = myxyz._col.clone();
 
         geom.vertices.push(new THREE.Vector3(xc[i], yc[i], zc[i]));

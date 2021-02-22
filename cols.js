@@ -1,7 +1,7 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2021/02/13 16:25:53
+window.lastModified.basic = `Last modified: 2021/02/22 11:30:38
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
@@ -50,7 +50,7 @@ COLS.autocol = /**
  * @param {string | number} field
  */
  function(tdata, field) {
-    const nv = tdata.namevseti[field];
+    const nv = tdata.vseti[field];
     const nn = nv.length;
     const r = COLS[field] = {};
     const eql = eqcols.length;
@@ -77,7 +77,7 @@ COLS.gencol = /**
         if (field === 'random') return toset + '.set(COLS.random())';             // random colours
         if (field === 'fixed') field = E.colourpick.value;          // fixed colour
 
-        if (tdata.namecolnstrs[field] > tdata.namecolnnum[field] && !COLS[field]) COLS.autocol(tdata, field);
+        if (tdata.ranges[field].numStrs > tdata.ranges[field].numNum && !COLS[field]) COLS.autocol(tdata, field);
 
         if (COLS[field]) return `${toset}.set(COLS['${field}'][xyz.tdata.val('${field}', i)])`;       // field with defined colours
 
@@ -135,7 +135,7 @@ COLS.forrange = /**
 COLS.writer = async function(fid = 'test') {
     if (!fid.endsWith('.cols')) fid += '.cols';
     const d = {};
-    const ns = X.currentXyz.tdata.namevseti;
+    const ns = X.currentXyz.tdata.vseti;
     const choose = Object.keys(THREE.Color.NAMES);
 
     for (const fname in ns) {
@@ -156,7 +156,7 @@ COLS.writer = async function(fid = 'test') {
  * @param {*} field 
  */
 COLS.show = function(tdata = X.currentXyz, field = X.currentXyz.guiset.colourby) {
-    if (tdata.namecolnstrs[field] < tdata.namecolnnum[field]) {
+    if (tdata.ranges[field].numStrs < tdata.ranges[field].numNum) {
         E.colkey.innerHTML = '';
         return;
     }

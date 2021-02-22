@@ -83,7 +83,7 @@ function onMouseMove( event ) {
             const s = [];
             const ind = ii.index;
             // const row = xyz.datas[ii.index];
-            for (const name in xyz.tdata.namecols) { 
+            for (const name in xyz.tdata.fvals) { 
                 const v = xyz.tdata.val(name, ind); 
                 if (typeof v !== 'object') 
                     s.push(name + ': ' + v);

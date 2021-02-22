@@ -165,23 +165,23 @@ async function useLassoShader(cols, id, xyz = X.currentXyz) {
         for (let i=1; i<=3; i++) {
             const col = cols[i-1];    // column name
             if (col) {
-                const usealpha = tdata.namecolnstrs[col] > tdata.namecolnnum[col];
-                if (!tdata.nameattcols[col]) {
+                const usealpha = tdata.ranges[col].numStrs > tdata.ranges[col].numNum;
+                if (!tdata.attcols[col]) {
                     await tdata.lazyLoadCol(col);
-                    let namecol = tdata.namecols[col];
+                    let namecol = tdata.fvals[col];
                     if (usealpha) { // for alpha columns we must generate an integer array from the NaN tags
-                        let namevcol = tdata.namevcols[col];
-                        const type = tdata.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
-                        const iarr = new type(namevcol.length);   // could usually use Uint8Array
-                        iarr.forEach((v,n) => iarr[n] = namevcol[n] - _baseiNaN);
+                        let uval = tdata.uvals[col];
+                        const type = tdata.vsetlen[col] <= 255 ? Uint8Array : Uint16Array;
+                        const iarr = new type(uval.length);   // could usually use Uint8Array
+                        iarr.forEach((v,n) => iarr[n] = uval[n] - _baseiNaN);
                         namecol = iarr;
                     }
-                    tdata.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
+                    tdata.attcols[col] = new THREE.BufferAttribute(namecol, 1);
                 }                
-                particles.geometry.setAttribute('field' + i, tdata.nameattcols[col]);
+                particles.geometry.setAttribute('field' + i, tdata.attcols[col]);
                 const r = tdata.ranges[col];
                 if (usealpha)
-                    uniforms['vmap' + i].value.set(0, 1/tdata.namevsetlen[col]);
+                    uniforms['vmap' + i].value.set(0, 1/tdata.vsetlen[col]);
                 else
                     uniforms['vmap' + i].value.set(r.mean - 1.5*r.sd, 1/3/r.sd);
             } else {

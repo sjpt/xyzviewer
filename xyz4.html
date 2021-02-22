@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/15 12:42:46
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/02/21 20:43:55
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -7,7 +7,7 @@ window.onload  = async () => {
     console.log('loading patchxyz');
     pp = await import('./patchxyz.js');
     console.log('patchxyz loaded');
-    await pp.init('./');
+    // await pp.init('./');
     
     makexyz('./', a);
     makexyz('./', b)
@@ -28,16 +28,30 @@ async function makexyz(_loc, host) {
 <html lang="en">
 	<head>
 		<title>xyzviewer 4 pane test</title>
+        <link rel="stylesheet" type="text/css" href="xyz.css">
 		<meta charset="utf-8">
         <script>
             function globalPollution() {return Object.keys(window).filter(x => !globalPollution.init.includes(x))};
             globalPollution.init = Object.keys(window);
         </script>
+
 	</head>
 	<body>
         <table style="width: 100%; height: 900px; table-layout: fixed;">
             <tr><td id="a">A</td><td id="b">B</td></tr>
             <tr><td id="c">C</td><td id="d">D</td></tr>
+        </table>
+        <script src="jsdeps/three121.js"></script>
+        <!-- <script type="module" src="./jsdeps/three123.module.js"></script> -->
+
+        <script src="jsdeps/stats.min.js"></script>
+        <script src="jsdeps/js-yaml.js"></script>
+        <script src="jsdeps/math.js"></script>
+        <script src="main.js"></script>
+        <script src="gldebug.js"></script>
+
+        <script src="xyzspeech.js" type="module"></script>
+
     </body>
 </html>
 <!-- 

@@ -70,7 +70,7 @@ folddemofun();
 /** make chains based on backbone distances > l, and compute centroids and other chain stats
  * only relevant to virus/folddemo; assumes we only have CA atoms, and chains aren't sensibly defined
  */
-function makevirchains(l = 5, cols = myxyz.tdata.namecols, ) {
+function makevirchains(l = 5, cols = myxyz.tdata.fvals, ) {
     const xc = cols['x'], yc = cols['y'], zc = cols['z'];
     // const chainc = cols.chainn = new Float32Array(xc.length);
     const chainc = cols.chain; // just override the all 'A' chain field
@@ -246,7 +246,7 @@ let opos;   // original position, used to make expanded variants
  */
 function expandchain(trik = 0, pentk = 0, cenk = 0) {
     const tdata = myxyz.tdata;
-    const xc = tdata.namecols['x'], yc = tdata.namecols['y'], zc = tdata.namecols['z'], chainc = tdata.namecols['chain'];
+    const xc = tdata.fvals['x'], yc = tdata.fvals['y'], zc = tdata.fvals['z'], chainc = tdata.fvals['chain'];
     if (!opos) {
         opos = [];
         for (let i = 0; i < xc.length; i++)

@@ -417,31 +417,30 @@ async function useXShader(pcols, id, /** @type {XYZ} */ xyz = X.currentXyz) {
         for (let i=0; i<ND; i++) {
             const col = cols[i];    // column name
             if (col) {
-                const usealpha = tdata.namecolnstrs[col] > tdata.namecolnnum[col];
-                if (!tdata.nameattcols[col]) {
+                const usealpha = tdata.ranges[col].numStrs > tdata.ranges[col].numNum;
+                if (!tdata.attcols[col]) {
                     tdata.lazyLoadCol(col);       // don't await, we'll see data as it arrives
-                    let namecol = tdata.namecols[col];
+                    let fval = tdata.fvals[col];
                     if (usealpha) { // for alpha columns we must generate an integer array from the NaN tags
-                        let namevcol = tdata.namevcols[col];
-                        const type = tdata.namevsetlen[col] <= 255 ? Uint8Array : Uint16Array;
-                        const iarr = new type(namevcol.length);
-                        // iarr.forEach((v,n) => iarr[n] = namevcol[n] - _baseiNaN); // done async as segments read
-                        namecol = iarr;
+                        let uval = tdata.uvals[col];
+                        const type = tdata.vsetlen[col] <= 255 ? Uint8Array : Uint16Array;
+                        const iarr = new type(uval.length);
+                        fval = iarr;
                     }
-                    tdata.nameattcols[col] = new THREE.BufferAttribute(namecol, 1);
+                    tdata.attcols[col] = new THREE.BufferAttribute(fval, 1);
                 }                
-                particles.geometry.setAttribute('field' + i, tdata.nameattcols[col]);
+                particles.geometry.setAttribute('field' + i, tdata.attcols[col]);
                 const r = tdata.ranges[col];
                 // map to -1..1
                 if (usealpha)
-                    vmap[i].set(tdata.namevsetlen[col]/2, 2/tdata.namevsetlen[col]);
+                    vmap[i].set(tdata.vsetlen[col]/2, 2/tdata.vsetlen[col]);
                 //else if(col === 'x' || col === 'y' || col === 'z') // do not normalize x,y,z, to consider ...
                 //    vmap[i].set(0, 1);
                 else
                     vmap[i].set(r.mean, 1/(1.5*r.sd));
                 // // map to 0..1
                 // if (usealpha)
-                //     vmap[i].set(0, 1/tdata.namevsetlen[col]);
+                //     vmap[i].set(0, 1/tdata.name vsetlen[col]);
                 // else
                 //     vmap[i].set(r.mean - 1.5*r.sd, 1/3/r.sd);
             } else {

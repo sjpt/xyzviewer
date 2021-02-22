@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/20 18:16:51
+window.lastModified.tdata = `Last modified: 2021/02/22 14:51:35
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -44,19 +44,23 @@ constructor(data, fid) {
     /** @type {{}} */ this.pendread = {};  // pending async lazy reads
     /** @type XYZ[] */ this.xyzs = [];
 
-    this._cols = [],         // column arrays (Float32), by number
-    this._colsv = [],        // column arrays (Uint32), by number    
-    this.namecols = {},     // columns arrays (Float32), by name
-    this.nameattcols = {};  // column buffer attributes; created outside TData but held by  TData for sharing
-    this._vset = [],         // value set, by number
-    this.namevset = {};     // value set, by name, string => value set id 
-    this._vsetlen = [];      // size of value set, by number
-    this.namevsetlen = {};  // size of value set (# discrete string values), by name
-    this._colnstrs = [];     // number of string value instances in each column
-    this._colnnull = [];     // number of null string instances in each column
-    this._colnnum = [];      // number of numeric values in each column
-    this.namevseti = {};    // value set, value set id => string
-    this.n = 0;             // count
+    this.fvals = {},        // columns arrays (Float32), by name
+    this.uvals = {};        // column arrays (UInt32), by name
+    this.attcols = {};      // three.js column buffer attributes; created outside TData but held by TData for sharing
+    this.vset = {};         // value set, by name, string => value set id 
+    this.vsetlen = {};      // size of value set (# discrete string values), by name
+    this.vseti = {};        // value set, value set id => string
+    this.n = 0;             // count of items/rows
+    this.ranges = {};       // stats for each column
+    
+    // _ fields below only used when collecting/parsing data using column numbers
+    this._vsetlen = [];     // size of value set, by number
+    this._vset = [],        // value set, by number
+    this._colf32 = [],      // column arrays (Float32), by number
+    this._colsu32 = [],     // column arrays (Uint32), by number    
+    this._colnstrs = [];    // number of string value instances in each column
+    this._colnnull = [];    // number of null string instances in each column
+    this._colnnum = [];     // number of numeric values in each column
     this.tellUpdateInterval = 10000;    // inform update insterval during long load
     this.firstUpdate = 10000;
     this.graphicsUpdateInterval = 250000;
@@ -72,7 +76,7 @@ constructor(data, fid) {
  * @returns {TData}
  */
 static get(data, fid, xyz) {
-    /** @type TData */ let tdata = (data instanceof TData) ? data : data.tdata || TData.tdatas[fid];
+    /** @type TData */ let tdata = (data instanceof TData) ? data : (data && data.tdata) || TData.tdatas[fid];
     if (!tdata) tdata = new TData(data, fid);
     TData.tdatas[fid] = tdata;
     tdata.xyzs.push(xyz);
@@ -91,14 +95,18 @@ static get(data, fid, xyz) {
  * @param {number} i 
  */
 val(name, i) {
-    const nc = this.namecols[name];
-    if (!nc) { this.lazyLoadCol(name); return NaN; }
+    const nc = this.fvals[name];
+    if (!nc) {
+        if (name === '_tdata') return this;
+        this.lazyLoadCol(name); 
+        return NaN;
+    }
     const rv = nc[i];
     if (!isNaN(rv)) return rv;
     // const k = NaN2i(rv);
-    const k = this.namevcols[name][i] - _baseiNaN;
+    const k = this.uvals[name][i] - _baseiNaN;
     if (k === -15) return '';
-    return this.namevseti[name][k];
+    return this.vseti[name][k];
 }
 
 
@@ -131,15 +139,15 @@ async xlsxReader(raw, fid) {
      */
 async lazyLoadCol(id) {
     let step = 2*1024*1024;
-    const t = this.namecols[id]; 
+    const t = this.fvals[id]; 
     if (t) {    // do not complete till really loaded, todo use events
         while (this.pendread[id] !== this.n) await sleep(100);
         return t;
     }
     if (!this.ranges[id]) {
         if (id === 'id') {  // special case to help out crossfilter
-            this.namecols[id] = new Float32Array(this.n);
-            this.namecols[id].forEach( (x,i,a) => a[i] = i);        // silly forEach not chainable
+            this.fvals[id] = new Float32Array(this.n);
+            this.fvals[id].forEach( (x,i,a) => a[i] = i);        // silly forEach not chainable
             this.pendread[id] = this.n;
             return;
         }
@@ -149,10 +157,10 @@ async lazyLoadCol(id) {
     }
     const fid = this.bfid + '_' + id + '.colbin';
     // set up the complete buffer/views to hold all data (both Float32Array and Uint32Array views)
-    let fbuff = this.namecols[id] = new Float32Array(this.n);
-    this.namevcols[id] = new Uint32Array(fbuff.buffer);
+    let fbuff = this.fvals[id] = new Float32Array(this.n);
+    this.uvals[id] = new Uint32Array(fbuff.buffer);
     const u8buff = new Uint8Array(fbuff.buffer);        // used for loading, in case chunk has non *4 length
-    const usealpha = this.namecolnstrs[id] > this.namecolnnum[id];
+    const usealpha = this.ranges[id].numStrs > this.ranges[id].numNum;
     const kk = 'll ' + id;
     this.pendread[id] = 0;
     console.time(kk);
@@ -189,7 +197,7 @@ async lazyLoadCol(id) {
     let np = 0, np4 = 0;                                    // np, np4 are new values after segemt read
     let ut = 0;                                             // ut is last update time, set to 0 so first input causes update
     const updateInterval = 1000;                            // update every second
-    const att = this.nameattcols[id];
+    const att = this.attcols[id];
     while (true) {
         const {done, value} = await reader.read();
         if (done) break;
@@ -201,10 +209,10 @@ async lazyLoadCol(id) {
 
         if (att) {                                          // update associated texture (if any)
             if (usealpha) {                                 // alpha ones need the unsigned bytes array updated
-                const namevcol = this.namevcols[id];
+                const uval = this.uvals[id];
                 const iarr = att.array;
                 for (let n = p4; n < np4; n++)
-                    iarr[n] = namevcol[n] - _baseiNaN;                
+                    iarr[n] = uval[n] - _baseiNaN;                
             }
             const t = Date.now();                           // update the texture, but not too often
             if (t - ut > updateInterval) {
@@ -223,7 +231,7 @@ async lazyLoadCol(id) {
 
 /** test lazy load of ALL columns */
 async testLazyLoad() {
-    this.namecols = {}; 
+    this.fvals = {}; 
     this.pendread = {}; 
     for (const h of this.header) this.lazyLoadCol(h);
 }
@@ -236,33 +244,41 @@ async yamlReader(raw, fid) {
     this.prep();    // obsolete
     // get information available in yaml
     const yaml = typeof raw === 'string' ? raw : await raw.text();
-    Object.assign(this, X.jsyaml.safeLoad(yaml));
+
+    // Object.assign(this, X.jsyaml.safeLoad(yaml));
+    // collect specific fields from the yaml file
+    // allow for rename from some old values
+    const y = X.jsyaml.safeLoad(yaml);
+    this.header = y.header;
+    this.vset = y.vset || y.namevset;
+    this.ranges = y.ranges;
+    this.n = y.n;
 
     // and synthesize some more
-    const {namevset, namevseti, header, namevsetlen} = this;
-    this.namecols = {};
-    this.namevcols = {};
-    for (const n in namevset) {
-        namevseti[n] = Object.keys(namevset[n]);
-        namevsetlen[n] = namevseti[n].length;
+    const {vset, vseti, header, vsetlen} = this;
+    for (const n in vset) {
+        vseti[n] = Object.keys(vset[n]);
+        vsetlen[n] = vseti[n].length;
     }
-    // ?? this.headerSetup();  
+    // ?? this.headerSetup(); 
+    
+    // for backward compatability
+
     
     // for backward compatibility, older files (eg cytof_1.5million_anonymised.txt.yaml for ?ox) saved in different format
-    if (!this.namecolnstrs) {
-        this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
+    if (this.ranges[header[0]].numStrs === undefined) {
+
         for (let i = 0; i < header.length; i++) {
+            const h = header[i];
             // if it is an old yaml file the namecolnstrs etc will be missing,
             // and the _colnstrs etc will have an old name colnstrs etc.
-            // @ts-ignore
-            this.namecolnstrs[header[i]] = this.colnstrs[i];
-            // @ts-ignore
-            this.namecolnnum[header[i]] = this.colnnum[i];
-            // @ts-ignore
-            this.namecolnnull[header[i]] = this.colnnull[i];
+
+            this.ranges[h].numStrs = y.namecolnstrs ? y.namecolnstrs[h] : y.colnstrs[i];
+            this.ranges[h].numNum = y.namecolnnum ? y.namecolnnum[h] : y.colnnum[i];
+            this.ranges[h].numNull = y.namecolnnull ? y.namecolnnull[h] : y.colnnull[i];
         }
-        // @ts-ignore
-        delete this.colnstrs; delete this.colnnum; delete this.colnnull;
+        //// @ts-ignore
+        ////delete this.colnstrs; delete this.colnnum; delete this.colnnull;
 
     }
 
@@ -425,8 +441,8 @@ addHeader(header) {
 
     // prepare to collect the column based data, based on columns numbers
     for (let i = 0; i < header.length; i++) {
-        this._colsv[i] = new Uint32Array(1000);
-        this._cols[i] = new Float32Array(this._colsv[i].buffer);
+        this._colsu32[i] = new Uint32Array(1000);
+        this._colf32[i] = new Float32Array(this._colsu32[i].buffer);
         this._vset[i] = {};
         this._vsetlen[i] = 0;
         this._colnstrs[i] = 0;
@@ -441,7 +457,7 @@ addHeader(header) {
      * @param {any[]} rowa
      */
 addRow(rowa) {
-    const {_cols, header, _colsv} = this;
+    const {_colf32: _cols, header, _colsu32: _colsv} = this;
     if (!this.header) {
         this.addHeader(rowa);
         return 0;
@@ -450,49 +466,47 @@ addRow(rowa) {
     
     // conversion of array to tuple, plus test, increases total parse time from 300 => 2000
     // with testing 300 => 500
-    // TODO: consider whether we want any xyz testing if those columns ARE present
-    const xi = header.indexOf('x'), yi = header.indexOf('y');
-    const xyztest = (this.fid.startsWith('StarCarr')) ? +rowa[xi] + +rowa[yi] : 99; // only test for StarCarr
-
-    if (xyztest === 0) {
-        // log('odd position', s.oid, s.x, s.y, s.z);
-    } else if (isNaN(xyztest)) {
-        log('odd data');
-    } else {
-        // extend column arrays if necessary
-        const ll = this._cols[0].length;
-        if (n >= ll) {
-            for (let i = 0; i < header.length; i++) {
-                const na = new Uint32Array(ll*2);
-                na.set(_colsv[i]);
-                _colsv[i] = na;
-                _cols[i] = new Float32Array(na.buffer);
-            }
-        }
-
-        // fill in data values, allowing for number/text and hybrid columns
-        for (let i = 0; i < header.length; i++) {
-            let v = rowa[i];
-            if (v === '') {          // '' value
-                this._colnnull[i]++;
-                _colsv[i][n] = NaN4null;
-            } else if (isNaN(v)) {   // text value
-                let k = this._vset[i][v];
-                if (k === undefined) {
-                    k = this._vset[i][v] = this._vsetlen[i];
-                    this._vsetlen[i]++;
-                }
-                this._colnstrs[i]++;
-                _colsv[i][n] = k + _baseiNaN;
-            } else {                 // number value
-                v = +v;
-                this._colnnum[i]++;
-                _cols[i][n] = v;
-            }
-        }
-        this.n++;
-        this.pendread_min = this.n;
+    
+    // special case for StarCarr 0 values. ? TODO make generic data cleansing escape
+    if (this.fid.startsWith('StarCarr')) {
+        const xi = header.indexOf('x'), yi = header.indexOf('y') // , zi = header.indexOf('z'), noi = header.indexOf('no');
+        if (+rowa[xi] === 0) rowa[xi] = '!!!bad 0!!!';
+        if (+rowa[yi] === 0) rowa[yi] = '!!!bad 0!!!';        
     }
+ 
+    // extend column arrays if necessary
+    const ll = this._colf32[0].length;
+    if (n >= ll) {
+        for (let i = 0; i < header.length; i++) {
+            const na = new Uint32Array(ll*2);
+            na.set(_colsv[i]);
+            _colsv[i] = na;
+            _cols[i] = new Float32Array(na.buffer);
+        }
+    }
+
+    // fill in data values, allowing for number/text and hybrid columns
+    for (let i = 0; i < header.length; i++) {
+        let v = rowa[i];
+        if (v === '') {          // '' value
+            this._colnnull[i]++;
+            _colsv[i][n] = NaN4null;
+        } else if (isNaN(v)) {   // text value
+            let k = this._vset[i][v];
+            if (k === undefined) {
+                k = this._vset[i][v] = this._vsetlen[i];
+                this._vsetlen[i]++;
+            }
+            this._colnstrs[i]++;
+            _colsv[i][n] = k + _baseiNaN;
+        } else {                 // number value
+            v = +v;
+            this._colnnum[i]++;
+            _cols[i][n] = v;
+        }
+    }
+    this.n++;
+    this.pendread_min = this.n;
     return this.n;
 } // addRow
 
@@ -501,36 +515,36 @@ addRow(rowa) {
      */
 finalize(fid, partial = false) {
     const me = this;
-    const {header, _cols, namecols, _vset, namevset, _vsetlen, namevsetlen} = this;
-
-    this.namecolnstrs = {}; this.namecolnnum = {}; this.namecolnnull = {};
-    this.namevcols = {};
+    const {header, _colf32: _cols, fvals: fvals, _vset, vset, _vsetlen, vsetlen} = this;
 
     // now we have collected the data trim the columns and prepare helper derived data
     for (let i = 0; i < header.length; i++) {
+        const colname = header[i];
         _cols[i] = _cols[i].slice(0, this.n);
-        namecols[header[i]] = _cols[i];
-        this.namevcols[header[i]] = new Uint32Array(_cols[i].buffer);
-        namevset[header[i]] = _vset[i];
-        namevsetlen[header[i]] = _vsetlen[i];
-        this.namevseti[header[i]] = Object.keys(_vset[i]);
+        fvals[colname] = _cols[i];
+        this.uvals[header[i]] = new Uint32Array(_cols[i].buffer);
+        vset[colname] = _vset[i];
+        vsetlen[colname] = _vsetlen[i];
+        this.vseti[colname] = Object.keys(_vset[i]);
 
-        this.namecolnstrs[header[i]] = this._colnstrs[i];
-        this.namecolnnum[header[i]] = this._colnnum[i];
-        this.namecolnnull[header[i]] = this._colnnull[i];
+        if (!this.ranges[colname]) this.ranges[colname] = {};
+        const r = this.ranges[colname];
+        r.numStrs = this._colnstrs[i];
+        r.numNum = this._colnnum[i];
+        r.numNull = this._colnnull[i];
     }
 
     // delete some number based fields; they have done their work during preparation, no longer needed
     // they aren't using much space as the big things they point to are pointed to from namecols etc
     if (!partial) {
-        delete this._cols;
+        delete this._colf32;
         delete this._vset;
         delete this._vsetlen;
     }
     
     
-    if (!this.ranges || !partial) {
-        this.ranges = this.genstats();  // only generate ranges for first input so all are consistent
+    if (!partial) {
+        Object.assign(this.ranges, this.genstats());  // only generate ranges for first input so all are consistent
     }
     
     function finish(col) {
@@ -557,7 +571,7 @@ rebase(fn) {
     const c = centrerange[fn];
     // we used to keep extra columns for original data
     // and also three vectors for position, but overhead too high
-    const col = this.namecols[fn];
+    const col = this.fvals[fn];
     for (let i = 0; i < col.length; i++) col[i] -= c;
     this.ranges[fn] = this.genstats(fn);     // could be more efficient here and just modify old stats
 }
@@ -582,22 +596,22 @@ genstats(name = undefined) {
     // }
     // tothreepos(datals); // do not keep pos, overhead of all those Vector3 too high
     if (!name) {   // repeat for all fields
-        const lranges = {};
+        const lranges = this.ranges;
         for (name of this.header)  {
-            lranges[name] = this.genstats(name);
+            this.genstats(name);
         }
         if (centrerange.x === Infinity && lranges.x)  // centrerange is static set on first file, and use same for all subsequent files
             centrerange.set(lranges.x.mean, lranges.y.mean, lranges.z.mean);
         return lranges;
     }
 
-    const data = this.namecols[name];   // just extract this field
+    const data = this.fvals[name];   // just extract this field
     let sum = 0, sum2 = 0, n = 0;
-    let min = Number.MAX_VALUE;
-    let max = Number.MIN_VALUE;
-    if (isNaN(data[0])) {min = max = data[0]}
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    // if (isNaN(data[0])) {min = max = data[0]}  // ???? what was this for ????
     data.forEach(v => {
-        if (!v) return;  // '' or 0 are sometimes used for missing/undefined (not for pdb chains, never mind ...!!!)
+        if (v == null) return;  // used to use !v so v=0 was not used, special StarCarr case of x/y=0, now handled elsewhere
         if (isNaN(v)) {
             //
         } else {
@@ -611,7 +625,10 @@ genstats(name = undefined) {
     });
 
     const sd = Math.sqrt((sum2 - 1/n * sum*sum) / n);
-    return {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n};
+    Object.assign(this.ranges[name], 
+        {name, mean: sum / n, sd, mid: (min + max) / 2, range: (max - min), min, max, sum, sum2, n}
+    );
+    return this.ranges[name];
 }
 
 
@@ -619,34 +636,22 @@ genstats(name = undefined) {
  * This is used for example where a very large csv file has been (expensively) read,
  * and enables the more efficient column load for future (fast, lazy) loading.
  */
-async savefiles() {
+async savefiles(yamlonly = false) {
     const saver = saveData; // for download eg to downloads, could be writeFile if we have local server
     // make an object with most metadata but no data
-    var xxx = this;
-    var obj = Object.assign({}, xxx);
-
-    delete obj.namecols;        // namecols will be saved in separate column files
-    delete obj.xyzs;            // xyzs will by dynamic in each session
-    for (const k in obj) if (k[0] === '_') delete obj[k];   // delete all private
-    delete obj.namevsetlen;     // recreate in yamlReader from namevset
-    delete obj.namevseti;       // recreate in yamlReader from namevset   
-    delete obj.nameattcols;     // THREE attributes will be created by user programs, but shared through nameattcols
-
-    // delete obj._cols;        _* done above
-    // delete obj._vset;        _* done above
-    // delete obj._vsetlen;     _* done above
-    // delete obj.namevset;     DO NOT delete
-    // delete obj.vseti;        field does not exist any more
+    const {header, vset, ranges, n} = this;
+    const obj = {header, vset, ranges, n};
        
     var yaml = X.jsyaml.safeDump(obj, {skipInvalid: true})
     console.log('yaml size', yaml.length);
-
     saver(this.fid + '.yaml', yaml);
-    for (const n in this.namecols) {
+    if (yamlonly) return;
+
+    for (const n in this.fvals) {
         await sleep(200);
         const fid = this.fid + '_' + n + '.colbin';
         log('save', fid);
-        await saver(fid, this.namecols[n]);
+        await saver(fid, this.fvals[n]);
     }
     log('saves done');
 }  // savefiles
@@ -660,7 +665,7 @@ async savefiles() {
      */
 valN(f, i, sds=1.5) {
     const r = this.ranges[f];
-    return (this.namecols[f][i] - r.mean) / (r.sd * sds * 2) + 0.5;
+    return (this.fvals[f][i] - r.mean) / (r.sd * sds * 2) + 0.5;
 }
 
 /**
@@ -672,7 +677,7 @@ valN(f, i, sds=1.5) {
      * @returns {number}
      */
 valLH(f, i, low, high) {
-    return (this.namecols[f][i] -low) / (high - low);
+    return (this.fvals[f][i] -low) / (high - low);
 }
 
 /**
@@ -682,7 +687,7 @@ valLH(f, i, low, high) {
      * @returns {number}
      */
 valE(f,i) {
-    return this.namevcols[f][i] - _baseiNaN;
+    return this.uvals[f][i] - _baseiNaN;
 }
 
 /**
@@ -692,7 +697,7 @@ valE(f,i) {
      * @returns {number}
      */
     valEN(f,i) {
-    return (this.namevcols[f][i] - _baseiNaN) / this.namevsetlen[f];
+    return (this.uvals[f][i] - _baseiNaN) / this.vsetlen[f];
 }
 
 /**
@@ -702,7 +707,7 @@ valE(f,i) {
      * @returns {string}
      */
 valC(f, i) {
-    return this.namevseti[f][this.namevcols[f][i] - _baseiNaN];
+    return this.vseti[f][this.uvals[f][i] - _baseiNaN];
 }
 // X.en umI = en umI; X.en umF = en umF; 
 

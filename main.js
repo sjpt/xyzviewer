@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/02/20 12:09:35
+window.lastModified.main = `Last modified: 2021/02/21 20:46:55
 `
 
 // @ts-ignore
@@ -217,7 +217,7 @@ guidiv.innerHTML = html;
 document.body.appendChild(guidiv);
 console.log('main.js execute, window W set', W.closed, E.colourpick.value, X.raywidth);
 guidiv.id = 'xyzviewergui';
-if (!location.href.match('xyz/xyz.html')) {
+if (!location.href.match('xyz/xyz')) { // xyz.html and html4.html
     guidiv.style.display = 'none';
     guidiv.style.position = 'absolute';
     guidiv.style.right = '0%';

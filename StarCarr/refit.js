@@ -18,8 +18,8 @@ function refit() {
     /** @type {XYZ} */
     const xyz = X.currentXyz;
     const tdata = xyz.tdata;
-    const refitcol = tdata.namecols.refit_grou;
-    const xc = tdata.namecols.x, yc = tdata.namecols.y, zc = tdata.namecols.z;
+    const refitcol = tdata.fvals.refit_grou;
+    const xc = tdata.fvals.x, yc = tdata.fvals.y, zc = tdata.fvals.z;
     if (!refitcol) {setTimeout(refit, 100); return; }
     // data prep, find groups
     rgroups = {};

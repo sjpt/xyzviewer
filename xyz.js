@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/20 12:35:40
+window.lastModified.xyz = `Last modified: 2021/02/22 11:30:38
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -221,10 +221,10 @@ async _dataToMarkersFast() {
     tdata.lazyLoadCol(zf);
     tdata.lazyLoadCol(cf);
 
-    const xc = tdata.namecols[xf];
-    const yc = tdata.namecols[yf];
-    const zc = tdata.namecols[zf];
-    const cc = tdata.namecols[cf];
+    const xc = tdata.fvals[xf];
+    const yc = tdata.fvals[yf];
+    const zc = tdata.fvals[zf];
+    const cc = tdata.fvals[cf];
     if (!xc || !yc || !zc || !cc) {
         throw new Error(`at least one value not a valid column in _dataToMarkersFast, ${xf}, ${yf}, ${zf}, ${cf}`)
     }
@@ -270,7 +270,7 @@ async _dataToMarkers(pfilterfun = E.filterbox.value, popping, cbs) {
     const fulll = tdata.n; // xc.length;
     let vert = this._svert;
     let col = this._scol;
-    const _namecols = tdata.namecols;
+    const _namecols = tdata.fvals;
     
     if (pfilterfun.startsWith('//fast') || queryVariables.fast) return this._dataToMarkersFast();
     const st = performance.now();
@@ -441,7 +441,7 @@ async makefilterfun(filtin, box, mode='') {
             for (let fn of tdata.header) { // find used fields and assign (saves risk of accidental override of d.<fn>)
                 
                 // these do over-global automatic choice, upset COL:
-                //const usealpha = this.namecolnstrs[fn] > this.namecolnnum[fn];
+                //const usealpha = this.name colnstrs[fn] > this.name colnnum[fn];
                 //let use = usealpha ? '_EN' : XYZ.autorange ? '_N' : '_R';
                 //filt = filt.replace( new RegExp('\\b(' + fn + ')\\b', 'g'), fn + use);
 
@@ -452,7 +452,7 @@ async makefilterfun(filtin, box, mode='') {
                 
                 
                 if (filt.match( new RegExp('\\b' + fn + '\\b', 'g'))) {
-                    const usealpha = tdata.namecolnstrs[fn] > tdata.namecolnnum[fn];
+                    const usealpha = tdata.ranges[fn].numStrs > tdata.ranges[fn].numNum;
                     // let fun = usealpha ? 'valEN' : XYZ.autorange ? 'valN' : 'val';
                     // filt = `const ${fn} = xyz.${fun}('${fn}', i);\n${filt}`;
                     if (usealpha)
@@ -565,7 +565,7 @@ async makefilterfun(filtin, box, mode='') {
 
     try {
         // eslint-disable-next-line no-unused-vars
-        const r = filterfun(this/*. _ccr*/, 0, tdata.namecols);
+        const r = filterfun(this/*. _ccr*/, 0, tdata.fvals);
     } catch(e) {
         msg('function throws exception: ' + e.message, '_exception');
         return badfun;
