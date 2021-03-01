@@ -28,7 +28,7 @@
     "esbuild": "^0.8.43",
     "eslint": "^7.19.0",
     "mathjs": "^8.1.1",
-    "three": "^0.123.0",
+    "three": "^0.125.0",
     "webpack": "^5.22.0"
   },
   "keywords": []
