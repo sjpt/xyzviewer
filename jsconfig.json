@@ -10,5 +10,5 @@
     },
     "exclude": ["./jsdeps/three*.js"]
     // "include": ["./jsdeps/Three.d.ts"]
-    // "include": ["./jsdeps/three121.js"]
+    // "include": ["./jsdeps/three127.js"]
 }

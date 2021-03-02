@@ -80,7 +80,7 @@ async function init(loc = 'https://csynth.molbiol.ox.ac.uk/csynthstatic/xyz/') {
     xyzhtml(loc);
     
     // these js files are not currently implemented as modules so must be loaded as scripts
-    await addscript(loc + "jsdeps/three121.js")
+    await addscript(loc + "jsdeps/three127.js")
     await addscript(loc + "jsdeps/stats.min.js")
     await addscript(loc + "jsdeps/js-yaml.js")
     await addscript(loc + "jsdeps/math.js")
