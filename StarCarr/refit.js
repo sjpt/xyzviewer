@@ -44,10 +44,12 @@ function refit() {
     }
 
     // now prepare groups as graphics
-    var linegeom = new THREE.Geometry();
+    // var linegeom = new THREE. Geometry();
+    const vertices = [];
+    const colors = [];
     for (let g in rgroups) {
         const gr = rgroups[g];
-        const col = col3(Math.random(), Math.random(), Math.random());
+        const col = [Math.random(), Math.random(), Math.random()];
         // const cen = new THREE.Vector3(gr.x - centrerange.x, gr.y - centrerange.y, gr.z - centrerange.z); // not needed 8/11/2020, new centre scheme
         const cen = new THREE.Vector3(gr.x, gr.y, gr.z);
         gr.inds.forEach( i=> {
@@ -56,12 +58,15 @@ function refit() {
             //if (dv.distanceTo(cen) > 3)
             //    console.log('refit big', gr.gid, i, cen, dv);
 
-            linegeom.vertices.push(cen);
-            linegeom.vertices.push(dv);
-            linegeom.colors.push(col);
-            linegeom.colors.push(col);
+            vertices.push(cen.x, cen.y, cen.z);
+            vertices.push(xc[i],  yc[i],  zc[i]);
+            colors.push(col[0], col[1], col[2]);
+            colors.push(col[0], col[1], col[2]);
             });
     }
+    const linegeom = new THREE.BufferGeometry();
+    linegeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    linegeom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true /*THREE.VertexColors*/ } );
     //if (rlines) maingroup.remove(rlines);

@@ -127,7 +127,7 @@ function virchaindists(sc = 1) {
     }
     groupgeom.scale.set(sc,sc,sc);
     // find the close pairs
-    var linegeom = new THREE.Geometry();
+    const linegeom = new THREE.BufferGeometry(), vertices = [], colors = [];
 
     virchains.forEach(c => c.close=[]);
     // cols is based on the known centroid distances for 4bcu
@@ -141,15 +141,18 @@ function virchaindists(sc = 1) {
             if (d < 50) {   // close enough to be of interest, collect the info and draw the line
                 chi.close.push(j);
                 chj.close.push(i);
-                linegeom.vertices.push(chi.near);
-                linegeom.vertices.push(chj.near);
+                vertices.push(chi.near.x, chi.near.y, chi.near.z);
+                vertices.push(chj.near.x, chj.near.y, chj.near.z);
                 const colx = cols[Math.floor(d)]
                 const col = colx ? colx.clone() : col3(0,1,0);
-                linegeom.colors.push(col);
-                linegeom.colors.push(col);
+                colors.push(col.r, col.g, col.b);
+                colors.push(col.r, col.g, col.b);
             }
         }
     }
+    linegeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    linegeom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true} ); // THREE.VertexColors } );
     //maingroup.remove(rlines);
     groupgeom.remove(rlines);
@@ -162,11 +165,12 @@ function virchaindists(sc = 1) {
     const dists = ds.filter(function(v,i,a) { if(v < a[i-1]+0.2) return 0; return 1; });
     log('discrete distances found, ascending order', dists);
 
+    const t1 = new THREE.Vector3(), t2 = new THREE.Vector3(), t3 = new THREE.Vector3();
     // find triangles
     // classify them into types according to distances
     // group triangles into pentagons where appropriate
     // draw solid with triangles
-    var trigeom = new THREE.Geometry();
+    const trigeom =  new THREE.BufferGeometry(), verticest = [], colorst = [], normalst = [];
     //let groups = [];
     let n = 0;
     for (let i=0; i < virchains.length; i++) {
@@ -208,15 +212,26 @@ function virchaindists(sc = 1) {
                 }
 
                 // collect the face as graphics object
-                trigeom.vertices.push(chi.near); // (a);
-                trigeom.vertices.push(chj.near); // b);
-                trigeom.vertices.push(chk.near); // c);
+                verticest.push(chi.near.x, chi.near.y, chi.near.z);
+                verticest.push(chj.near.x, chj.near.y, chj.near.z);
+                verticest.push(chk.near.x, chk.near.y, chk.near.z);
+                colorst.push(col.r, col.g, col.b);
+                colorst.push(col.r, col.g, col.b);
+                colorst.push(col.r, col.g, col.b);
+                t1.subVectors(chi.near, chj.near);
+                t2.subVectors(chj.near, chk.near);
+                t3.crossVectors(t1, t2).normalize();
 
-                const face = new THREE.Face3(n++, n++, n++, undefined, col.clone());
-                face.chainset = chainset;
-                trigeom.faces.push(face);
+                normalst.push(t3.x, t3.y, t3.z);
+                normalst.push(t3.x, t3.y, t3.z);
+                normalst.push(t3.x, t3.y, t3.z);
+
+                // ??? face.chainset = chainset; <<<< todo no three.geometry
             });
         });
+        trigeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verticest), 3));
+        trigeom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colorst), 3));
+        trigeom.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normalst), 3));
     }
 
     // convert pentagon and trimers to arrays and compute their centres. quite a bit of duplicated work below
@@ -230,7 +245,7 @@ function virchaindists(sc = 1) {
     log('chain tripos etc computed in chaindists');
 
     // finish off the mesh ready for drawing
-    trigeom.computeFaceNormals();
+    //??? trigeom.computeFaceNormals(); // <<<< todo no three.geometry
     const meshmat = new THREE.MeshPhongMaterial( { color: 0xffffff, opacity: 1, vertexColors: true /*THREE.VertexColors*/, side: THREE.DoubleSide } );
     if (polygonmesh) groupgeom.remove(polygonmesh);
     polygonmesh = new THREE.Mesh(trigeom, meshmat);

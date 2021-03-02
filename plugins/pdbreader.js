@@ -106,7 +106,8 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
     const tdata = myxyz.tdata;
     if (!tdata.fvals) return;
     const filterfun = await myxyz.makefilterfun(pfilterfun, E.filterbox);
-    var geom = new THREE.Geometry;
+    var geom = new THREE.BufferGeometry(), vertices = [], colors = [];
+
 
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1, vertexColors: true }); // THREE.VertexColors } );
     // maingroup.remove(chainlines);
@@ -130,11 +131,14 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
         if (filterfun) if (!filterfun(myxyz, i+1, tdata.fvals)) continue;
         const col2 = myxyz._col.clone();
 
-        geom.vertices.push(new THREE.Vector3(xc[i], yc[i], zc[i]));
-        geom.vertices.push(new THREE.Vector3(xc[i+1], yc[i+1], zc[i+1]));
-        geom.colors.push(col1);
-        geom.colors.push(col2);
+        vertices.push(xc[i], yc[i], zc[i]);
+        vertices.push(xc[i+1], yc[i+1], zc[i+1]);
+        colors.push(col1.r, col1.g, col1.b);
+        colors.push(col2.r, col2.g, col2.b);
     }
+    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
     chainlines.geometry = geom;
 }
 

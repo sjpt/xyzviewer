@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/03/02 15:13:51
+<script>lastModified={}; lastModified.xyzhtml = `Last modified: 2021/03/02 13:01:32
 `
 var GG = {};
 GG.starttime = Date.now();
@@ -48,18 +48,19 @@ GG.starttime = Date.now();
         </p>
         </div>
 
-		<script src="jsdeps/three127.js"></script>
+		<!-- <script src="jsdeps/three127.js"></script> -->
         <!-- <script type="module" src="./jsdeps/three123.module.js"></script> -->
 
-        <script src="jsdeps/stats.min.js"></script>
+        <!-- <script src="jsdeps/stats.min.js"></script>
         <script src="jsdeps/js-yaml.js"></script>
         <script src="jsdeps/math.js"></script>
 		<script src="main.js"></script>
-        <script src="gldebug.js"></script>
+        <script src="gldebug.js"></script> --> -->
         
         <!-- loading this explicitly here rather than waiting saves near 1 second of load time-->
         <!-- we need to check cirular dependencies -->
-        <script src="xyzspeech.js" type="module"></script>
+        <!-- <script src="xyzspeech.js" type="module"></script> -->
+        <script src="esbuild/xyz.js" type="module"></script>
         <script>
             console.log('xyzspeech read, window=', window)
             // new GG .gb.GraphicsBoiler(); // can be too late, but get it in somewhere in this file?

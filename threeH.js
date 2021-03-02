@@ -1,4 +1,4 @@
-window.lastModified.threeH = `Last modified: 2021/02/18 20:03:43
+window.lastModified.threeH = `Last modified: 2021/03/02 15:23:43
 `;
 // everyone can import THREE from here using  'import {THREE} from "./threeH.js";'
 // which helps ensure everyone is using the same THREE as we switch to modules
@@ -13,11 +13,29 @@ window.lastModified.threeH = `Last modified: 2021/02/18 20:03:43
 //
 export {THREE};
 const {X} = window, {THREE} = X; console.log('>>>>threeH.js global');// this behaves best for now, 13/12/2020
+//import * as THREE from "./jsdeps/three126.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
+
+// import * as THREE from "./jsdeps/three127.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
+
 // import * as THREE from "three";
-// import * as THREE from "./jsdeps/three121.module.js"; console.log('>>>>threeH.js module');     // gives lots of compiler errors
 //import * as THREE from "./node_modules/three/build/three.module.js";  // gives lots of compiler errors as above
 /// <reference path="node_modules/three/src/Three.d.ts" /> // this seems to be there anyway for THREE from window.
 //import * as THREE from "./node_modules/three/src/Three";  // compiles ok but no THREE at runtime
 
 // var xx = new THREE.Scene(); xx.add(); // x.fred(); // test only
+
+
+/*
+experiment on import
+<script src="jsdeps/stats.min.js"></script>
+<script src="jsdeps/js-yaml.js"></script>
+<script src="jsdeps/math.js"></script>
+<script src="main.js"></script>
+<script src="gldebug.js"></script> 
+*/
+
+// import * as xx1 from "./jsdeps/js-yaml.js";
+// import * as xx2 from "./jsdeps/math.js";
+// import * as xx3 from "./main.js";
+// import * as xx4 from "./gldebug.js";
 

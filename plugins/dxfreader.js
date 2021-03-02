@@ -25,11 +25,14 @@ async function dxfReader(data, fid) {
     let nent = 0, nvert = 0;
     for (const ent of dxff.entities) {
         if (ent.type !== 'LWPOLYLINE') continue;
-        var geometry = new THREE.Geometry();
-        var verts = ent.vertices.map(v => new THREE.Vector3(v.x - xoff, v.y - yoff, 0));
+        var geometry = new THREE.BufferGeometry(), vertices = [];
+        // var verts = ent.vertices.map(v => new THREE.Vector3(v.x - xoff, v.y - yoff, 0));
+        for (const v of ent.vertices) vertices.push(v.x - xoff, v.y - yoff, 0);
         nent++;
-        nvert += verts.length;
-        geometry.vertices = verts;
+        nvert += vertices.length/3;
+        // geometry.vertices = verts;
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+
         const lsegs = new THREE.Line(geometry, dxfmaterial);
         lsegs.name = fid + ent.handle;
         dxfscene.add(lsegs);

@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.geojson = `Last modified: 2021/02/18 22:05:14
+window.lastModified.geojson = `Last modified: 2021/03/02 15:05:36
 `
 // code for display of geojson data
 export  {geojsonReader};
@@ -17,7 +17,7 @@ function geojsonReader(json, fid) {
     const features = sss.features;
 
     // now prepare groups as graphics
-    const linegeom = new THREE.Geometry();
+    const linegeom = new THREE.BufferGeometry(), vertices = [];
 
     const cx=centrerange.x, cy=centrerange.y, cz=centrerange.z;
     for (let fi = 0; fi < features.length; fi++) {
@@ -31,30 +31,33 @@ function geojsonReader(json, fid) {
                 let line = coords[i];
                 if (!Array.isArray(line)) line = [line];
                 for (let l=0; l < line.length - 1; l++) {
-                    linegeom.vertices.push(mv(line[l]));
-                    linegeom.vertices.push(mv(line[l+1]));
+                    pushp(mv(line[l]));
+                    pushp(mv(line[l+1]));
                 }
             }
         } else if (type === 'LineString') {
             for (let i=0; i < coords.length-1; i++) {
-                linegeom.vertices.push(mv(coords[i]));
-                linegeom.vertices.push(mv(coords[i+1]));
+                pushp(mv(coords[i]));
+                pushp(mv(coords[i+1]));
            }
         } else if (type === 'Point') {
-            linegeom.vertices.push(mv(coords));
-            const n = linegeom.vertices.push(mv(coords));
-            linegeom.vertices[n].x += 0.01;
+            pushp(mv(coords));
+            const n = pushp(mv(coords));
+            vertices[n-2] += 0.01; // ?????
         } else {
             log(`Unexpected type ${type} for geometry`);
         }
     }
+    function pushp(l) {return vertices.push(l.x, l.y, l.z);}
+
+    linegeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
 
     const linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 1, linewidth: 1 } );
     // if (geolines) maingroup.remove(geolines);
     geolines = new THREE.LineSegments(linegeom, linemat);
 
     ggb().addToMain(geolines, fid);
-    log(fid + `features=${features.length} segs=${linegeom.vertices.length}`);
+    log(fid + `features=${features.length} segs=${vertices.length}`);
 
 }
 
