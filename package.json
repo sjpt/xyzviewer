@@ -25,11 +25,11 @@
   },
   "dependencies": {
     "csv-parser": "^2.3.5",
-    "esbuild": "^0.8.43",
-    "eslint": "^7.19.0",
+    "esbuild": "^0.8.54",
+    "eslint": "^7.21.0",
     "mathjs": "^8.1.1",
-    "three": "^0.123.0",
-    "webpack": "^5.22.0"
+    "three": "^0.126.0",
+    "webpack": "^5.24.2"
   },
   "keywords": []
 }
