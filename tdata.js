@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/02/22 14:51:35
+window.lastModified.tdata = `Last modified: 2021/03/11 12:33:25
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -557,10 +557,13 @@ finalize(fid, partial = false) {
         // maybe, it certainly helped with pdbdata
         finish('x');
         finish('y');
-        finish('z');
-    }
-
+        finish('z');        
+        }
     this.ranges.forEach = this.sForEach;
+    for (const xyz of this.xyzs)
+        xyz.finalize(fid, partial);
+
+
 }
 
 /**

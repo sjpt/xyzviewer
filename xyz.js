@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/02/22 11:30:38
+window.lastModified.xyz = `Last modified: 2021/03/11 12:43:25
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -113,12 +113,14 @@ static constructorDone = undefined;
  * (maybe incrementally as real data is loaded)
  * @param {string} fid 
  */
-finalize(fid) {
+finalize(fid, partial) {
     if (this.tdata.header) this.headerSetup(); // ####????
 
-    this.setupGraphics(fid);
     this.gb.select(fid, this);
-    this.watchload(); // #### check when to do this
+    if (Object.keys(this.tdata.ranges).length !== 0) {
+        this.watchload(); // #### check when to do this
+        this.setupGraphics(fid);
+    }
     // this.filtergui({keyCode: 13});    // display as markers
 }
 
@@ -128,7 +130,7 @@ finalize(fid) {
  * @param {boolean} popping 
  */
 dataToMarkersGui(type = undefined, popping = false) {
-    if (!this.def) this.headerSetup();
+    this.headerSetup();
     if (!this.group) this.setupGraphics();
 
     this.group.remove(this.lines);  // may be overridden for default shader
@@ -761,6 +763,7 @@ if (!xyz._lasso(q[0], q[1], q[2])) return;
 
     /** generate colourby and initial filter*/
 headerSetup() {
+    if (this.def) return;
     const tdata = this.tdata;
     this.def = {};
     this.def.X = tdata.header.includes('x') ? 'x' : tdata.header[0];
@@ -784,7 +787,6 @@ async watchload() {
     const tdata = this.tdata;
     while (!tdata.header) {await sleep(10);}  // eg from MLV
     for (let i=0; i<100; i++) {
-        // tdata.showpendread(); // done better in dataToMarkersGui()
         await dataToMarkersGui();
         log('pending', i, tdata.pendread_min, tdata.n);
         if (tdata.pendread_min === tdata.n) break;
