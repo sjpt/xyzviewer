@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-        <meta http-equiv="refresh" content="0; URL='xyz/xyz.html'" />
-    </head>
+    <script>
+        console.log('>>>', location.href)
+        location.href = location.origin + location.pathname + '/xyz.html' + location.search
+    </script>
 </html>
