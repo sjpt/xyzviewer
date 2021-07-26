@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/02/21 20:46:55
+window.lastModified.main = `Last modified: 2021/07/26 17:27:33
 `
 
 // @ts-ignore
@@ -126,16 +126,20 @@ const html = /*html*/`
         <br>
         <span>
         <b>Spot size:</b>
-            0.01<input type="radio" name="spotsize" id="spot0.01"/>
-            0.02<input type="radio" name="spotsize" id="spot0.02"/>
-            0.05<input type="radio" name="spotsize" id="spot0.05"/>
-            0.1<input type="radio" name="spotsize" id="spot0.1"/>
-            0.2<input type="radio" name="spotsize" id="spot0.2"/>
-            0.5<input type="radio" name="spotsize" id="spot0.5"/>
-            1<input type="radio" name="spotsize" id="spot1"/>
-            2<input type="radio" name="spotsize" id="spot2"/>
-            5<input type="radio" name="spotsize" id="spot5"/>
-            10<input type="radio" name="spotsize" id="spot10"/>
+            <span id="spots">
+                0.01<input type="radio" name="spotsize" id="spot0.01"/>
+                0.02<input type="radio" name="spotsize" id="spot0.02"/>
+                0.05<input type="radio" name="spotsize" id="spot0.05"/>
+                0.1<input type="radio" name="spotsize" id="spot0.1"/>
+                0.2<input type="radio" name="spotsize" id="spot0.2"/>
+                0.5<input type="radio" name="spotsize" id="spot0.5"/>
+                1<input type="radio" name="spotsize" id="spot1"/>
+                2<input type="radio" name="spotsize" id="spot2"/>
+                5<input type="radio" name="spotsize" id="spot5"/>
+                10<input type="radio" name="spotsize" id="spot10"/>
+                20<input type="radio" name="spotsize" id="spot20"/>
+                50<input type="radio" name="spotsize" id="spot50"/>
+            </span>
         </span>
         <span class="help">Choose size of each point.<br>Hover to preview, click to select.</span>
 

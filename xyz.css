@@ -20,6 +20,8 @@
     #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
     #ack { z-index: 100; }
     input[type="checkbox"] { margin-left: -0.5em; }
+    #spots input[type="radio"] { margin-left: 0em; height: 0.6em}
+    #spots {font-size: 85%;}
     /* select, button {color: white} */
 
     #filterbox {color: white; opacity: 0.8; }
