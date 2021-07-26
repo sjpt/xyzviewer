@@ -41,6 +41,7 @@ function pdbReader(data, fid) {
     myxyz.tdata.addHeader(format.map(f => f[2]));
 
     // process the pdb file to get the data
+    window.xxxyz = myxyz;  // debug help
     
     lines.forEach( l => {
         if (l.substr(0,4) !== 'ATOM') return;
@@ -48,6 +49,8 @@ function pdbReader(data, fid) {
         format.forEach( f => {
             if (!f) return;  // final dummy one
             let v = l.substring(+f[0] - 1, f[1]).trim();
+            if (f[2] === 'atid' && v.match(/[abcdef]/))
+                v = parseInt(v, 16);
             d.push(v);
         });
         if (!(queryVariables.ca && d[1] !== 'CA'))
@@ -69,9 +72,13 @@ function pdbReader(data, fid) {
     XYZ.autorange = false;
     const r = myxyz.tdata.ranges;
     const max = Math.max(r.x.range, r.y.range, r.z.range);
-    ggb().defaultDistance = max*2;
-    ggb().defaultFov = 50;
-    ggb().home();
+    const ggg = ggb();
+    ggg.defaultDistance = max*2;
+    ggg.camera.far = max*5; // ? should this be somehwere more generic
+    ggg.camera.updateProjectionMatrix();
+    ggg.outerscene.fog.density = 1- 0.5**(1/ggg.defaultDistance)
+    ggg.defaultFov = 50;
+    ggg.home();
     myxyz.setPointSize(2);
 
     myxyz.dataToMarkersGui();
@@ -101,7 +108,7 @@ function pdbcol(d) {
  * It can do sensible backbone if ca option is specified in queryVariables
  * TODO: if we want to use this seriously we need to keep additional information and make sensible chains
  * */
-async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 80) {
+async function makechainlines(pfilterfun = E.filterbox.value, maxd2 = 800) {
     if (chainlines && chainlines.visible === false) return;
     const tdata = myxyz.tdata;
     if (!tdata.fvals) return;
@@ -123,6 +130,9 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
         // patch missing data ... maybe clearer not to
         // if (residc[i] !== residc[i+1] && residc[i]+1 !== residc[i+1]) continue;
         // if ((xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 + (xc[i]-xc[i+1])**2 > maxdsq) continue;
+        const x = xc[i], y = yc[i], z = zc[i];
+        const x1 = xc[i+1], y1 = yc[i+1], z1 = zc[i+1];
+        if (maxd2 && (x-x1)**2 + (y-y1)**2 + (z-z1)**2 > maxd2) continue;
 
         myxyz._col.setRGB(0.3, 0.3, 0.3);
         if (filterfun) if (!filterfun(myxyz, i, tdata.fvals)) continue;
@@ -131,8 +141,7 @@ async function makechainlines(pfilterfun = E.filterbox.value) { // }, maxdsq = 8
         if (filterfun) if (!filterfun(myxyz, i+1, tdata.fvals)) continue;
         const col2 = myxyz._col.clone();
 
-        vertices.push(xc[i], yc[i], zc[i]);
-        vertices.push(xc[i+1], yc[i+1], zc[i+1]);
+        vertices.push(x, y, z, x1, y1, z1);
         colors.push(col1.r, col1.g, col1.b);
         colors.push(col2.r, col2.g, col2.b);
     }

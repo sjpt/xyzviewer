@@ -1,7 +1,7 @@
 'use strict';
 
 
-window.lastModified.graphicsboiler = `Last modified: 2021/02/19 11:53:43
+window.lastModified.graphicsboiler = `Last modified: 2021/07/26 14:21:28
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';

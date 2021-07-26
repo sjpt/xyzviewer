@@ -1,7 +1,7 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2021/02/22 11:30:38
+window.lastModified.basic = `Last modified: 2021/07/26 11:36:17
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
@@ -75,9 +75,10 @@ COLS.gencol = /**
         //     return `setRGB(${field}, 1-${field}, 1-${field})`
         // }
         if (field === 'random') return toset + '.set(COLS.random())';             // random colours
-        if (field === 'fixed') field = E.colourpick.value;          // fixed colour
-
-        if (tdata.ranges[field].numStrs > tdata.ranges[field].numNum && !COLS[field]) COLS.autocol(tdata, field);
+        if (field === 'fixed') field = E.colourpick.value;
+                  // fixed colour
+        const range = tdata.ranges[field];
+        if (range && range.numStrs > range.numNum && !COLS[field]) COLS.autocol(tdata, field);
 
         if (COLS[field]) return `${toset}.set(COLS['${field}'][xyz.tdata.val('${field}', i)])`;       // field with defined colours
 
@@ -156,7 +157,8 @@ COLS.writer = async function(fid = 'test') {
  * @param {*} field 
  */
 COLS.show = function(tdata = X.currentXyz, field = X.currentXyz.guiset.colourby) {
-    if (tdata.ranges[field].numStrs < tdata.ranges[field].numNum) {
+    const range = tdata.ranges[field];
+    if (!range || range.numStrs < range.numNum) {
         E.colkey.innerHTML = '';
         return;
     }

@@ -219,15 +219,15 @@ _prepcols() {
     const zc = tdata.fvals[zf];
     const cc = tdata.fvals[cf];
     if (!xc || !yc || !zc || !cc) {
-        throw new Error(`at least one value not a valid column in _dataToMarkersFast, ${xf}, ${yf}, ${zf}, ${cf}`)
+       // throw new Error(`at least one value not a valid column in _dataToMarkersFast, ${xf}, ${yf}, ${zf}, ${cf}`)
     }
     
     // for incremental .csv &c load the ranges will be computed on first batch, and should be recomputed at finalize
     const r = tdata.ranges;
-    if (!r[xf].mean) tdata.genstats(xf);
-    if (!r[yf].mean) tdata.genstats(yf);
-    if (!r[zf].mean) tdata.genstats(zf);
-    if (!r[cf].mean) tdata.genstats(cf);
+    if (xc && !r[xf].mean) tdata.genstats(xf);
+    if (yc && !r[yf].mean) tdata.genstats(yf);
+    if (zc && !r[zf].mean) tdata.genstats(zf);
+    if (cc && !r[cf].mean) tdata.genstats(cf);
     return {tdata, xf, yf, zf, cf, xc,yc, zc, cc, r};
     // >>> todo check here for charer heavy columns, this only works on number columns
 }
