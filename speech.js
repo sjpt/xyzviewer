@@ -5,7 +5,7 @@ var log = console.log, msgfix = console.log;
 
 var SpeechRecognition;
 // eslint-disable-next-line no-undef
-SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+SpeechRecognition = SpeechRecognition || window.webkitSpeechRecognition;
 
 // var webkitSpeechGrammarList, SpeechGrammarList;
 // SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
