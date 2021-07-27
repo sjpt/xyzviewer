@@ -1,5 +1,5 @@
 // Various colour helper functions not specific to xyzviewer.
-window.lastModified.xyz = `Last modified: 2021/02/08 12:30:46
+window.lastModified.xyz = `Last modified: 2021/07/27 12:34:20
 `; console.log('>>>>colorHelpers.js');
 
 // CIElab code drom https://raw.githubusercontent.com/antimatter15/rgb-lab/master/color.js
@@ -237,6 +237,11 @@ function hsv2rgb(h, s, v, ret) {
   return ret;
 }
 
+// polyfill to backfit hsv
+THREE.Color.prototype.setHSV = function(h, s, v, ret) {
+    hsv2rgb(h, s, v, this);
+    return this;
+}
 
 /** from http://stackoverflow.com/questions/8022885/rgb-to-hsv-color-in-javascript
 * changed for input range 0..1 and output range 0..1 */
