@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/03/11 15:38:24
+window.lastModified.xyz = `Last modified: 2021/07/27 11:39:57
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -506,6 +506,11 @@ async makefilterfun(filtin, box, mode='') {
             filt = filt.replace(/\b_R\b/g, "_C.r");
             filt = filt.replace(/\b_G\b/g, "_C.g");
             filt = filt.replace(/\b_B\b/g, "_C.b");
+
+            filt = filt.replace(/\b_X\b/g, "q[0]");
+            filt = filt.replace(/\b_Y\b/g, "q[1]");
+            filt = filt.replace(/\b_Z\b/g, "q[2]");
+
             // RGB(cd3, cd4, cd16)
 
             // apply after VX() etc to reduce wrong bracketing risk

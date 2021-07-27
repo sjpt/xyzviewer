@@ -42,7 +42,6 @@ function pdbReader(data, fid) {
     myxyz.tdata.addHeader(format.map(f => f[2]));
 
     // process the pdb file to get the data
-    window.xxxyz = myxyz;  // debug help
     
     lines.forEach( l => {
         if (l.substr(0,4) !== 'ATOM') return;
