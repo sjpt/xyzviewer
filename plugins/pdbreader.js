@@ -32,10 +32,11 @@ function pdbReader(data, fid) {
     [39,46, 'y'], //     Y orthogonal Å coordinate    right    real (8.3)
     [47,54, 'z'], //     Z orthogonal Å coordinate    right    real (8.3)
     //[55,60,    'occupancy'], // Occupancy    right    real (6.2)
-    [61,66,    'tempfac'] // Temperature factor    right    real (6.2)
+    [61,66,    'tempfac'], // Temperature factor    right    real (6.2)
     //[73,76,    'segid'], // Segment identifier¶    left    character
     //[77,78, 'elesym'], //     Element symbol    right    character
-    ]; format.pop();                     // dummy to make ending , easier
+    [99,99, 'reslen']   // length of residue, will be computed later, this reserves data slots
+    ];
 
     myxyz.tdata.prep();
     myxyz.tdata.addHeader(format.map(f => f[2]));
@@ -66,6 +67,13 @@ function pdbReader(data, fid) {
     // maingroup.remove(rlines);
     myxyz.tdata.finalize(fid);
     // myxyz.setField('COL', 'resname', false);
+
+    // compute residue lengths
+    const rid = myxyz.tdata.fvals.resid;
+    const rlen =  myxyz.tdata.fvals.reslen;
+    const rl = [];
+    for (const v of rid) rl[v] = (rl[v] || 0) + 1;
+    for (let i = 0; i < rlen.length; i++) rlen[i] = rl[rid[i]];
     
     // finalize will do this ... dataToMarkersGui();
     document.title = 'xyzviewer: ' + fid;
