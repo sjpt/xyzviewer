@@ -1,5 +1,5 @@
 // Various colour helper functions not specific to xyzviewer.
-window.lastModified.xyz = `Last modified: 2021/07/27 12:34:20
+window.lastModified.xyz = `Last modified: 2021/08/02 18:09:47
 `; console.log('>>>>colorHelpers.js');
 
 // CIElab code drom https://raw.githubusercontent.com/antimatter15/rgb-lab/master/color.js
@@ -238,7 +238,7 @@ function hsv2rgb(h, s, v, ret) {
 }
 
 // polyfill to backfit hsv
-THREE.Color.prototype.setHSV = function(h, s, v, ret) {
+THREE.Color.prototype.setHSV = function(h, s=1, v=1, ret) {
     hsv2rgb(h, s, v, this);
     return this;
 }
