@@ -2,12 +2,17 @@
  * @author Eberhard Graether / http://egraether.com/
  */
 
+ export {TrackballControls};
+ import {THREE} from "../threeH.js";
+ import {ggb} from '../graphicsboiler.js';
+ 
+
 // use indirection to THREEX, otherwise can confuse typescript management of cross-file references
 var {THREE: THREEX} = window;
 // import {THREE as THREEX} from '../threeH.js'; //  nb only used in Persp, which is still not even trying to use modules
 
 
-THREEX.TrackballControls = function ( object, domElement ) {
+const TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
 	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM: 4, TOUCH_PAN: 5 };
@@ -76,16 +81,16 @@ THREEX.TrackballControls = function ( object, domElement ) {
 
 	this.handleResize = function () {
 
-		if ( this.domElement === document ) {
+		if ( _this.domElement === document ) {
 
-			this.screen.left = 0;
-			this.screen.top = 0;
-			this.screen.width = window.innerWidth;
-			this.screen.height = window.innerHeight;
+			_this.screen.left = 0;
+			_this.screen.top = 0;
+			_this.screen.width = window.innerWidth;
+			_this.screen.height = window.innerHeight;
 
 		} else {
 
-			this.screen = this.domElement.getBoundingClientRect();
+			this.screen = _this.domElement.getBoundingClientRect();
 
 		}
 
@@ -295,7 +300,7 @@ THREEX.TrackballControls = function ( object, domElement ) {
 
 		if ( lastPosition.distanceToSquared( _this.object.position ) > 0 ) {
 
-			_this.dispatchEvent( changeEvent );
+			//!!! _this.dispatchEvent( changeEvent );
 
 			lastPosition.copy( _this.object.position );
 
@@ -316,7 +321,7 @@ THREEX.TrackballControls = function ( object, domElement ) {
 
 		_this.object.lookAt( _this.target );
 
-		_this.dispatchEvent( changeEvent );
+		// _this.dispatchEvent( changeEvent );
 
 		lastPosition.copy( _this.object.position );
 
@@ -559,4 +564,4 @@ THREEX.TrackballControls = function ( object, domElement ) {
 
 };
 
-THREEX.TrackballControls.prototype = Object.create( THREEX.EventDispatcher.prototype );
+// THREEX.TrackballControls.prototype = Object.create( THREEX.EventDispatcher.prototype );

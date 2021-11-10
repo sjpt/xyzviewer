@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/02/20 11:16:26
+window.lastModified.basic = `Last modified: 2021/11/09 17:12:19
 `
 if (!window.GG) window.GG = {}; if (!window.E) window.E = /**@type{any}*/ window;
 const {E, X} = window; 
@@ -219,7 +219,7 @@ async function openfile(file, item) {
             console.error('failure reading', file.fullPath, e)
         }
         const ext = getFileExtension(file.fullPath);
-        if (ext === '.tif' || ext === '.ply')   // TODO need to arrange this differently
+        if (ext === '.tif' || ext === '.ply' || ext === '.stl')   // TODO need to arrange this differently
             reader.readAsArrayBuffer(file);        // start read in the data file
         else if (ext === '.xlsx')   // TODO need to arrange this differently
             reader.readAsBinaryString(file);        // start read in the data file

@@ -41,6 +41,7 @@ const OrbitControls = function ( object, domElement ) {
 
 	// Set to false to disable this control
 	this.enabled = true;
+	this.keysEnabled = true;
 
 	// "target" sets the location of focus, where the control orbits around
 	// and where it pans with respect to.
@@ -510,7 +511,7 @@ const OrbitControls = function ( object, domElement ) {
 	}
         
     this.usekeys = function() {
-		if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
+		if ( scope.keysEnabled === false || scope.noKeys === true || scope.noPan === true ) return;
         var keysdown = scope.keysdown;
 	
 		var d = 0.003;

@@ -35,11 +35,14 @@ function pdbReader(data, fid) {
     [61,66,    'tempfac'], // Temperature factor    right    real (6.2)
     //[73,76,    'segid'], // Segment identifier¶    left    character
     //[77,78, 'elesym'], //     Element symbol    right    character
-    [99,99, 'reslen']   // length of residue, will be computed later, this reserves data slots
+    [99,99, 'reslen'],   // length of residue, will be computed later, this reserves data slots
+    [99,99, 'resstart'],   // id for first element in residue, will be computed later, this reserves data slots
+    [99,99, 'atinres']   // id of atom within reside, computed later
     ];
 
-    myxyz.tdata.prep();
-    myxyz.tdata.addHeader(format.map(f => f[2]));
+    const tdata = myxyz.tdata;
+    tdata.prep();
+    tdata.addHeader(format.map(f => f[2]));
 
     // process the pdb file to get the data
     
@@ -54,7 +57,7 @@ function pdbReader(data, fid) {
             d.push(v);
         });
         if (!(queryVariables.ca && d[1] !== 'CA'))
-            myxyz.tdata.addRow(d);
+            tdata.addRow(d);
     });
 
     // process the format and data to get the ranges
@@ -64,20 +67,30 @@ function pdbReader(data, fid) {
 
     // push data to main graphics
     // maingroup.remove(rlines);
-    myxyz.tdata.finalize(fid);
+    tdata.finalize(fid);
     // myxyz.setField('COL', 'resname', false);
 
     // compute residue lengths
-    const rid = myxyz.tdata.fvals.resid;
-    const rlen =  myxyz.tdata.fvals.reslen;
-    const rl = [];
-    for (const v of rid) rl[v] = (rl[v] || 0) + 1;
-    for (let i = 0; i < rlen.length; i++) rlen[i] = rl[rid[i]];
+    const rid = tdata.fvals.resid;
+    const rlen =  tdata.fvals.reslen;
+    const rstart =  tdata.fvals.resstart;
+    const atrinres =  tdata.fvals.atinres;
+    const rl = [], rs = [];
+    for (let i = 0; i < tdata.n; i++) {
+        const v = rid[i];
+        if (rs[v] === undefined) {rs[v] = i; rl[v] = 0; }
+        rl[v]++;
+    }
+    for (let i = 0; i < rlen.length; i++) {
+        rlen[i] = rl[rid[i]];
+        rstart[i] = rs[rid[i]];
+        atrinres[i] = i - rstart[i];
+    }
     
     // finalize will do this ... dataToMarkersGui();
     document.title = 'xyzviewer: ' + fid;
     XYZ.autorange = false;
-    const r = myxyz.tdata.ranges;
+    const r = tdata.ranges;
     const max = Math.max(r.x.range, r.y.range, r.z.range);
     const ggg = ggb();
     ggg.defaultDistance = max*2;

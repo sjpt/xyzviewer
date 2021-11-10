@@ -76,6 +76,7 @@ meshmaker ( geometry, fid ) {
 
     obj.xyz = this;
     ggb().addToMain(obj, fid);
+    this.gb = obj.gb = ggb();   // ?? why just for plyreader ?
     return obj;
 }
 }

@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/07/26 17:27:33
+window.lastModified.main = `Last modified: 2021/11/10 12:25:21
 `
 
 // @ts-ignore
@@ -32,6 +32,13 @@ const html = /*html*/`
             <input type="checkbox" id="speechbox" onchange="GG.ospeech.isRunning=this.checked"/>
         </span>
         <span class="help" id="speechhelp">check for speech input</span>
+
+        <span>
+            <b>orbit controls: </b>
+            <input type="checkbox" id="useorbcamera" onchange="currentXyz.gb.setOrbitController(this.checked)"/>
+        </span>
+        <span class="help" id="speechhelp">check for orbit controls,<br>trackball controls if not checked</span>
+
         <br>
 
         <span>
@@ -142,6 +149,13 @@ const html = /*html*/`
             </span>
         </span>
         <span class="help">Choose size of each point.<br>Hover to preview, click to select.</span>
+
+        <br>
+        <span>wireframe
+        <input type='checkbox' id='wireframe' onchange='currentXyz.material.wireframe = wireframe.checked'/>
+        </span>
+        <span class="help">Display current object in wireframe.</span>
+
 
         <fieldset style="width:20em">
             <legend onclick="toggleFold(this)">details...</legend>

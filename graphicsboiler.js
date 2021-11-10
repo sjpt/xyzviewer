@@ -1,7 +1,7 @@
 'use strict';
 
 
-window.lastModified.graphicsboiler = `Last modified: 2021/07/26 14:21:28
+window.lastModified.graphicsboiler = `Last modified: 2021/11/10 09:32:12
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -11,13 +11,14 @@ import {} from "./raycast.js";
 import {Lasso} from './lasso.js';
 
 import {OrbitControls} from './jsdeps/OrbitControls.js';
+import {TrackballControls} from './jsdeps/TrackballControls.js';
 import {vrstart, vrframe} from './vrcontrols.js';
 export {ggb, GraphicsBoiler};
 
 
 // export {addToMain, framenum, makeCircle, this.renderer as renderer, fullcanvas, this.maingroup, this.nocamscene as nocamscene, setxyzspeechupdate, 
 //     setBackground, setHostDOM, setSize,
-//     this.camera as camera, this.usePhotoShader as usePhotoShader, this.orbcamera as orbcamera, this.outerscene as outerscene, plan, elevation, scale, addvis_clicked, select, this.controls as controls, onWindowResize};
+//     this.camera as camera, this.usePhotoShader as usePhotoShader, this.controlCamera as controlCamera, this.outerscene as outerscene, plan, elevation, scale, addvis_clicked, select, this.controls as controls, onWindowResize};
 const {E, X, Stats} = window;
 let gbid = 0;
 
@@ -48,8 +49,8 @@ constructor(id = 'gb' + gbid++) {
     this.camera.fov = this.defaultFov;
     this.camera.updateProjectionMatrix();
     this.camera.position.z = 0;
-    this.orbcamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.orbcamera.name = this.id + 'orbcamera';
-    this.orbcamera.position.z = this.defaultDistance;
+    this.controlCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 ); this.controlCamera.name = this.id + 'controlCamera';
+    this.controlCamera.position.z = this.defaultDistance;
     this.camscene = new THREE.Scene(); this.camscene.name = this.id + 'camscene';
     this.camscene.add(this.camera);
 
@@ -96,8 +97,9 @@ constructor(id = 'gb' + gbid++) {
         document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
         const av = me.addvisList;
         X.currentXyz = Object.values(av)[0].xyz;
+        if (!X.currentXyz) X.currentXyz = Object.values(av)[0].obj.xyz; // <<< check
         _ggb = me;
-        console.log('click', X.currentXyz.fid, me.id);
+        if (X.currentXyz) console.log('click', X.currentXyz.fid, me.id);
     }
     // this.canvas.addEventListener('blur', () => console.log('blur', this.id));
     // this.canvas.addEventListener('focus', () => {
@@ -118,9 +120,15 @@ constructor(id = 'gb' + gbid++) {
     window.addEventListener( 'resize', ()=>this.onWindowResize(), false );
 
     if (OrbitControls) {
-        this.controls = new OrbitControls(this.orbcamera, this.renderer.domElement);
-        this.controls.autoRotate = false;  // was is_webgl
+        this.orbitControls = new OrbitControls(this.controlCamera, this.renderer.domElement);
+        this.orbitControls.autoRotate = false;  // was is_webgl
+        this.orbitControls.enabled = false;     // just used for keys
     }
+    // if (TrackballControls) {
+    //     this.trackballControls = new TrackballControls(this.controlCamera, this.renderer.domElement);
+    //     // this.trackballControls.autoRotate = false;  // was is_webgl
+    // }
+    this.setOrbitController(false);
 
     // three.js default (at 106) is 'local-floor', which should be supported but is not on Chrome 79.0.3942.0 and 81.0.4006.0
     if (this.renderer.xr.setReferenceSpaceType)
@@ -136,7 +144,7 @@ constructor(id = 'gb' + gbid++) {
 // this.xyzcontainer
 // let this.stats;
 // let this.camera, this.main3group, this.outerscene, this.renderer,
-//     this.controls, this.canvas, this.orbcamera, this.camscene, display,
+//     this.controls, this.canvas, this.controlCamera, this.camscene, display,
 //     this.usePhotoShader = false, this.light0, this.light1;
 //const this.nocamcamera = new THREE.OrthographicCamera(0, 200, 100, 0, -100, 100);
 //const this.nocamscene = new THREE.Scene(); this.nocamscene.name = this.id + 'nocamscene';
@@ -145,9 +153,18 @@ static xyzspeechupdate;        // called each frame for speech control. ? todo a
 static setxyzspeechupdate(f) {GraphicsBoiler.xyzspeechupdate = f;}
 
 // add an object to parent, default this.maingroup, and add a selection/visibility icon
-addToMain(obj, name, parent = this.maingroup, xyz) {
+addToMain(obj, name, parent = this.maingroup, xyz = obj) {
     parent.add(obj);
     this.addvis(obj, name, xyz);
+}
+
+setOrbitController(v = true) {
+    // this.orbitControls.enabled = false;
+    // this.trackballControls.enabled = false;
+    // this.controls = v ? this.orbitControls : this.trackballControls
+    // this.controls.enabled = true;
+    if (this.controls) this.controls.enabled = false;
+    this.controls = new (v ? OrbitControls : TrackballControls)(this.controlCamera, this.renderer.domElement);
 }
 
 /** start the animation loop, managed by three.js */
@@ -165,17 +182,27 @@ render() {
     // We still need more navigation for VR, and smooth handover between nonVR and VR.
     // renderer.xr.enabled = renderer.xr.getDevice() && renderer.xr.getDevice().isPresenting;
 
-    if (this.controls) {
-        this.controls.update(); // ??? (0.1);
-        if (document.activeElement === document.body) this.controls.usekeys();  // use keys becuase of continuous mode
-        this.orbcamera.updateMatrix(); // orbcamera.updateMatrixWorld();
+    this.controls.update();
+    if (this.orbitControls) {
+        // this.orbitControls.update(); // ??? (0.1);
+        if (document.activeElement === document.body) {
+            if (this.controls instanceof OrbitControls) {
+                this.controls.usekeys();  // use keys because of continuous mode
+            } else {
+                // try to make keys work for TrackballControls; may not be complete
+                this.orbitControls.target.copy(this.controls.target);
+                this.orbitControls.usekeys();  // use keys becuase of continuous mode
+                this.controls.target.copy(this.orbitControls.target);
+            }
+        }
+        this.controlCamera.updateMatrix(); // controlCamera.updateMatrixWorld();
         if (GraphicsBoiler.xyzspeechupdate) GraphicsBoiler.xyzspeechupdate();
     }
     //    outerscene.matrixAutoUpdate = false;
-    //    outerscene.matrix.getInverse(orbcamera.matrix);
+    //    outerscene.matrix.getInverse(controlCamera.matrix);
     //    outerscene.matrixWorldNeedsUpdate = true;
     this.camscene.matrixAutoUpdate = false;
-    this.camscene.matrix.fromArray(this.orbcamera.matrix.elements);
+    this.camscene.matrix.fromArray(this.controlCamera.matrix.elements);
     this.camscene.matrixWorldNeedsUpdate = true;
     this.camscene.updateMatrixWorld(true);
 
@@ -309,7 +336,7 @@ select(fid, xyz) {
     // if (!avl) return;      // try to select before ready ???
     log('sselect', fid, avl);
     if (avl) X.currentThreeObj = avl.obj;
-    xyz = xyz || avl.xyz;
+    xyz = xyz || avl.xyz || avl;
     if (xyz) {
         X.currentXyz = xyz;  // this logic need thought
         const guiset = xyz.guiset;
@@ -326,6 +353,15 @@ select(fid, xyz) {
 /** called on click of visibility checkbox */
 addvis_clicked(evt) {
     const src = evt.target;
+    if (evt.shiftKey) {
+        for (const n in this.addvisList) {
+            const eele = this.addvisList[n];
+            const v = n === src.name;
+            document.getElementById(n + '_cb').checked = v;
+            eele.obj.visible = v;
+        }
+        return;
+    }
     const ele = this.addvisList[src.name];
     ele.obj.visible = src.checked;
     //window.currentThreeObj = ele.obj;
@@ -350,7 +386,7 @@ elevation() {
 }
 
 home() {
-    this.controls.home();
+    if (this.controls.home) this.controls.home();
 }
 
 saveview() {
@@ -359,7 +395,7 @@ saveview() {
     }
     this.lastsave = {
         camera: save(this.camera), 
-        orbcamera: save(this.orbcamera), 
+        controlCamera: save(this.controlCamera), 
         mg: save(this.maingroup), 
         targpos: this.controls.target.clone()
     };
@@ -372,7 +408,7 @@ restoreview(s = this.lastsave) {
         a.matrix.decompose(a.position, a.quaternion, a.scale);
     }
     rest(this.camera, s.camera);
-    rest(this.orbcamera, s.orbcamera);
+    rest(this.controlCamera, s.controlCamera);
     rest(this.maingroup, s.mg);
     this.controls.target.copy(s.targpos);
 }
