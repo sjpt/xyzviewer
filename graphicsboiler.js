@@ -1,7 +1,7 @@
 'use strict';
 
 
-window.lastModified.graphicsboiler = `Last modified: 2021/11/10 09:32:12
+window.lastModified.graphicsboiler = `Last modified: 2021/11/10 15:47:31
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -357,6 +357,7 @@ addvis_clicked(evt) {
         for (const n in this.addvisList) {
             const eele = this.addvisList[n];
             const v = n === src.name;
+            // @ts-ignore
             document.getElementById(n + '_cb').checked = v;
             eele.obj.visible = v;
         }
@@ -386,6 +387,7 @@ elevation() {
 }
 
 home() {
+    // @ts-ignore
     if (this.controls.home) this.controls.home();
 }
 

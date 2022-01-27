@@ -68,7 +68,17 @@ function vrframe() {
     if (igp1 && igp1.axes && igp1.buttons[2].pressed) d *= -igp1.axes[1];  // works for Vive on Chrome
     else if (!select) d = 0;                     // plain select works with very basic three.js choices
 
-    ggb().controls.pan3(m[8]*d, m[9]*d, m[10]*d);
+    // try pan using orbitControls ... ? not working
+    const c = ggb().controls;
+    if (c['pan3']) { // (c instanceof OrbitControls) does not work, c.pan3 gives type error
+        c['pan3'](m[8]*d, m[9]*d, m[10]*d);
+    } else {
+        const oc = ggb().orbitControls;
+        oc.target.copy(c.target);
+        oc.pan3(m[8]*d, m[9]*d, m[10]*d);
+        c.target.copy(oc.target);
+    }
+
 
     // ~~ rotate object, second controller select botton, see onSelectStart2 and onSelectEnd2 above
     

@@ -74,7 +74,8 @@ class VRButton {
 					// ('local' is always available for immersive sessions and doesn't need to
 					// be requested separately.)
 
-					const sessionInit = { optionalFeatures: [ 'local-floor', 'bounded-floor' /* , 'hand-tracking' */ ] };
+					const sessionInit = undefined; // { optionalFeatures: [ 'local-floor', 'bounded-floor' /* , 'hand-tracking' */ ] };
+					// @ts-ignore
 					navigator.xr.requestSession( 'immersive-vr', sessionInit ).then( onSessionStarted )
 						.catch(e => button.textContent = e); // sjpt
 
@@ -135,6 +136,7 @@ class VRButton {
 
 			stylizeElement( button );
 
+			// @ts-ignore
 			navigator.xr.isSessionSupported( 'immersive-vr' ).then( function ( supported ) {
 
 				supported ? showEnterVR() : showWebXRNotFound();

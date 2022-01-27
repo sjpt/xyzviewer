@@ -25,7 +25,7 @@ function refit() {
     rgroups = {};
     for(let i=0; i < refitcol.length; i++) {
         const gid = refitcol[i];
-        if (isNaN(gid)) continue;
+        if (isNaN(gid + xc[i] + yc[i] + zc[i])) continue;
         let gr = rgroups[gid];
         if (!gr) gr = rgroups[gid] = {gid, sx: 0, sy:0, sz: 0, n: 0, inds: []};
         gr.sx += xc[i];

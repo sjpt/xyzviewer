@@ -16,7 +16,8 @@ interface MyExternals {
     xyzspeechupdate,    // should be moved and clarified
     jsyaml,  // from dependencies
     THREE,
-    webkitSpeechRecognition
+    webkitSpeechRecognition,
+    stlpos, // for debug
 }
 interface Window {lastModified; DxfParser; Stats; GG};
 declare var WA: any, W: Window, E: MyElements, X: MyExternals;

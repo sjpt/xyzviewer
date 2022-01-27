@@ -1,7 +1,8 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/11/09 17:12:19
+window.lastModified.basic = `Last modified: 2021/11/10 15:46:45
 `
+// @ts-ignore
 if (!window.GG) window.GG = {}; if (!window.E) window.E = /**@type{any}*/ window;
 const {E, X} = window; 
 var {GG} = window;

@@ -18,7 +18,7 @@ function stlReader(rawdata, fid) {
     const l = rawdata.byteLength;
     const n = (l - 84)/50;          // number of triangles, 84 bytes of header, 50 bytes per entry
 
-    const pos = new Float32Array(n*3*3);     
+    const pos = X.stlpos = new Float32Array(n*3*3);     
     const norm = new Float32Array(n*3*3);
     // set up arrays/views to help copy data
     // setting posb/normb implicitly sets pos/norm with minimal data allocation/copy
@@ -45,5 +45,4 @@ function stlReader(rawdata, fid) {
     X.currentXyz = X.currentThreeObj = mesh;
     mesh.xyz = mesh;
     mesh.gb = ggb();
-
 }
