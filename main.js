@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2021/11/10 12:25:21
+window.lastModified.main = `Last modified: 2022/09/01 10:43:35
 `
 
 // @ts-ignore
@@ -90,7 +90,8 @@ const html = /*html*/`
 
         <span>
             <b>tumble: </b>
-            <input type="checkbox" id="tumblebox" onchange="GG.xshader.settubmlerot(this.checked * 0.005)"/>
+            l <input type="checkbox" id="tumbleboxl" onchange="GG.xshader.settumblerotl(this.checked * 0.005)"/>
+            r <input type="checkbox" id="tumbleboxr" onchange="GG.xshader.settumblerotr(this.checked * 0.005)"/>
         </span>
         <span class="help">perform multidimensional tumble (very much w.i.p.)
         </span>
@@ -233,6 +234,10 @@ const html = /*html*/`
 const guidiv = document.createElement('div');
 guidiv.innerHTML = html;
 document.body.appendChild(guidiv);
+// xvalue stops non-change assignment from disturbing cursor on the filterbox
+Object.defineProperty(E.filterbox, 'xvalue', {
+    set: v => { v = v.trim(); if (E.filterbox.value.trim() !== v) E.filterbox.value = v }
+});
 console.log('main.js execute, window W set', W.closed, E.colourpick.value, X.raywidth);
 guidiv.id = 'xyzviewergui';
 if (!location.href.match('xyz/xyz')) { // xyz.html and html4.html

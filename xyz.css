@@ -1,4 +1,4 @@
-    td {text-align: center; border: solid 1px; }
+    td {text-align: center;/* border: solid 1px; */width:  2em;}
     body {
         font-family: Monospace;
         background-color: #101010;
@@ -17,7 +17,6 @@
     .gui >* { background: #2226;}  /* not .gui *, as that can give multiple layers of transparency */
     #msgbox { pointer-events: none; }
     #narrow { width: 25em }
-    #colkey { max-width: 1em }  /* seems odd, but works to keep as small as reasonable */
     #ack { z-index: 100; }
     input[type="checkbox"] { margin-left: -0.5em; }
     #spots input[type="radio"] { margin-left: 0em; height: 0.6em}
@@ -78,6 +77,13 @@
         margin-bottom: 0px;
         font-weight: bold;
     }  /* when expanded */
+
+    #colkey {
+        position: fixed;
+        top: 0;
+        right: 0%;
+        /* max-width: 1em; */  /* seems odd, but works to keep as small as reasonable */
+    }
 
     /** below extra details if we want hover flyout * /
     /* .hidebelow > :first-child {/* color: red; *-/}  /* when collapsed *-/ */

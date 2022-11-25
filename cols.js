@@ -1,7 +1,7 @@
 /**  */
 'use strict';
 export {COLS};
-window.lastModified.basic = `Last modified: 2021/07/26 11:36:17
+window.lastModified.basic = `Last modified: 2022/07/18 11:21:56
 `; console.log('>>>>cols.js');
 import {saveData, addFileTypeHandler} from './basic.js';
 import {eqcols} from './jsdeps/colorHelpers.js';
@@ -173,7 +173,7 @@ COLS.show = function(tdata = X.currentXyz, field = X.currentXyz.guiset.colourby)
     for (const k in f) {
         const c = f[k], rgb = `rgb(${c.r*255}, ${c.g*255}, ${c.b*255})`;
         s.push(`<tr><td>${k}</td><td style=" background-color: ${rgb}">&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>`);
-        if (i++ > 20) break;
+        if (i++ > 80) break;
     }
     E.colkey.innerHTML = `<table><tbody><colgroup><col style="max-width: 4em"><col style="width: 2em"></colgroup>${s.join('')}</tbody></table>`;
 }
@@ -181,8 +181,8 @@ COLS.show = function(tdata = X.currentXyz, field = X.currentXyz.guiset.colourby)
 /** set a colour value */
 COLS.set = function(f, fixed) {
     if (E.xshaderbox.checked) { // this GUI should be at a different level, outside COLS.
-        E.filterbox.value = (E.filterbox.value + `\nMD:${f}`).trim();
-        useXShader('MD:');
+        X.currentXyz.setField('MD', f);
+        useXShader();
         return;
     }
 
@@ -190,9 +190,9 @@ COLS.set = function(f, fixed) {
     const ofilt = '\n' + E.filterbox.value + '\n'
     let g = ofilt.match(/^(.*)\nCOL:(.*?)\n(.*)/s);
     if (g)
-        E.filterbox.value = `${g[1]}\nCOL:${f}\n${g[3]}`.trim();
+        E.filterbox.xvalue = `${g[1]}\nCOL:${f}\n${g[3]}`.trim();
     else
-        E.filterbox.value = `COL:${f}\n${ofilt}`.trim();
+        E.filterbox.xvalue = `COL:${f}\n${ofilt}`.trim();
     dataToMarkersGui();
 }
 

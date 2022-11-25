@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.tdata = `Last modified: 2021/07/26 11:30:46
+window.lastModified.tdata = `Last modified: 2021/03/11 15:28:37
 `; console.log('>>>>xyz.js');
 
 //?? import {pdbReader} from './pdbreader.js';
@@ -139,7 +139,6 @@ async xlsxReader(raw, fid) {
      * @param {string} id
      */
 async lazyLoadCol(id) {
-    if (!this.header.includes(id)) return; // eg for 'fixed'
     let step = 2*1024*1024;
     const t = this.fvals[id]; 
     if (t) {    // do not complete till really loaded, todo use events
@@ -325,7 +324,7 @@ showpendread() {
 async csvReader(raw, fid) {
     log('csvReader', fid);
     if (fid.endsWith('.xlsx')) return this.xlsxReader(raw, fid);
-    if (fid.endsWith('.yaml')) return this.yamlReader(raw, fid);
+    if (fid.endsWith('.yaml')) return await this.yamlReader(raw, fid);
 
     this.prep();     // obsolete ?
     

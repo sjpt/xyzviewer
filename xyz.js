@@ -1,5 +1,5 @@
 'use strict';
-window.lastModified.xyz = `Last modified: 2021/07/27 11:39:57
+window.lastModified.xyz = `Last modified: 2022/07/18 10:55:24
 `; console.log('>>>>xyz.js');
 
 // import {ggb} from './graphicsboiler.js'; // addToMain, select, setBackground, setHostDOM, setSize
@@ -89,9 +89,8 @@ constructor(pdata, fid, owngb) {
     // tdata.lazyLoadCol(this.getField('Z'));
 
     if (pdata)
-        this.finalize(fid); // #### check when to do this
-
-    if (XYZ.constructorDone) XYZ.constructorDone(this);
+        this.finalize(fid); // #### check when to do this, for now finalize timeout loops till ready
+    if (XYZ.constructorDone) XYZ.constructorDone(this); //and this should be XYZ.finalizeDone inside finalize?
 
     // make sure all spotsize elements ready for appropriate events
     // NOT probably the best place
@@ -120,6 +119,9 @@ finalize(fid, partial) {
         this.gb.select(fid, this);
         this.dataToMarkersGui();
         // this.watchload(); // watchload for incremental update now driven from TData finalize => xyz finalize
+    } else {
+        // todo, arrange proper await synchronization
+        setTimeout(() => this.finalize(fid), 10);
     }
 }
 
@@ -134,7 +136,7 @@ dataToMarkersGui(type = undefined, popping = false) {
 
     this.group.remove(this.lines);  // may be overridden for default shader
     this.group.add(this.particles);
-    if (E.xshaderbox.checked) { useXShader('MD:'); return; }
+    if (E.xshaderbox.checked) { useXShader(); return; }
     // if (E.lassoshaderbox.checked) { useLassoShader(true, undefined, this); return; } // no, this does need CPU position etc
     
     if (X.currentThreeObj.xyz) {
@@ -212,7 +214,7 @@ _prepcols() {
     tdata.lazyLoadCol(xf);
     tdata.lazyLoadCol(yf);
     tdata.lazyLoadCol(zf);
-    tdata.lazyLoadCol(cf);
+    if (cf !== 'fixed' && cf !== 'random') tdata.lazyLoadCol(cf);
 
     const xc = tdata.fvals[xf];
     const yc = tdata.fvals[yf];
@@ -729,18 +731,39 @@ if (!xyz._lasso(q[0], q[1], q[2])) return;
      * @param {boolean} update
      */
     setField(fieldRole, fieldName, update=true) {
-        fieldName = fieldName.trim();
-        if (this.fields[fieldRole] === fieldName) return;
-        this.fields[fieldRole] = fieldName; // .replace('_ N', '');
         const ofilt = '\n' + E.filterbox.value + '\n';
-        const rx = new RegExp('^(.*)\\n' + fieldRole + ':(.*?)\\n(.*)', 's');  // was /^(.*)\nCOL:(.*?)\n(.*)/s
-        let g = ofilt.match(rx);
-        if (g)
-            E.filterbox.value = `${g[1]}\n${fieldRole}:${fieldName}\n${g[3]}`.trim();
-        else
-            E.filterbox.value = `${ofilt.trim()}\n${fieldRole}:${fieldName}`.trim();
+        if (fieldRole === 'MD') {
+            if (fieldRole === 'MD' && ofilt.indexOf('\nMD:' + fieldName + '\n') !== -1) return;
+            E.filterbox.xvalue = ofilt + 'MD:' + fieldName;
+        } else {
+            fieldName = fieldName.trim();
+            if (this.fields[fieldRole] === fieldName) return;
+            this.fields[fieldRole] = fieldName; // .replace('_ N', '');
+            // there can be multiple MD cols, but we don't want multiple the same
+            // for other roles we must overwrite the previous role in the gui, if there
+            const rx = new RegExp('^(.*)\\n' + fieldRole + ':(.*?)\\n(.*)', 's');  // was /^(.*)\nCOL:(.*?)\n(.*)/s
+            let g = ofilt.match(rx);
+            if (g)    // could optimize and skip compute of g, but not worth it
+                E.filterbox.xvalue = `${g[1]}\n${fieldRole}:${fieldName}\n${g[3]}`.trim();
+            else
+                E.filterbox.xvalue = `${ofilt.trim()}\n${fieldRole}:${fieldName}`.trim();
+        }
         if (update) this.dataToMarkersGui();
     }
+
+    commentField(fieldRole, fieldName, update=true) {
+        const ofilt = '\n' + E.filterbox.value + '\n';
+        const r = '\n' + fieldRole + ':' + fieldName + '\n';
+        const cr = '\n//' + fieldRole + ':' + fieldName + '\n';
+        const nfilt = ofilt.replace(r, cr);
+        if (ofilt === nfilt)
+            console.error('cannot comment missing field', r)
+        else {
+            E.filterbox.xvalue = nfilt;
+            if (update) this.dataToMarkersGui();
+        }
+    }
+
     
     /**
          * @param {string} fieldRole
@@ -754,7 +777,7 @@ if (!xyz._lasso(q[0], q[1], q[2])) return;
         if (m) return m[1].trim(); // .replace('_ N', '');
         
         const v =this.def[fieldRole];
-        E.filterbox.value = `${E.filterbox.value}\n${fieldRole}:${v}`;
+        E.filterbox.xvalue = `${E.filterbox.value}\n${fieldRole}:${v}`;
         return v;
     }
     
@@ -786,14 +809,25 @@ headerSetup() {
     this.def.X = tdata.header.includes('x') ? 'x' : tdata.header[0];
     this.def.Y = tdata.header.includes('y') ? 'y' : tdata.header[1];
     this.def.Z = tdata.header.includes('z') ? 'z' : tdata.header[2];
+    this.def.COL = tdata.header.includes('col') ? 'col' : 'fixed';
     this.setField('X', this.getField('X'), false);
     this.setField('Y', this.getField('Y'), false);
     this.setField('Z', this.getField('Z'), false);
 
     const s = [`<option value="fixed">fixed</option>`];
     s.push(`<option value="random">random</option>`);
-    for (const name of tdata.header)
-        s.push(`<option value="${name}">${name}</option>`);
+    for (const name of tdata.header) {
+        const r = tdata.ranges[name];
+        if (r.range === 0)
+            console.error('do not add column to dropdown, range 0', name);
+        else {
+            let nname = name;
+            if (r.numStrs > r.numNum) nname = name + ' C' + tdata.vsetlen[name];
+            else if (r.numNum === tdata.n) nname = name + ' N*'
+            else nname = name + ' N' + r.numNum;
+            s.push(`<option value="${name}">${nname}</option>`);
+        }
+    }
     E.colourby.innerHTML = s.join('');
 }
 
@@ -810,7 +844,7 @@ function filterAdd(s, end=false) {
         l.push(s);
     else
         l.unshift(s);
-    E.filterbox.value = l.join('\n');
+    E.filterbox.xvalue = l.join('\n');
     //filtergui();
     dataToMarkersGui();
 }
@@ -818,7 +852,7 @@ function filterAdd(s, end=false) {
 function filterRemove(s) {
     let l = E.filterbox.value.split('\n');
     l = l.filter(ll => ll !== s);
-    E.filterbox.value = l.join('\n');
+    E.filterbox.xvalue = l.join('\n');
     //filtergui();
     dataToMarkersGui();
 }
@@ -827,7 +861,7 @@ function filterRemove(s) {
 function applyurl() {
     const con = decodeURI(location.href).split('&control=')[1] || ''; // location.search is terminated by '#' character
     return con.split('!!!').join('\n');
-    // E.filterbox.value = con.split('!!!').join('\n');
+    // E.filterbox.xvalue = con.split('!!!').join('\n');
     // dataToMarkersGui(undefined, true);
 }
 

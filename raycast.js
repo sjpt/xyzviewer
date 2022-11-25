@@ -64,10 +64,10 @@ function onMouseMove( event ) {
             // TODO: change filterbox without disturbing related things such as COL:
             if (newface.chainset) {
                 const chainsa = Array.from(newface.chainset);
-                E.filterbox.value = '?[' + chainsa + '].includes(chainn)';
+                E.filterbox.xvalue = '?[' + chainsa + '].includes(chainn)';
             }
         } else {
-            E.filterbox.value = '';
+            E.filterbox.xvalue = '';
         }
         dataToMarkersGui();
     }
@@ -102,7 +102,7 @@ function onMouseMove( event ) {
     // console.log(ii ? ii.object : 'nohit');
     if (lastface && !intersects.length) {
         lastface.color.copy(lastface.ocol);
-        E.filterbox.value = '';
+        E.filterbox.xvalue = '';
         dataToMarkersGui();
         lastface = undefined;
     }

@@ -1,7 +1,7 @@
 'use strict';
 
 
-window.lastModified.graphicsboiler = `Last modified: 2021/11/10 15:47:31
+window.lastModified.graphicsboiler = `Last modified: 2022/07/14 17:38:46
 `; console.log('>>>>graphicsboiler.js');
 import {log} from './basic.js';
 import {VRButton} from './jsdeps/VRButton.js';
@@ -96,8 +96,10 @@ constructor(id = 'gb' + gbid++) {
     this.canvas.onclick = () => {
         document.activeElement.blur();  // so keys such as cursor keys don't force tabbing over the gui elements
         const av = me.addvisList;
-        X.currentXyz = Object.values(av)[0].xyz;
-        if (!X.currentXyz) X.currentXyz = Object.values(av)[0].obj.xyz; // <<< check
+        if (Object.values(av).length !== 0) {
+            X.currentXyz = Object.values(av)[0].xyz;
+            if (!X.currentXyz) X.currentXyz = Object.values(av)[0].obj.xyz; // <<< check
+        }
         _ggb = me;
         if (X.currentXyz) console.log('click', X.currentXyz.fid, me.id);
     }
@@ -342,7 +344,7 @@ select(fid, xyz) {
         const guiset = xyz.guiset;
         if (guiset) {
             E.colourby.value = guiset.colourby;
-            E.filterbox.value = guiset.filterbox;
+            E.filterbox.xvalue = guiset.filterbox;
             E.colourpick.value = guiset.colourpick;
             if (xyz.material) xyz.setPointSize(guiset.spotsize)
             // E['spot'+guiset.spotsize].checked = true;
