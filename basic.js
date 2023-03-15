@@ -1,6 +1,6 @@
 export {addFileTypeHandler, handlerForFid, showfirstdata, posturiasync, streamReader, fileReader, lineSplitter, 
     writeFile, saveData, sleep, readyFiles, addToFilelist, addscript, availableFileList, loaddrop, queryVariables, log, waitev, killev, fireev, getStartdata};
-window.lastModified.basic = `Last modified: 2021/11/10 15:46:45
+window.lastModified.basic = `Last modified: 2023/03/15 12:41:57
 `
 // @ts-ignore
 if (!window.GG) window.GG = {}; if (!window.E) window.E = /**@type{any}*/ window;
@@ -180,8 +180,13 @@ function openfiles(droptarget = lastdroptarget) {
 async function handlerForFid(fid) {
     const ext = getFileExtension(fid);
     let handler = fileTypeHandlers[ext];
-    if (!handler) {  // <<< TODO catch
-        await import('./plugins/' + ext.substring(1) + 'reader.js');
+    const ii = './plugins/' + ext.substring(1) + 'reader.js';
+    if (!handler) {
+        try {
+            await import(ii);
+        } catch (e) {
+            alert('Cannot load handler ' + ii);
+        }
         handler = fileTypeHandlers[ext];
     }
 
