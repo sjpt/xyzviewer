@@ -1,5 +1,5 @@
 // main file for code that needs to run early
-window.lastModified.main = `Last modified: 2022/09/01 10:43:35
+window.lastModified.main = `Last modified: 2024/09/30 09:53:51
 `
 
 // @ts-ignore
@@ -7,6 +7,7 @@ var W = window, E = window, X = window, WA = window;
 
 
 var foldStates = {}; // fold state structure, also saved as string in local storage
+X.proxy = X.proxy ?? '';
 /** toggle fold state, and remember it */
 function toggleFold(e) {
     if (e instanceof MouseEvent)
