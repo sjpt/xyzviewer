@@ -28,7 +28,7 @@
   "dependencies": {
     "csv-parser": "^2.3.5",
     "esbuild": "^0.25.0",
-    "eslint": "^7.26.0",
+    "eslint": "^10.8.1",
     "mathjs": "^15.2.0",
     "three": "^0.126.1"
   },
